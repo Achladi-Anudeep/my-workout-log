@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { DAY, PLAN } from '../data/plan';
+import { PLATE, sessionTitle } from '../lib/routines';
+import { useActivePlan } from '../lib/useRoutine';
 import { Plate } from '../components/ui';
 import { act, useWorkout } from '../store/workout';
 import { fmtDate, fmtW, isoDay, pad, volumeOf, weekdayId } from '../lib/utils';
@@ -7,13 +8,12 @@ import type { Session } from '../types';
 
 function SessionCard({ s, open, onToggle }: { s: Session; open: boolean; onToggle: () => void }) {
   const [del, setDel] = useState(false);
-  const d = DAY[s.dayId];
   return (
     <article className="rounded-2xl border border-line bg-surface">
       <button className="flex w-full items-center gap-3 px-4 py-3 text-left" onClick={onToggle} aria-expanded={open}>
-        <Plate color={d.plate} size={14} />
+        <Plate color={PLATE[s.dayId]} size={14} />
         <div className="min-w-0 flex-1">
-          <div className="disp text-[20px] font-bold uppercase leading-tight">{d.title}</div>
+          <div className="disp text-[20px] font-bold uppercase leading-tight">{sessionTitle(s)}</div>
           <div className="text-[13px] text-muted">{fmtDate(s.date)} · <span className="num">{s.mins}</span> min{s.cardio ? <> · cardio <span className="num">{s.cardio}</span>m</> : null}</div>
         </div>
         <div className="text-right"><div className="num text-[15px] font-bold">{Math.round(volumeOf(s)).toLocaleString()}</div><div className="text-[11px] text-muted">kg volume</div></div>
@@ -48,6 +48,7 @@ export default function CalendarView() {
   const [sel, setSel] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const todayIso = isoDay();
+  const { plan, byId } = useActivePlan();
 
   const byDate = useMemo(() => {
     const m: Record<string, Session[]> = {};
@@ -67,7 +68,7 @@ export default function CalendarView() {
   cells.forEach(d => {
     if (!d) return;
     const iso = isoDay(d);
-    if (iso < startDate || iso > todayIso || !DAY[weekdayId(d)].exercises.length) return;
+    if (iso < startDate || iso > todayIso || !byId[weekdayId(d)].exercises.length) return;
     planned++;
     if (byDate[iso]) hit++;
   });
@@ -105,7 +106,7 @@ export default function CalendarView() {
           {cells.map((d, i) => {
             if (!d) return <span key={i} />;
             const iso = isoDay(d);
-            const day = DAY[weekdayId(d)];
+            const day = byId[weekdayId(d)];
             const logged = byDate[iso] ?? [];
             const missed = !logged.length && day.exercises.length > 0 && iso < todayIso && iso >= startDate;
             const isSel = sel === iso, isToday = iso === todayIso;
@@ -115,7 +116,7 @@ export default function CalendarView() {
                 className={`flex aspect-square min-h-[44px] flex-col items-center justify-center gap-1 rounded-lg border text-[14px] ${isSel ? 'border-ink bg-ink text-bg' : isToday ? 'border-accent' : 'border-transparent'} ${iso > todayIso && !isSel ? 'text-muted' : ''}`}>
                 <span className="num leading-none">{d.getDate()}</span>
                 <span className="flex h-2.5 items-center gap-0.5">
-                  {logged.slice(0, 2).map(s => <Plate key={s.id} color={DAY[s.dayId].plate} size={9} />)}
+                  {logged.slice(0, 2).map(s => <Plate key={s.id} color={PLATE[s.dayId]} size={9} />)}
                   {missed && <span className="block h-0.5 w-2.5 rounded bg-muted" />}
                 </span>
               </button>
@@ -123,7 +124,7 @@ export default function CalendarView() {
           })}
         </div>
         <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-1 text-[12px] text-muted">
-          {PLAN.filter(p => p.exercises.length).map(p => <span key={p.id} className="flex items-center gap-1"><Plate color={p.plate} size={8} />{p.title}</span>)}
+          {plan.filter(p => p.exercises.length).map(p => <span key={p.id} className="flex items-center gap-1"><Plate color={p.plate} size={8} />{p.title}</span>)}
           <span className="flex items-center gap-1"><span className="block h-0.5 w-2.5 rounded bg-muted" />Missed</span>
         </div>
       </section>
@@ -137,7 +138,7 @@ export default function CalendarView() {
       ) : (
         <div className="rounded-2xl border border-dashed border-line px-5 py-6 text-center">
           {sel ? (
-            <p className="text-muted">Nothing logged on this day. Planned: <span className="font-semibold text-ink">{DAY[weekdayId(new Date(sel + 'T00:00:00'))].title}</span>.</p>
+            <p className="text-muted">Nothing logged on this day. Planned: <span className="font-semibold text-ink">{byId[weekdayId(new Date(sel + 'T00:00:00'))].title}</span>.</p>
           ) : (
             <>
               <p className="disp text-[22px] font-bold uppercase">No workouts this month yet</p>

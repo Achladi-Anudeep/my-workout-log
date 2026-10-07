@@ -1,4 +1,5 @@
-import { ALL_EX, EX_DAYS } from '../data/plan';
+import { exDays } from '../lib/routines';
+import { useActivePlan, useAllExercises } from '../lib/useRoutine';
 import { Chip } from '../components/ui';
 import BodyWeight from '../components/BodyWeight';
 import { useWorkout } from '../store/workout';
@@ -23,7 +24,12 @@ const ORDER = { ready: 0, building: 1, new: 2 } as const;
 
 export default function Progress() {
   const sessions = useWorkout(s => s.sessions);
-  const rows = ALL_EX.map(e => {
+  const { plan } = useActivePlan();
+  const allEx = useAllExercises();
+  // Exercises in the active routine, plus anything else you've actually logged.
+  const loggedIds = new Set(sessions.flatMap(s => s.ex.map(e => e.id)));
+  const inPlan = new Set(plan.flatMap(d => d.exercises.map(e => e.id)));
+  const rows = allEx.filter(e => inPlan.has(e.id) || loggedIds.has(e.id)).map(e => {
     const st = progressStatus(sessions, e);
     const hist = sessions.slice().reverse()
       .map(s => s.ex.find(x => x.id === e.id))
@@ -45,7 +51,7 @@ export default function Progress() {
           <div key={e.id} className={`flex items-center gap-3 px-4 py-3 ${i ? 'border-t border-line' : ''}`}>
             <div className="min-w-0 flex-1">
               <div className="truncate text-[15px] font-semibold">{e.name}</div>
-              <div className="text-[12px] text-muted">{EX_DAYS(e.id).join(' · ')} · target {e.sets}×{range(e)}</div>
+              <div className="text-[12px] text-muted">{exDays(plan, e.id).join(' · ') || 'Not in active routine'} · target {e.sets}×{range(e)}</div>
               <div className="mt-1">
                 {st.kind === 'ready' && <Chip tone="good">Go {st.next != null ? `${fmtW(st.next)} kg` : 'harder'}</Chip>}
                 {st.kind === 'building' && <Chip tone="accent">Building reps</Chip>}

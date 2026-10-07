@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { DAY, PLAN } from '../data/plan';
 import { CheckIcon as Check, Chip, Plate } from '../components/ui';
-import { act, useWorkout } from '../store/workout';
+import { act, activeDay, useWorkout } from '../store/workout';
+import { useActivePlan } from '../lib/useRoutine';
 import { isoDay, mmss, pad, programWeek, progressStatus, range, fmtW, weekdayId } from '../lib/utils';
 import type { Active, Day, DayId, Exercise, Session } from '../types';
 import WeightSheet from '../components/WeightSheet';
@@ -9,11 +9,11 @@ import { fmtKg, fmtWhen } from '../lib/weight';
 
 export type OnRest = (secs: number, label: string) => void;
 
-function DayStrip({ sel, onSel, today }: { sel: DayId; onSel: (d: DayId) => void; today: DayId }) {
+function DayStrip({ sel, onSel, today, plan }: { sel: DayId; onSel: (d: DayId) => void; today: DayId; plan: Day[] }) {
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-1">
       <div className="flex gap-2">
-        {PLAN.map(d => (
+        {plan.map(d => (
           <button key={d.id} id={`day-${d.id}`} onClick={() => onSel(d.id)}
             className={`flex min-w-[64px] flex-col items-center gap-1 rounded-xl border px-2 py-2 transition ${sel === d.id ? 'border-ink bg-ink text-bg' : 'border-line bg-surface text-ink'}`}>
             <span className="disp text-[17px] font-bold uppercase leading-none">{d.short}</span>
@@ -163,9 +163,11 @@ export default function Today({ onRest }: { onRest: OnRest }) {
   const [finishing, setFinishing] = useState(false);
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
-  const day = DAY[sel];
-  const pw = programWeek(startDate);
+  const { routine, plan, byId } = useActivePlan();
   const isActiveHere = active?.dayId === sel;
+  // While a workout runs, show the snapshot it started with, even if the routine was edited since.
+  const day = isActiveHere && active ? activeDay(active) : byId[sel];
+  const pw = programWeek(startDate);
   const doneToday = sessions.find(s => s.date === isoDay() && s.dayId === sel);
 
   return (
@@ -175,16 +177,16 @@ export default function Today({ onRest }: { onRest: OnRest }) {
         <span className="block text-muted">{pw.deload ? 'Easy week due: drop weights ~20% this week.' : `${pw.rir}. Form over weight.`}</span>
       </div>
       <WeightQuickRow />
-      <DayStrip sel={sel} onSel={setSel} today={today} />
+      <DayStrip sel={sel} onSel={setSel} today={today} plan={plan} />
       <section>
-        <div className="flex items-center gap-2"><Plate color={day.plate} size={14} /><span className="label">{day.short}{sel === today ? ' · today' : ''}{day.home ? ' · at home' : ''}</span></div>
+        <div className="flex items-center gap-2"><Plate color={day.plate} size={14} /><span className="label">{day.short}{sel === today ? ' · today' : ''}{day.home ? ' · at home' : ''} · {routine.name}</span></div>
         <h2 className="disp mt-1 text-[40px] font-extrabold uppercase leading-[0.95]">{day.title}</h2>
         <p className="mt-1 text-muted">{day.focus}{day.mins !== '0' && <> · ~<span className="num">{day.mins}</span> min</>}</p>
         {day.cardio !== 'none' && <p className="mt-1 text-[14px] text-muted">Optional cardio after: 15–20 min, conversational pace{day.cardio === 'home' ? ' (walk, stairs, jog in place)' : ''}.</p>}
-        {day.id !== 'sun' && day.cardio === 'none' && <p className="mt-1 text-[14px] text-muted">No cardio today.</p>}
+        {day.exercises.length > 0 && day.cardio === 'none' && <p className="mt-1 text-[14px] text-muted">No cardio today.</p>}
       </section>
 
-      {day.id === 'sun' ? (
+      {!day.exercises.length ? (
         <div className="rounded-2xl border border-line bg-surface px-4 py-6 text-center">
           <p className="disp text-[24px] font-bold uppercase">Rest day</p>
           <p className="mt-1 text-muted">Muscle is built while you recover. Light walking in daily life is fine.</p>
@@ -205,7 +207,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
                 </button>
               ) : active ? (
                 <button className="h-12 w-full rounded-xl border border-line bg-surface text-[15px] font-semibold shadow-lg" onClick={() => setSel(active.dayId)}>
-                  {DAY[active.dayId].title} workout in progress · go back
+                  {activeDay(active).title} workout in progress · go back
                 </button>
               ) : (
                 <button id="start-workout" className="h-12 w-full rounded-xl bg-accent text-[16px] font-bold text-accentInk shadow-lg" onClick={() => act().start(sel)}>

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { act, useWorkout, type RemoteRow, type RemoteWeightRow } from './workout';
+import { act, useWorkout, type RemoteRoutineRow, type RemoteRow, type RemoteWeightRow } from './workout';
 
 export type SyncMode = 'unconfigured' | 'signed-out' | 'syncing' | 'synced' | 'offline';
 
@@ -47,6 +47,46 @@ async function syncWeights() {
   }
 }
 
+/** False while the routines table is missing; routines then stay on this device. */
+let routinesReady = true;
+const activeRowId = () => `active-${userId}`;
+
+async function syncRoutines() {
+  if (!supabase || !userId) return;
+  try {
+    const now = () => new Date().toISOString();
+    for (const id of [...act().pendingRUp]) {
+      const r = act().routines.find(x => x.id === id);
+      if (!r) { act().markRoutineUploaded(id); continue; }
+      const { error } = await supabase.from('routines').upsert({ id: r.id, user_id: userId, data: r, deleted: false, updated_at: now() });
+      if (error) throw error;
+      act().markRoutineUploaded(id);
+    }
+    for (const id of [...act().pendingRDel]) {
+      const { error } = await supabase.from('routines').upsert({ id, user_id: userId, data: null, deleted: true, updated_at: now() });
+      if (error) throw error;
+      act().markRoutineDeleted(id);
+    }
+    if (act().activeRoutineDirty) {
+      const { error } = await supabase.from('routines').upsert({
+        id: activeRowId(), user_id: userId, data: { activeId: act().activeRoutineId }, deleted: false, updated_at: now(),
+      });
+      if (error) throw error;
+      act().markActiveRoutineSaved();
+    }
+    const { data, error } = await supabase.from('routines').select('id, data, deleted');
+    if (error) throw error;
+    const rows = (data ?? []) as { id: string; data: any; deleted: boolean }[];
+    const activeRow = rows.find(r => r.id === activeRowId());
+    act().applyRemoteRoutines(rows.filter(r => r.id !== activeRowId()) as RemoteRoutineRow[], activeRow?.data?.activeId ?? null);
+    routinesReady = true;
+  } catch (err: any) {
+    const missing = err?.code === '42P01' || err?.code === 'PGRST205' || /could not find the table|does not exist/i.test(err?.message ?? '');
+    if (missing) { routinesReady = false; return; }
+    throw err;
+  }
+}
+
 /** Push pending changes, then pull everything. Safe to call often; calls coalesce. */
 async function syncNow() {
   if (!supabase || !userId) return;
@@ -89,9 +129,10 @@ async function syncNow() {
     act().applyRemote((rows ?? []) as RemoteRow[], (settings?.start_date as string | undefined) ?? null);
 
     await syncWeights();
+    await syncRoutines();
 
     // applyRemote may have queued items that were only on this device
-    if (act().pendingUp.length || (weightsReady && act().pendingWUp.length)) again = true;
+    if (act().pendingUp.length || (weightsReady && act().pendingWUp.length) || (routinesReady && act().pendingRUp.length)) again = true;
     patch({ mode: 'synced', lastSync: Date.now() });
   } catch (err: any) {
     const offline = typeof navigator !== 'undefined' && !navigator.onLine;
@@ -102,6 +143,13 @@ async function syncNow() {
     running = false;
     if (again) { again = false; void syncNow(); }
   }
+}
+
+/** Routine edits come in bursts (typing a name, tapping steppers): wait for a short pause before uploading. */
+let debounce: ReturnType<typeof setTimeout> | undefined;
+function scheduleSync() {
+  clearTimeout(debounce);
+  debounce = setTimeout(() => void syncNow(), 800);
 }
 
 function onSignedIn(id: string, email: string | null) {
@@ -126,9 +174,12 @@ export const Sync = {
     // Push as soon as something changes locally
     useWorkout.subscribe((s, prev) => {
       const changed = s.pendingUp !== prev.pendingUp || s.pendingDel !== prev.pendingDel
-        || s.pendingWUp !== prev.pendingWUp || s.pendingWDel !== prev.pendingWDel || (s.settingsDirty && !prev.settingsDirty);
-      const hasWork = s.pendingUp.length || s.pendingDel.length || s.pendingWUp.length || s.pendingWDel.length || s.settingsDirty;
-      if (changed && hasWork) void syncNow();
+        || s.pendingWUp !== prev.pendingWUp || s.pendingWDel !== prev.pendingWDel || (s.settingsDirty && !prev.settingsDirty)
+        || s.pendingRUp !== prev.pendingRUp || s.pendingRDel !== prev.pendingRDel || (s.activeRoutineDirty && !prev.activeRoutineDirty)
+        || s.routines !== prev.routines;
+      const hasWork = s.pendingUp.length || s.pendingDel.length || s.pendingWUp.length || s.pendingWDel.length || s.settingsDirty
+        || s.pendingRUp.length || s.pendingRDel.length || s.activeRoutineDirty;
+      if (changed && hasWork) scheduleSync();
     });
 
     // Pull when the app comes back to the foreground or the network returns (laptop review, phone unlock)
