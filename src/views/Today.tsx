@@ -4,6 +4,8 @@ import { CheckIcon as Check, Chip, Plate } from '../components/ui';
 import { act, useWorkout } from '../store/workout';
 import { isoDay, mmss, pad, programWeek, progressStatus, range, fmtW, weekdayId } from '../lib/utils';
 import type { Active, Day, DayId, Exercise, Session } from '../types';
+import WeightSheet from '../components/WeightSheet';
+import { fmtKg, fmtWhen } from '../lib/weight';
 
 export type OnRest = (secs: number, label: string) => void;
 
@@ -132,6 +134,26 @@ function FinishPanel({ day, onClose }: { day: Day; onClose: () => void }) {
   );
 }
 
+function WeightQuickRow() {
+  const latest = useWorkout(s => s.weights[s.weights.length - 1]);
+  const [open, setOpen] = useState(false);
+  const loggedToday = latest && isoDay(new Date(latest.at)) === isoDay();
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-2.5">
+      <div className="min-w-0 flex-1">
+        <div className="label">Body weight</div>
+        <div className="text-[14px]">
+          {latest
+            ? <><span className="num font-bold">{fmtKg(latest.kg)} kg</span> <span className="text-muted">· {loggedToday ? 'today' : fmtWhen(latest.at)}</span></>
+            : <span className="text-muted">Not logged yet</span>}
+        </div>
+      </div>
+      <button className="h-10 rounded-lg bg-sunk px-3 text-[14px] font-semibold" onClick={() => setOpen(true)}>{loggedToday ? '+ Log again' : '+ Log weight'}</button>
+      {open && <WeightSheet onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
 export default function Today({ onRest }: { onRest: OnRest }) {
   const active = useWorkout(s => s.active);
   const sessions = useWorkout(s => s.sessions);
@@ -152,6 +174,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
         <span className="disp text-[18px] font-bold uppercase">Week {pw.week} · {pw.name}</span>
         <span className="block text-muted">{pw.deload ? 'Easy week due: drop weights ~20% this week.' : `${pw.rir}. Form over weight.`}</span>
       </div>
+      <WeightQuickRow />
       <DayStrip sel={sel} onSel={setSel} today={today} />
       <section>
         <div className="flex items-center gap-2"><Plate color={day.plate} size={14} /><span className="label">{day.short}{sel === today ? ' · today' : ''}{day.home ? ' · at home' : ''}</span></div>

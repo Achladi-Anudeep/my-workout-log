@@ -1,5 +1,6 @@
 import { ALL_EX, EX_DAYS } from '../data/plan';
 import { Chip } from '../components/ui';
+import BodyWeight from '../components/BodyWeight';
 import { useWorkout } from '../store/workout';
 import { fmtW, progressStatus, range } from '../lib/utils';
 
@@ -35,7 +36,9 @@ export default function Progress() {
   return (
     <div className="grid gap-4">
       <h2 className="disp text-[36px] font-extrabold uppercase leading-none">Progress</h2>
-      <p className="text-[14px] text-muted">Add weight only when all 3 sets hit the top of the rep range with good form. Then add 2.5–5% and drop back to the bottom of the range.</p>
+      <BodyWeight />
+      <div className="label mt-2">Lifts</div>
+      <p className="-mt-2 text-[14px] text-muted">Add weight only when all 3 sets hit the top of the rep range with good form. Then add 2.5–5% and drop back to the bottom of the range.</p>
       {ready > 0 && <div><Chip tone="good">▲ {ready} exercise{ready > 1 ? 's' : ''} ready to progress</Chip></div>}
       <div className="overflow-hidden rounded-2xl border border-line bg-surface">
         {rows.map(({ e, st, hist }, i) => (

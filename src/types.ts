@@ -30,6 +30,9 @@ export interface Day {
   exercises: Exercise[];
 }
 
+/** One weigh-in: body weight in kg at a moment in time (ms since epoch). */
+export interface WeightEntry { id: string; at: number; kg: number; }
+
 export interface SetLog { w: string; r: string; done: boolean; }
 export interface Active { dayId: DayId; startedAt: number; logs: Record<string, SetLog[]>; }
 

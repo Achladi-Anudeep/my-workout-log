@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { act, useWorkout, type RemoteRow } from './workout';
+import { act, useWorkout, type RemoteRow, type RemoteWeightRow } from './workout';
 
 export type SyncMode = 'unconfigured' | 'signed-out' | 'syncing' | 'synced' | 'offline';
 
@@ -12,6 +12,40 @@ let userId: string | null = null;
 let running = false;
 let again = false;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** False once the weights table turns out to be missing, so a not-yet-run migration never blocks workout sync. */
+let weightsReady = true;
+
+async function syncWeights() {
+  if (!supabase || !userId) return;
+  try {
+    for (const id of [...act().pendingWUp]) {
+      const w = act().weights.find(x => x.id === id);
+      if (!w) { act().markWeightUploaded(id); continue; }
+      const { error } = await supabase.from('weights').upsert({
+        id: w.id, user_id: userId, at: w.at, kg: w.kg, deleted: false, updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      act().markWeightUploaded(id);
+    }
+    for (const id of [...act().pendingWDel]) {
+      const { error } = await supabase.from('weights').upsert({
+        id, user_id: userId, at: 0, kg: null, deleted: true, updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      act().markWeightDeleted(id);
+    }
+    const { data, error } = await supabase.from('weights').select('id, at, kg, deleted').order('at', { ascending: true });
+    if (error) throw error;
+    act().applyRemoteWeights((data ?? []) as RemoteWeightRow[]);
+    weightsReady = true;
+  } catch (err: any) {
+    // 42P01 / PGRST205 = table not created yet. Keep weights on this device and carry on.
+    const missing = err?.code === '42P01' || err?.code === 'PGRST205' || /could not find the table|does not exist/i.test(err?.message ?? '');
+    if (missing) { weightsReady = false; return; }
+    throw err;
+  }
+}
 
 /** Push pending changes, then pull everything. Safe to call often; calls coalesce. */
 async function syncNow() {
@@ -54,8 +88,10 @@ async function syncNow() {
     if (e2) throw e2;
     act().applyRemote((rows ?? []) as RemoteRow[], (settings?.start_date as string | undefined) ?? null);
 
-    // applyRemote may have queued sessions that were only on this device
-    if (act().pendingUp.length) again = true;
+    await syncWeights();
+
+    // applyRemote may have queued items that were only on this device
+    if (act().pendingUp.length || (weightsReady && act().pendingWUp.length)) again = true;
     patch({ mode: 'synced', lastSync: Date.now() });
   } catch (err: any) {
     const offline = typeof navigator !== 'undefined' && !navigator.onLine;
@@ -89,9 +125,10 @@ export const Sync = {
 
     // Push as soon as something changes locally
     useWorkout.subscribe((s, prev) => {
-      if (s.pendingUp !== prev.pendingUp || s.pendingDel !== prev.pendingDel || (s.settingsDirty && !prev.settingsDirty)) {
-        if (s.pendingUp.length || s.pendingDel.length || s.settingsDirty) void syncNow();
-      }
+      const changed = s.pendingUp !== prev.pendingUp || s.pendingDel !== prev.pendingDel
+        || s.pendingWUp !== prev.pendingWUp || s.pendingWDel !== prev.pendingWDel || (s.settingsDirty && !prev.settingsDirty);
+      const hasWork = s.pendingUp.length || s.pendingDel.length || s.pendingWUp.length || s.pendingWDel.length || s.settingsDirty;
+      if (changed && hasWork) void syncNow();
     });
 
     // Pull when the app comes back to the foreground or the network returns (laptop review, phone unlock)

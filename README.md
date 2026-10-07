@@ -4,7 +4,7 @@ A phone-first workout logger for the 6-day Push / Pull / Legs / Arms plan. It's 
 
 - **Today:** the day's workout, set logging (kg × reps), a rest timer, and Finish with cardio minutes and a note.
 - **Calendar:** a month view of logged and missed days, with adherence, cardio and volume, and per-day session details.
-- **Progress:** per-exercise trend lines and "ready to add weight" cues based on the progression rule.
+- **Progress:** body-weight log (date and time, 7-day average, trend chart) plus per-exercise trend lines and "ready to add weight" cues.
 - **Tutorials:** animated GIF demos and steps, fetched live from the free [ExerciseDB](https://oss.exercisedb.dev/) API. Nothing is stored.
 - **Plan:** the weekly overview, rules, the program start date and the sync account.
 
@@ -31,6 +31,9 @@ Stack: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Supabase (auth + Postg
 3. On your laptop, open the same URL and sign in with the same account.
 
 When both devices are signed in, go to **Supabase → Authentication → Sign In / Providers** and turn off **Allow new users to sign up**, so nobody else can create an account on your project.
+
+### Updating an existing Supabase project
+If you set the project up before body-weight tracking existed, run `supabase/002_weights.sql` once in the SQL Editor.
 
 ## How sync works
 - Every workout is saved on the device first, so logging works with no signal at the gym.

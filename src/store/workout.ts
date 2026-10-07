@@ -2,12 +2,13 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DAY } from '../data/plan';
 import { isoDay, lastFor, uid } from '../lib/utils';
-import type { Active, DayId, Session, SetLog } from '../types';
+import type { Active, DayId, Session, SetLog, WeightEntry } from '../types';
 
 export type Tab = 'today' | 'calendar' | 'progress' | 'tutorials' | 'plan';
 
 /** A row as stored in Supabase: deletes are soft so they reach every device. */
 export interface RemoteRow { id: string; data: Session | null; deleted: boolean; }
+export interface RemoteWeightRow { id: string; at: number; kg: number | null; deleted: boolean; }
 
 export interface WorkoutState {
   startDate: string;
@@ -18,6 +19,15 @@ export interface WorkoutState {
   pendingUp: string[];
   pendingDel: string[];
   settingsDirty: boolean;
+  weights: WeightEntry[];
+  pendingWUp: string[];
+  pendingWDel: string[];
+
+  addWeight: (kg: number, at: number) => void;
+  deleteWeight: (id: string) => void;
+  applyRemoteWeights: (rows: RemoteWeightRow[]) => void;
+  markWeightUploaded: (id: string) => void;
+  markWeightDeleted: (id: string) => void;
 
   setTab: (t: Tab) => void;
   setStartDate: (d: string) => void;
@@ -52,6 +62,32 @@ export const useWorkout = create<WorkoutState>()(
       pendingUp: [],
       pendingDel: [],
       settingsDirty: false,
+      weights: [],
+      pendingWUp: [],
+      pendingWDel: [],
+
+      addWeight: (kg, at) => set(s => {
+        const entry: WeightEntry = { id: uid(), at, kg: Math.round(kg * 100) / 100 };
+        return { weights: [...s.weights, entry].sort((a, b) => a.at - b.at), pendingWUp: [...s.pendingWUp, entry.id] };
+      }),
+      deleteWeight: id => set(s => ({
+        weights: s.weights.filter(w => w.id !== id),
+        pendingWUp: s.pendingWUp.filter(x => x !== id),
+        pendingWDel: [...s.pendingWDel, id],
+      })),
+      applyRemoteWeights: rows => set(s => {
+        const remoteIds = new Set(rows.map(r => r.id));
+        const deleted = new Set(rows.filter(r => r.deleted).map(r => r.id));
+        const live = rows.filter(r => !r.deleted && r.kg != null && !s.pendingWDel.includes(r.id))
+          .map(r => ({ id: r.id, at: Number(r.at), kg: Number(r.kg) }));
+        const localOnly = s.weights.filter(w => !remoteIds.has(w.id) && !deleted.has(w.id));
+        return {
+          weights: [...live, ...localOnly].sort((a, b) => a.at - b.at),
+          pendingWUp: [...new Set([...s.pendingWUp.filter(id => !deleted.has(id)), ...localOnly.map(w => w.id)])],
+        };
+      }),
+      markWeightUploaded: id => set(s => ({ pendingWUp: s.pendingWUp.filter(x => x !== id) })),
+      markWeightDeleted: id => set(s => ({ pendingWDel: s.pendingWDel.filter(x => x !== id) })),
 
       setTab: tab => set({ tab }),
       setStartDate: startDate => set({ startDate, settingsDirty: true }),
@@ -132,6 +168,7 @@ export const useWorkout = create<WorkoutState>()(
       partialize: s => ({
         startDate: s.startDate, active: s.active, sessions: s.sessions, tab: s.tab,
         pendingUp: s.pendingUp, pendingDel: s.pendingDel, settingsDirty: s.settingsDirty,
+        weights: s.weights, pendingWUp: s.pendingWUp, pendingWDel: s.pendingWDel,
       }),
     },
   ),
