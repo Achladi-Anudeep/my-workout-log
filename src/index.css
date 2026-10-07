@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Layout: one-column phone app — sticky header, scrolling day log, fixed bottom tab bar.
+   Plate colours tag each training day. */
+:root {
+  --bg: #F1F3F6; --surface: #FFFFFF; --sunk: #E7EAEF; --ink: #13161B; --muted: #5B6471; --line: #D9DEE6;
+  --accent: #2350D8; --accent-ink: #FFFFFF; --accent-soft: #E3E9FB;
+  --good: #19864A; --good-soft: #DDF2E5; --warn: #A86400; --warn-soft: #FBEBD0; --danger: #C2362B;
+  --p-red: #D8322A; --p-blue: #2350D8; --p-yellow: #E6B400; --p-green: #23955A; --p-white: #8A94A3; --p-black: #2B2F36;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0D0F13; --surface: #171A20; --sunk: #1F232B; --ink: #ECEFF4; --muted: #96A0AD; --line: #2A2F39;
+    --accent: #7C97FF; --accent-ink: #0B0E14; --accent-soft: #1D2647;
+    --good: #45D68E; --good-soft: #13301F; --warn: #F2B544; --warn-soft: #33270F; --danger: #FF7A6E;
+    --p-red: #FF5A50; --p-blue: #7C97FF; --p-yellow: #F5CC2E; --p-green: #45D68E; --p-white: #C7CDD6; --p-black: #6B7280;
+    color-scheme: dark;
+  }
+}
+
+html, body, #root { min-height: 100%; }
+html { padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: Barlow, system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 15px;
+  -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
+}
+.num { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+.disp { font-family: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif; letter-spacing: .01em; }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+h1, h2, h3 { text-wrap: balance; }
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input { font-size: 16px; } /* stops iOS zooming in on focus */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
