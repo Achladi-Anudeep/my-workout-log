@@ -66,3 +66,6 @@ create policy "own routines" on public.routines
   for all to authenticated
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
+
+-- Signed-in users can use the API on these tables (row level security still limits them to their own rows)
+grant select, insert, update, delete on public.sessions, public.settings, public.weights, public.routines to authenticated;

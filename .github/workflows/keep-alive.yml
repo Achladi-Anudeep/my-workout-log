@@ -1,0 +1,23 @@
+# Keeps both Supabase projects (test and production) from being paused for inactivity.
+# Fails loudly if a database is already paused, so it gets noticed and resumed.
+name: Keep databases awake
+
+on:
+  schedule:
+    - cron: '17 3 */2 * *'   # every second day, 08:47 IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Ping databases
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/keep-alive.mjs https://my-own-workout-log.netlify.app https://develop--my-own-workout-log.netlify.app

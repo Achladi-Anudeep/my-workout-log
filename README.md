@@ -48,10 +48,11 @@ If you set the project up before these features existed, run these once in the S
 | | Branch | URL | Database |
 |---|---|---|---|
 | **Production** | `main` | https://my-own-workout-log.netlify.app | production Supabase project (set in the Netlify UI) |
-| **Test** | `develop` | https://develop--my-own-workout-log.netlify.app | test Supabase project (set in `netlify.toml`) |
+| **Test** | `develop` | https://develop--my-own-workout-log.netlify.app | test Supabase project `my-workout-log-test` (set in `netlify.toml`) |
 
 - The test site shows a **TEST** badge in the header and installs as "Workout TEST", so it can't be confused with the real app.
 - `scripts/check-env.mjs` fails any Netlify build that would connect the wrong database: production must use the production project, and every other build must not.
+- Supabase pauses free projects after about a week of no activity. `.github/workflows/keep-alive.yml` makes a tiny read against both databases every second day so that never happens, and fails loudly if one is already paused.
 - Every deploy publishes `/version.json` (commit, environment, database host), which the pipeline uses to confirm exactly what is live.
 
 ## Release process (CI/CD)

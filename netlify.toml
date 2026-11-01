@@ -14,16 +14,16 @@
 # Test environment (develop branch). The URL and anon key are public values (they ship inside the web app);
 # row level security keeps each account's data private.
 [context.develop.environment]
-  VITE_SUPABASE_URL = ""
-  VITE_SUPABASE_ANON_KEY = ""
+  VITE_SUPABASE_URL = "https://vzdeaxytytzrjjdwdpwk.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "sb_publishable_hOKe2KxpxOBz-cL5ZaSASA_OOfJULNt"
 
 [context.deploy-preview.environment]
-  VITE_SUPABASE_URL = ""
-  VITE_SUPABASE_ANON_KEY = ""
+  VITE_SUPABASE_URL = "https://vzdeaxytytzrjjdwdpwk.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "sb_publishable_hOKe2KxpxOBz-cL5ZaSASA_OOfJULNt"
 
 [context.branch-deploy.environment]
-  VITE_SUPABASE_URL = ""
-  VITE_SUPABASE_ANON_KEY = ""
+  VITE_SUPABASE_URL = "https://vzdeaxytytzrjjdwdpwk.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "sb_publishable_hOKe2KxpxOBz-cL5ZaSASA_OOfJULNt"
 
 # Single-page app: send every route to index.html
 [[redirects]]
