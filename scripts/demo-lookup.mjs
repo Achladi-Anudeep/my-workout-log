@@ -19,16 +19,18 @@ const Q = {
   'band-pull-apart': ['band pull apart', 'pull apart'], 'goblet-squat': ['dumbbell goblet squat', 'goblet squat'],
   'cable-crossover': ['cable cross-over', 'cable crossover', 'cable fly'], 'cable-curl': ['cable curl', 'cable biceps curl'],
 };
+const DONE = new Set(["chest-press", "incline-press", "dips", "lateral-raise", "triceps-pushdown", "front-raise", "farmers-carry", "bicep-curl"]);
 for (const [id, qs] of Object.entries(Q)) {
+  if (DONE.has(id)) continue;
   const seen = new Set();
   const rows = [];
   for (const q of qs) {
     try {
-      const r = await fetch(`https://oss.exercisedb.dev/api/v1/exercises?name=${encodeURIComponent(q)}&limit=8`);
+      const r = await fetch(`https://oss.exercisedb.dev/api/v1/exercises?name=${encodeURIComponent(q)}&limit=10`);
       const j = await r.json();
       for (const d of j.data ?? []) if (!seen.has(d.exerciseId)) { seen.add(d.exerciseId); rows.push(`${d.exerciseId} | ${d.name} | ${d.equipments.join(',')} | ${d.targetMuscles.join(',')}`); }
     } catch (e) { rows.push(`ERR ${q}: ${e.message}`); }
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 4000));
   }
   console.log(`DEMO ${id}\n  ` + (rows.slice(0, 10).join('\n  ') || '(none)'));
 }
