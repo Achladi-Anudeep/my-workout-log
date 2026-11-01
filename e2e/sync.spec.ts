@@ -29,7 +29,8 @@ async function laptop(browser: Browser) {
 }
 
 test.describe('@env', () => {
-  test.describe.configure({ mode: 'serial' });
+  // Real network round-trips against the test database take longer than local UI tests.
+  test.describe.configure({ mode: 'serial', timeout: 180_000 });
 
   test.beforeAll(async () => {
     expect(email, 'TEST_USER_EMAIL is not set').not.toBe('');
@@ -82,6 +83,7 @@ test.describe('@env', () => {
 
     // ---- laptop deletes the workout → gone on the phone
     await tab(lap, 'calendar');
+    await lap.locator('article button[aria-expanded]').first().click(); // switching tabs collapses the card again
     await lap.getByRole('button', { name: 'Delete session' }).click();
     await lap.getByRole('button', { name: 'Tap again to delete' }).click();
     await syncNow(lap);
