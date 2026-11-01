@@ -55,6 +55,8 @@ function UpdateBar() {
 export default function App() {
   const tab = useWorkout(s => s.tab);
   const [timer, setTimer] = useState<Timer | null>(null);
+  // Tapping the tab you're already on goes back to that tab's start screen, like other iPhone apps.
+  const [resets, setResets] = useState(0);
   const onRest = (secs: number, label: string) => setTimer({ end: Date.now() + secs * 1000, total: secs, label });
 
   // Older saved state may hold a tab that no longer exists
@@ -79,8 +81,8 @@ export default function App() {
         {tab === 'today' && <Today onRest={onRest} />}
         {tab === 'calendar' && <CalendarView />}
         {tab === 'progress' && <Progress />}
-        {tab === 'tutorials' && <Tutorials />}
-        {tab === 'plan' && <Plan />}
+        {tab === 'tutorials' && <Tutorials key={resets} />}
+        {tab === 'plan' && <Plan key={resets} />}
       </main>
 
       <UpdateBar />
@@ -89,7 +91,7 @@ export default function App() {
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="mx-auto grid max-w-xl grid-cols-5">
           {TABS.map(t => (
-            <button key={t.id} id={`tab-${t.id}`} onClick={() => act().setTab(t.id)} aria-current={tab === t.id ? 'page' : undefined}
+            <button key={t.id} id={`tab-${t.id}`} onClick={() => { if (t.id === tab) setResets(n => n + 1); else act().setTab(t.id); }} aria-current={tab === t.id ? 'page' : undefined}
               className={`flex h-16 flex-col items-center justify-center gap-1 ${tab === t.id ? 'text-accent' : 'text-muted'}`}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>
               <span className="text-[12px] font-semibold">{t.label}</span>
