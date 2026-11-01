@@ -11,6 +11,7 @@ const patch = (p: Partial<SyncState>) => useSync.setState(p);
 let userId: string | null = null;
 let running = false;
 let again = false;
+let chained = 0;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
 /** False once the weights table turns out to be missing, so a not-yet-run migration never blocks workout sync. */
@@ -141,7 +142,9 @@ async function syncNow() {
     retryTimer = setTimeout(() => void syncNow(), 20000);
   } finally {
     running = false;
-    if (again) { again = false; void syncNow(); }
+    // Chain at most a few rounds back to back, so a row the server keeps rejecting can't spin forever.
+    if (again && chained < 3) { again = false; chained++; void syncNow(); }
+    else { again = false; chained = 0; }
   }
 }
 

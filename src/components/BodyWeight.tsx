@@ -15,7 +15,7 @@ export default function BodyWeight() {
 
   const all = useMemo(() => withRollingAvg(weights), [weights]);
   const days = RANGES.find(r => r[0] === range)![1];
-  const shown = days ? all.filter(p => p.at >= Date.now() - days * DAY) : all;
+  const shown = useMemo(() => (days ? all.filter(p => p.at >= Date.now() - days * DAY) : all), [all, days]);
 
   const latest = all[all.length - 1];
   const now = Date.now();

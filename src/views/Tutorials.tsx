@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { cleanStep, useDemos, ytUrl } from '../lib/exercisedb';
+import ExerciseHowTo from '../components/ExerciseHowTo';
+import type { Exercise } from '../types';
 import { DEMO_Q } from '../data/plan';
 import { exDays } from '../lib/routines';
 import { useActivePlan } from '../lib/useRoutine';
@@ -16,9 +18,9 @@ function DemoError({ name }: { name: string }) {
   );
 }
 
-interface DemoTarget { title: string; query: string; cue?: string; }
+interface DemoTarget { title: string; query: string; exercise?: Exercise; }
 
-function DemoView({ title, query, cue, onBack }: DemoTarget & { onBack: () => void }) {
+function DemoView({ title, query, exercise, onBack }: DemoTarget & { onBack: () => void }) {
   const { data, error } = useDemos(query, 6);
   const [pick, setPick] = useState(0);
   const [imgFailed, setImgFailed] = useState(false);
@@ -29,7 +31,7 @@ function DemoView({ title, query, cue, onBack }: DemoTarget & { onBack: () => vo
     <div className="grid gap-4">
       <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>‹ All tutorials</button>
       <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{title}</h2>
-      {cue && <div className="rounded-xl border border-line bg-surface px-4 py-3"><div className="label">Your cue</div><p className="mt-1 text-[15px]">{cue}</p></div>}
+      {exercise && <div className="rounded-xl border border-line bg-surface px-4 py-3"><ExerciseHowTo e={exercise} /></div>}
       {error && <DemoError name={title} />}
       {!error && !data && <div className="grid aspect-square w-full max-w-sm place-items-center rounded-2xl bg-sunk text-muted">Loading demo…</div>}
       {data && !data.length && (
@@ -125,7 +127,7 @@ export default function Tutorials() {
         </div>
         <div className="overflow-hidden rounded-2xl border border-line bg-surface">
           {planList.map((e, i) => (
-            <button key={e.id} onClick={() => setView({ title: e.name, query: e.demo?.name ?? DEMO_Q[e.id] ?? e.name, cue: e.cue })}
+            <button key={e.id} onClick={() => setView({ title: e.name, query: e.demo?.name ?? DEMO_Q[e.id] ?? e.name, exercise: e })}
               className={`flex w-full items-center gap-3 px-4 py-3 text-left ${i ? 'border-t border-line' : ''}`}>
               <span className="min-w-0 flex-1"><span className="block font-semibold">{e.name}</span><span className="block text-[12px] text-muted">{exDays(plan, e.id).join(' · ')}</span></span>
               <span className="text-[13px] font-semibold text-accent">Demo ›</span>

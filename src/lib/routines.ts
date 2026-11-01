@@ -49,6 +49,9 @@ export function toDay(r: Routine, id: DayId): Day {
   };
 }
 
+/** A routine's name for display: falls back while the name field is empty. */
+export const routineName = (r: Routine) => r.name.trim() || 'Untitled routine';
+
 export const planOf = (r: Routine): Day[] => DAY_IDS.map(id => toDay(r, id));
 
 export function findRoutine(routines: Routine[], id: string): Routine {

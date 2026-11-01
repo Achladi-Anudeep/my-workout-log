@@ -5,7 +5,7 @@ import { Plate } from '../ui';
 import ExerciseHowTo from '../ExerciseHowTo';
 import { detailsOf } from '../../data/details';
 import { act, useWorkout } from '../../store/workout';
-import { isBuiltin, DAY_LONG, PLATE, emptyDay, findRoutine } from '../../lib/routines';
+import { isBuiltin, routineName, DAY_LONG, PLATE, emptyDay, findRoutine } from '../../lib/routines';
 import { range } from '../../lib/utils';
 import type { DayId, Exercise, RoutineDay } from '../../types';
 
@@ -26,7 +26,7 @@ export default function DayEditor({ routineId, dayId, onBack }: { routineId: str
 
   return (
     <div className="grid gap-4">
-      <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>‹ {routine.name}</button>
+      <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>‹ {routineName(routine)}</button>
       <div className="flex items-center gap-2"><Plate color={day.exercises.length ? PLATE[dayId] : 'var(--line)'} size={14} /><span className="label">{DAY_LONG[dayId]}</span></div>
       {ro && <p className="rounded-xl bg-sunk px-4 py-3 text-[14px] text-muted">This is the built-in plan, so it's read-only. Duplicate the routine to change it.</p>}
 

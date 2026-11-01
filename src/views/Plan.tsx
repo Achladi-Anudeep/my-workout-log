@@ -4,9 +4,10 @@ import AccountCard from '../components/AccountCard';
 import RoutineEditor from '../components/routines/RoutineEditor';
 import DayEditor from '../components/routines/DayEditor';
 import { act, useWorkout } from '../store/workout';
-import { BUILTINS, BUILTIN_ID, BUILTIN_V2_ID, planOf } from '../lib/routines';
+import { BUILTINS, BUILTIN_ID, BUILTIN_V2_ID, planOf, routineName } from '../lib/routines';
 import { useActivePlan } from '../lib/useRoutine';
 import { programWeek } from '../lib/utils';
+import { APP_ENV, APP_VERSION } from '../lib/env';
 import type { DayId } from '../types';
 
 const RULES: [string, string[]][] = [
@@ -47,7 +48,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
   return (
     <div className="grid gap-4">
       <h2 className="disp text-[36px] font-extrabold uppercase leading-none">The Plan</h2>
-      <p className="text-muted">Running <span className="font-semibold text-ink">{routine.name}</span> · week <span className="num text-ink">{pw.week}</span>.</p>
+      <p className="text-muted">Running <span className="font-semibold text-ink">{routineName(routine)}</span> · week <span className="num text-ink">{pw.week}</span>.</p>
 
       <section className="grid gap-2">
         <div className="flex items-end justify-between">
@@ -71,7 +72,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
             return (
               <button key={r.id} onClick={() => open(r.id)} className={`flex w-full items-center gap-3 px-4 py-3 text-left ${i ? 'border-t border-line' : ''}`}>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">{r.name}</span>
+                  <span className="block truncate font-semibold">{routineName(r)}</span>
                   <span className="block text-[13px] text-muted">{days} training day{days === 1 ? '' : 's'}{r.builtin ? ' · built-in, locked' : ''}</span>
                 </span>
                 {r.id === activeId && <Chip tone="good">Active</Chip>}
@@ -83,7 +84,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
       </section>
 
       <section className="grid gap-2">
-        <span className="label">This week · {routine.name}</span>
+        <span className="label">This week · {routineName(routine)}</span>
         <div className="overflow-hidden rounded-2xl border border-line bg-surface">
           {plan.map((d, i) => (
             <button key={d.id} onClick={() => act().setTab('today')} className={`flex w-full items-center gap-3 px-4 py-3 text-left ${i ? 'border-t border-line' : ''}`}>
@@ -114,6 +115,10 @@ function PlanHome({ open }: { open: (id: string) => void }) {
           className="num mt-2 h-11 w-full rounded-lg border border-line bg-bg px-3" />
         <p className="mt-2 text-[13px] text-muted">Sets your week number and when calibration ends.</p>
       </section>
+
+      <p id="app-version" className="text-center text-[12px] text-muted">
+        Version <span className="num">{APP_VERSION}</span>{APP_ENV !== 'prod' ? ` · ${APP_ENV} environment` : ''}
+      </p>
     </div>
   );
 }

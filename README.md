@@ -43,10 +43,35 @@ If you set the project up before these features existed, run these once in the S
 - The app pulls new data when it opens, when it comes back to the foreground, and every minute while it's open.
 - Deletes are soft (a `deleted` flag), so a session deleted on one device disappears on the other too.
 
+## Environments
+
+| | Branch | URL | Database |
+|---|---|---|---|
+| **Production** | `main` | https://my-own-workout-log.netlify.app | production Supabase project (set in the Netlify UI) |
+| **Test** | `develop` | https://develop--my-own-workout-log.netlify.app | test Supabase project (set in `netlify.toml`) |
+
+- The test site shows a **TEST** badge in the header and installs as "Workout TEST", so it can't be confused with the real app.
+- `scripts/check-env.mjs` fails any Netlify build that would connect the wrong database: production must use the production project, and every other build must not.
+- Every deploy publishes `/version.json` (commit, environment, database host), which the pipeline uses to confirm exactly what is live.
+
+## Release process (CI/CD)
+
+All changes go to **`develop`**. Nobody pushes to `main` directly; branch protection only accepts commits that passed the test environment.
+
+1. **CI** (`.github/workflows/ci.yml`, every push and PR): type check → unit tests (including a two-device sync simulation) → production build → end-to-end tests on iPhone (WebKit) and Android (Chromium).
+2. **Release** (`.github/workflows/release.yml`, every push to `develop`):
+   1. runs CI;
+   2. waits for Netlify to deploy the commit to the **test** site, checks it uses the test database, then runs smoke tests and real sync tests (phone + laptop, sign-in, workouts, weight, routines, deletes, offline logging) against it with a dedicated test account;
+   3. **promotes** the exact tested commit to `main` (fast-forward) → Netlify deploys **production**;
+   4. waits for production to serve that commit and runs read-only smoke tests (no sign-in, no data written).
+
+GitHub secrets (environment **test**): `TEST_USER_EMAIL`, `TEST_USER_PASSWORD` — a user that exists only in the test Supabase project.
+
 ## Local development
 ```bash
 npm install
 cp .env.example .env.local   # fill in the two Supabase values
 npm run dev
+npm run check      # everything CI runs: typecheck, unit tests, build, e2e
 ```
 Without the env vars the app still runs, saving to this device only.

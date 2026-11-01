@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Chip, Plate } from '../ui';
 import { act, useWorkout } from '../../store/workout';
-import { isBuiltin, findRoutine, planOf } from '../../lib/routines';
+import { isBuiltin, findRoutine, planOf, routineName } from '../../lib/routines';
 import type { DayId } from '../../types';
 
 /** One routine: rename, activate, duplicate, delete, and pick a day to edit. */
@@ -32,7 +32,7 @@ export default function RoutineEditor({ id, onBack, onOpenDay, onOpenRoutine }: 
         </div>
       ) : (
         <label htmlFor="routine-name" className="block"><span className="label">Routine name</span>
-          <input id="routine-name" value={routine.name} onChange={e => act().renameRoutine(routine.id, e.target.value)}
+          <input id="routine-name" value={routine.name} placeholder="Untitled routine" maxLength={60} onChange={e => act().renameRoutine(routine.id, e.target.value)}
             className="disp mt-1 h-14 w-full rounded-lg border border-line bg-bg px-3 text-[26px] font-bold uppercase" />
         </label>
       )}
@@ -42,7 +42,7 @@ export default function RoutineEditor({ id, onBack, onOpenDay, onOpenRoutine }: 
           ? <Chip tone="good">✓ Active routine</Chip>
           : <button id="set-active" className="h-10 rounded-lg bg-accent px-4 text-[14px] font-bold text-accentInk" onClick={() => act().setActiveRoutine(routine.id)}>Use this routine</button>}
         <button id="duplicate-routine" className="h-10 rounded-lg border border-line bg-surface px-4 text-[14px] font-semibold"
-          onClick={() => onOpenRoutine(act().createRoutine(`${routine.name} (copy)`, routine.id))}>Duplicate</button>
+          onClick={() => onOpenRoutine(act().createRoutine(`${routineName(routine)} (copy)`, routine.id))}>Duplicate</button>
         {!ro && (confirmDel
           ? <button className="h-10 px-3 text-[14px] font-bold text-danger" onClick={() => { act().deleteRoutine(routine.id); onBack(); }}>Tap again to delete</button>
           : <button className="h-10 px-3 text-[14px] font-semibold text-muted" onClick={() => setConfirmDel(true)}>Delete</button>)}

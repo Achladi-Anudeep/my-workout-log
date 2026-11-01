@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { CheckIcon as Check, Chip, Plate } from '../components/ui';
 import { act, activeDay, useWorkout } from '../store/workout';
 import { useActivePlan } from '../lib/useRoutine';
+import { routineName } from '../lib/routines';
 import { isoDay, mmss, pad, programWeek, progressStatus, range, fmtW, weekdayId } from '../lib/utils';
 import type { Active, Day, DayId, Exercise, Session } from '../types';
 import WeightSheet from '../components/WeightSheet';
@@ -125,7 +126,8 @@ function FinishPanel({ day, onClose }: { day: Day; onClose: () => void }) {
             <input id="session-note" placeholder="Knee felt fine, squat depth to bench" value={note} onChange={e => setNote(e.target.value)}
               className="mt-1 h-11 w-full rounded-lg border border-line bg-bg px-3" />
           </label>
-          <button className="mt-5 h-12 w-full rounded-xl bg-accent text-[16px] font-bold text-accentInk" onClick={() => { act().finish(Number(cardio) || 0, note.trim()); onClose(); }}>Save workout</button>
+          {done === 0 && <p className="mt-4 rounded-lg bg-warnSoft px-3 py-2 text-[14px] text-warn">Tick at least one set to save this workout, or discard it.</p>}
+          <button disabled={done === 0} className="mt-5 h-12 w-full rounded-xl bg-accent text-[16px] font-bold text-accentInk disabled:opacity-40" onClick={() => { act().finish(Number(cardio) || 0, note.trim()); onClose(); }}>Save workout</button>
           <div className="mt-2 flex justify-between">
             <button className="h-11 px-2 text-[14px] font-semibold text-muted" onClick={onClose}>Keep training</button>
             {confirmDiscard
@@ -183,7 +185,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
       <WeightQuickRow />
       <DayStrip sel={sel} onSel={setSel} today={today} plan={plan} />
       <section>
-        <div className="flex items-center gap-2"><Plate color={day.plate} size={14} /><span className="label">{day.short}{sel === today ? ' · today' : ''}{day.home ? ' · at home' : ''} · {routine.name}</span></div>
+        <div className="flex items-center gap-2"><Plate color={day.plate} size={14} /><span className="label">{day.short}{sel === today ? ' · today' : ''}{day.home ? ' · at home' : ''} · {routineName(routine)}</span></div>
         <h2 className="disp mt-1 text-[40px] font-extrabold uppercase leading-[0.95]">{day.title}</h2>
         <p className="mt-1 text-muted">{day.focus}{day.mins !== '0' && <> · ~<span className="num">{day.mins}</span> min</>}</p>
         {day.cardio !== 'none' && <p className="mt-1 text-[14px] text-muted">Optional cardio after: 15–20 min, conversational pace{day.cardio === 'home' ? ' (walk, stairs, jog in place)' : ''}.</p>}

@@ -1,0 +1,129 @@
+# Release pipeline: every push to `develop` goes through
+#   1. CI checks
+#   2. TEST environment: wait for Netlify to deploy this commit to the develop site (test database),
+#      then run smoke + real two-device sync tests against it
+#   3. Promote: fast-forward `main` to this exact commit → Netlify deploys PRODUCTION
+#   4. Verify production serves this commit, then run read-only smoke tests
+# `main` is protected: it only accepts commits that passed steps 1 and 2.
+name: Release
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TEST_URL: https://develop--my-own-workout-log.netlify.app
+  PROD_URL: https://my-own-workout-log.netlify.app
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  test-env:
+    name: Test environment
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: test
+      url: ${{ env.TEST_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
+      - run: if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
+      - run: npx playwright install --with-deps chromium webkit
+
+      - name: Wait for the test deploy of this commit
+        run: node scripts/wait-for-deploy.mjs "$TEST_URL" "$GITHUB_SHA" test 15
+
+      - name: Smoke tests on test
+        env:
+          BASE_URL: ${{ env.TEST_URL }}
+          EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_ENV: test
+        run: npx playwright test --grep @smoke
+
+      - name: Sync tests on test (real database, two devices)
+        env:
+          BASE_URL: ${{ env.TEST_URL }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        run: npx playwright test --grep @env
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-test-env
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14
+
+  promote:
+    name: Promote to production
+    needs: test-env
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: production
+      url: ${{ env.PROD_URL }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fast-forward main to the tested commit
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor origin/main "$GITHUB_SHA"; then
+            echo "::error::main has commits that are not on develop. Merge main into develop first."
+            exit 1
+          fi
+          git push origin "$GITHUB_SHA:refs/heads/main"
+
+  verify-prod:
+    name: Verify production
+    needs: promote
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
+      - run: if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
+      - run: npx playwright install --with-deps chromium webkit
+
+      - name: Wait for the production deploy of this commit
+        run: node scripts/wait-for-deploy.mjs "$PROD_URL" "$GITHUB_SHA" prod 15
+
+      - name: Smoke tests on production (read-only)
+        env:
+          BASE_URL: ${{ env.PROD_URL }}
+          EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_ENV: prod
+        run: npx playwright test --grep @smoke
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-prod
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14

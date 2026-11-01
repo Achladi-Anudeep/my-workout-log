@@ -1,0 +1,194 @@
+import { expect, test } from '@playwright/test';
+import { mockExerciseDb, openApp, tab, watchErrors } from './helpers';
+
+// Full UI flows on a local build with no database (this-device-only mode).
+// Service workers are blocked here so the ExerciseDB mock can intercept requests.
+test.use({ serviceWorkers: 'block' });
+
+test.describe('@local', () => {
+  let errs: ReturnType<typeof watchErrors>;
+  test.beforeEach(async ({ page }) => {
+    errs = watchErrors(page);
+    await mockExerciseDb(page);
+    await openApp(page);
+  });
+  test.afterEach(() => errs.assertNone());
+
+  test('Today shows the active routine with full exercise details', async ({ page }) => {
+    await page.locator('#day-mon').click();
+    await expect(page.locator('main')).toContainText('Gym PPL');
+    await expect(page.locator('main')).toContainText('Works: Chest · front delts · triceps');
+    await page.getByRole('button', { name: 'How to do it' }).first().click();
+    await expect(page.locator('main')).toContainText('Set the seat so the handles line up');
+    await expect(page.locator('main')).toContainText('Key cue');
+    await expect(page.locator('main')).toContainText('Avoid');
+  });
+
+  test('logs a workout and shows it on the calendar', async ({ page }) => {
+    await page.locator('#day-mon').click();
+    await page.locator('#start-workout').click();
+    await page.getByRole('button', { name: 'Finish ›' }).click();
+    // Nothing ticked yet → can't save an empty workout
+    await expect(page.getByRole('button', { name: 'Save workout' })).toBeDisabled();
+    await page.getByRole('button', { name: 'Keep training' }).click();
+
+    await page.locator('#chest-press-w-0').fill('12.5');
+    await page.locator('#chest-press-r-0').fill('15');
+    await page.getByRole('button', { name: 'Mark set 1 done' }).first().click();
+    await expect(page.getByText('Resting')).toBeVisible();
+    await page.getByRole('button', { name: 'Skip' }).click();
+
+    await page.getByRole('button', { name: 'Finish ›' }).click();
+    await page.locator('#cardio-min').fill('15');
+    await page.locator('#session-note').fill('e2e workout');
+    await page.getByRole('button', { name: 'Save workout' }).click();
+
+    await expect(page.locator('main')).toContainText('Calendar');
+    await page.locator('article button[aria-expanded]').first().click();
+    await expect(page.locator('article').first()).toContainText('Chest Press');
+    await expect(page.locator('article').first()).toContainText('12.5×15');
+    await expect(page.locator('article').first()).toContainText('e2e workout');
+
+    // Survives closing and reopening the app
+    await page.reload();
+    await tab(page, 'calendar');
+    await expect(page.locator('article').first()).toContainText('Push');
+
+    // Next Monday prefills 12.5 kg from this session
+    await tab(page, 'today');
+    await page.locator('#day-mon').click();
+    await expect(page.locator('main')).toContainText('Last: 12.5×15');
+  });
+
+  test('logs body weight with validation and shows the trend', async ({ page }) => {
+    await page.getByRole('button', { name: '+ Log weight' }).first().click();
+    await page.locator('#weight-kg').fill('6');
+    await page.getByRole('button', { name: 'Save weight' }).click();
+    await expect(page.getByText('Enter your weight in kg')).toBeVisible();
+    await page.locator('#weight-kg').fill('65.8');
+    await page.getByRole('button', { name: 'Save weight' }).click();
+    await expect(page.locator('main')).toContainText('65.8 kg');
+
+    await tab(page, 'progress');
+    for (const [date, kg] of [['2026-10-01', '66.6'], ['2026-10-10', '66.1']]) {
+      await page.locator('#log-weight').click();
+      await page.locator('#weight-kg').fill(kg);
+      await page.locator('#weight-date').fill(date);
+      await page.getByRole('button', { name: 'Save weight' }).click();
+    }
+    await page.getByRole('button', { name: 'All', exact: true }).click();
+    const chart = page.locator('svg[role=img]');
+    await expect(chart).toBeVisible();
+    await expect(chart.locator('circle')).toHaveCount(3);
+    expect(await chart.innerHTML()).not.toContain('NaN');
+    await expect(page.locator('main')).toContainText('from 66.6 kg');
+  });
+
+  test('built-in routines are locked; your own copy is fully editable', async ({ page }) => {
+    await tab(page, 'plan');
+    await page.locator('button', { hasText: 'built-in, locked' }).first().click();
+    await expect(page.locator('#routine-name')).toHaveCount(0);
+    await page.locator('#edit-day-wed').click();
+    await expect(page.locator('#add-exercise')).toHaveCount(0);
+    await expect(page.locator('#day-title')).toBeDisabled();
+    // details are visible in the read-only view
+    await page.getByText('Wall Sit', { exact: true }).click();
+    await expect(page.getByText('Slide down until your thighs')).toBeVisible();
+    await page.getByRole('button', { name: 'Close' }).click();
+
+    await tab(page, 'plan');
+    await page.locator('#new-routine').click();
+    await page.locator('#new-from-builtin').click();
+    await page.locator('#routine-name').fill('');
+    await page.locator('#routine-name').fill('E2E Routine');
+    await page.locator('#set-active').click();
+    await expect(page.getByText('Active routine')).toBeVisible();
+
+    await page.locator('#edit-day-wed').click();
+    await page.getByRole('button', { name: 'Remove Wall Sit' }).click();
+    await page.getByRole('button', { name: 'Remove', exact: true }).click();
+    await expect(page.locator('main')).not.toContainText('Wall Sit');
+
+    await page.locator('#add-exercise').click();
+    await page.locator('#picker-search').fill('hip thrust');
+    await page.getByRole('button', { name: /Create custom exercise/ }).click();
+    await expect(page.locator('#ex-name')).toHaveValue('Hip Thrust');
+    await page.locator('#ex-max').fill('5');
+    await page.getByRole('button', { name: 'Add to day' }).click();
+    await expect(page.getByText(/rep range/)).toBeVisible();
+    await page.locator('#ex-max').fill('12');
+    await page.locator('#ex-start').fill('20');
+    await page.locator('#ex-steps').fill('Back on the bench\nDrive hips up\nLower slowly');
+    await page.getByRole('button', { name: 'Add to day' }).click();
+    await expect(page.locator('main')).toContainText('Hip Thrust');
+
+    // From the online library (mocked here)
+    await page.locator('#add-exercise').click();
+    await page.locator('#picker-search').fill('glute');
+    await page.getByRole('button', { name: /glute variation 1/ }).click();
+    await expect(page.locator('#ex-steps')).toHaveValue(/Drive the hips up/);
+    await page.getByRole('button', { name: 'Add to day' }).click();
+
+    await tab(page, 'today');
+    await page.locator('#day-wed').click();
+    await expect(page.locator('main')).toContainText('E2E Routine');
+    await expect(page.locator('main')).toContainText('Hip Thrust');
+    await expect(page.locator('main')).not.toContainText('Wall Sit');
+  });
+
+  test('a running workout keeps its exercises when the routine is edited', async ({ page }) => {
+    await tab(page, 'plan');
+    await page.locator('#new-routine').click();
+    await page.locator('#new-from-builtin').click();
+    await page.locator('#set-active').click();
+    await tab(page, 'today');
+    await page.locator('#day-wed').click();
+    await page.locator('#start-workout').click();
+
+    await tab(page, 'plan');
+    await page.locator('button', { hasText: 'My Gym PPL' }).click();
+    await expect(page.getByText('Edits apply from your next workout')).toBeVisible();
+    await page.locator('#edit-day-wed').click();
+    await page.getByRole('button', { name: 'Remove Wall Sit' }).click();
+    await page.getByRole('button', { name: 'Remove', exact: true }).click();
+
+    await tab(page, 'today');
+    await expect(page.locator('main')).toContainText('Wall Sit');
+  });
+
+  test('Gym PPL v2: superset A1 has no rest, A2 starts the rest timer', async ({ page }) => {
+    await tab(page, 'plan');
+    await page.locator('button', { hasText: 'Gym PPL v2' }).click();
+    await page.locator('#set-active').click();
+    await tab(page, 'today');
+    await page.locator('#day-thu').click();
+    await expect(page.locator('main')).toContainText('no rest, go to next');
+    await page.locator('#start-workout').click();
+    await page.locator('#ss-triceps-ext-r-0').fill('12');
+    await page.locator('article', { hasText: 'Overhead Triceps Extension' }).getByRole('button', { name: 'Mark set 1 done' }).click();
+    await expect(page.getByText('Resting')).toHaveCount(0);
+    await page.locator('article', { hasText: 'Superset Curl' }).getByRole('button', { name: 'Mark set 1 done' }).click();
+    await expect(page.getByText('Resting')).toBeVisible();
+
+    await tab(page, 'today');
+    await page.locator('#day-mon').click();
+    await expect(page.locator('main')).toContainText('Seated DB Shoulder Press');
+  });
+
+  test('tutorials: plan exercises show details; library search shows demos', async ({ page }) => {
+    await tab(page, 'tutorials');
+    await page.getByRole('button', { name: /Deadlift/ }).first().click();
+    await expect(page.locator('main')).toContainText('Push the floor away');
+    await expect(page.locator('main img').first()).toBeVisible();
+    await page.getByRole('button', { name: '‹ All tutorials' }).click();
+    await page.locator('#tutorial-search').fill('hip thrust');
+    await expect(page.getByRole('button', { name: /hip thrust variation 1/ })).toBeVisible();
+  });
+
+  test('runs in this-device-only mode without a database, and shows its version', async ({ page }) => {
+    await tab(page, 'plan');
+    await expect(page.getByText("Sync isn't set up for this site yet")).toBeVisible();
+    await expect(page.locator('#app-version')).toContainText('local environment');
+    await expect(page.locator('#env-badge')).toHaveText('local');
+  });
+});

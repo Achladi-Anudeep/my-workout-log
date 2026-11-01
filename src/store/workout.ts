@@ -127,7 +127,7 @@ export const useWorkout = create<WorkoutState>()(
         set(s => ({ routines: [...s.routines, r], pendingRUp: [...s.pendingRUp, r.id] }));
         return r.id;
       },
-      renameRoutine: (id, name) => editRoutine(set, id, r => { r.name = name.trim() || r.name; }),
+      renameRoutine: (id, name) => editRoutine(set, id, r => { r.name = name.slice(0, 60); }),
       deleteRoutine: id => set(s => {
         if (isBuiltin(id)) return {};
         const wasActive = s.activeRoutineId === id;
@@ -257,7 +257,8 @@ export const useWorkout = create<WorkoutState>()(
       markSettingsSaved: () => set({ settingsDirty: false }),
     }),
     {
-      name: 'ppl-log-v1',
+      // Tests run several simulated devices in one page, each with its own key (window.__storeKey).
+      name: (globalThis as { __storeKey?: string }).__storeKey ?? 'ppl-log-v1',
       storage: createJSONStorage(() => safeStorage),
       partialize: s => ({
         startDate: s.startDate, active: s.active, sessions: s.sessions, tab: s.tab,

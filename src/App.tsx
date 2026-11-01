@@ -8,6 +8,8 @@ import RestTimer, { type Timer } from './components/RestTimer';
 import { PlateLogo } from './components/ui';
 import { act, useWorkout, type Tab } from './store/workout';
 import { useSync, type SyncMode } from './store/sync';
+import { APP_ENV } from './lib/env';
+import { reloadNow, useUpdate } from './lib/update';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'today', label: 'Today', icon: 'M4 12h3l2-6 4 12 2-6h5' },
@@ -37,6 +39,19 @@ function SyncPill() {
   );
 }
 
+function UpdateBar() {
+  const ready = useUpdate(s => s.ready);
+  if (!ready) return null;
+  return (
+    <div className="fixed inset-x-0 z-30 px-4" style={{ bottom: 'calc(140px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="mx-auto flex max-w-xl items-center gap-3 rounded-xl border border-line bg-surface px-4 py-2.5 shadow-lg">
+        <span className="min-w-0 flex-1 text-[14px]">A new version of the app is ready.</span>
+        <button className="h-9 rounded-lg bg-accent px-3 text-[13px] font-bold text-accentInk" onClick={reloadNow}>Reload</button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const tab = useWorkout(s => s.tab);
   const [timer, setTimer] = useState<Timer | null>(null);
@@ -52,6 +67,9 @@ export default function App() {
           <div className="flex min-w-0 items-center gap-2">
             <PlateLogo />
             <span className="disp truncate text-[21px] font-extrabold uppercase tracking-wide">My Workout Log</span>
+            {APP_ENV !== 'prod' && (
+              <span id="env-badge" className="shrink-0 rounded-md bg-warnSoft px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-warn">{APP_ENV}</span>
+            )}
           </div>
           <SyncPill />
         </div>
@@ -65,6 +83,7 @@ export default function App() {
         {tab === 'plan' && <Plan />}
       </main>
 
+      <UpdateBar />
       {timer && <RestTimer t={timer} onClose={() => setTimer(null)} onAdd={s => setTimer({ ...timer, end: timer.end + s * 1000, total: timer.total + s })} />}
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>

@@ -1,3 +1,9 @@
+# Two environments on one Netlify site:
+#   prod → branch `main`    → https://my-own-workout-log.netlify.app          (Supabase: production project, set in the Netlify UI)
+#   test → branch `develop` → https://develop--my-own-workout-log.netlify.app (Supabase: test project, set below)
+# Pull-request previews also use the test project. Values in this file override the Netlify UI.
+# scripts/check-env.mjs fails any non-production build that points at the production database.
+
 [build]
   command = "npm run build"
   publish = "dist"
@@ -5,19 +11,49 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Test environment (develop branch). The URL and anon key are public values (they ship inside the web app);
+# row level security keeps each account's data private.
+[context.develop.environment]
+  VITE_SUPABASE_URL = ""
+  VITE_SUPABASE_ANON_KEY = ""
+
+[context.deploy-preview.environment]
+  VITE_SUPABASE_URL = ""
+  VITE_SUPABASE_ANON_KEY = ""
+
+[context.branch-deploy.environment]
+  VITE_SUPABASE_URL = ""
+  VITE_SUPABASE_ANON_KEY = ""
+
 # Single-page app: send every route to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Always fetch a fresh service worker so updates reach the phone
+# Always fetch a fresh service worker and version file so updates reach the phone
 [[headers]]
   for = "/sw.js"
   [headers.values]
     Cache-Control = "no-cache"
 
 [[headers]]
+  for = "/version.json"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
   for = "/manifest.webmanifest"
   [headers.values]
     Content-Type = "application/manifest+json"
+
+# Security headers for every page
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co https://oss.exercisedb.dev https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
