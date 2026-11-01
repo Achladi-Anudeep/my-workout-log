@@ -29,12 +29,9 @@ jobs:
         run: |
           if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; echo "new_lock=true" >> "$GITHUB_OUTPUT"; fi
 
-      - name: Upload lockfile (first run only)
+      - name: Print lockfile (first run only, so it can be committed)
         if: steps.install.outputs.new_lock == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: package-lock
-          path: package-lock.json
+        run: echo "LOCKFILE_B64:$(gzip -9c package-lock.json | base64 -w0)"
 
       - name: Type check
         run: npm run typecheck
