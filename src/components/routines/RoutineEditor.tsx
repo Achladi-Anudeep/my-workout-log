@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Chip, Plate } from '../ui';
 import { act, useWorkout } from '../../store/workout';
-import { BUILTIN_ID, findRoutine, planOf } from '../../lib/routines';
+import { isBuiltin, findRoutine, planOf } from '../../lib/routines';
 import type { DayId } from '../../types';
 
 /** One routine: rename, activate, duplicate, delete, and pick a day to edit. */
@@ -12,7 +12,7 @@ export default function RoutineEditor({ id, onBack, onOpenDay, onOpenRoutine }: 
   const activeId = useWorkout(s => s.activeRoutineId);
   const workoutRunning = useWorkout(s => !!s.active);
   const routine = findRoutine(routines, id);
-  const ro = routine.id === BUILTIN_ID;
+  const ro = isBuiltin(routine.id);
   const isActive = activeId === routine.id;
   const [confirmDel, setConfirmDel] = useState(false);
   const plan = planOf(routine);
@@ -25,7 +25,10 @@ export default function RoutineEditor({ id, onBack, onOpenDay, onOpenRoutine }: 
       {ro ? (
         <div>
           <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{routine.name}</h2>
-          <p className="mt-2 rounded-xl bg-sunk px-4 py-3 text-[14px] text-muted">Your original plan. It's locked so it never changes by accident. Duplicate it to make an editable copy; your progress history carries over.</p>
+          <p className="mt-2 rounded-xl bg-sunk px-4 py-3 text-[14px] text-muted">{routine.id === 'builtin-ppl'
+            ? "Your original plan. It's locked so it never changes by accident."
+            : 'Gym PPL with the review gaps filled: seated shoulder press on Monday, the Thursday superset split into two logged exercises, hammer curls and standing calf raises on Friday, and a pain-free home leg day with calf raises on Saturday. Locked like the original.'}
+            {' '}Duplicate it to make an editable copy; progress on shared exercises carries over.</p>
         </div>
       ) : (
         <label htmlFor="routine-name" className="block"><span className="label">Routine name</span>

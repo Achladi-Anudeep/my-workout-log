@@ -2,11 +2,11 @@
 
 A phone-first workout logger for the 6-day Push / Pull / Legs / Arms plan. It's an installable PWA for iPhone, and workouts sync between your phone and laptop.
 
-- **Today:** the day's workout, set logging (kg × reps), a rest timer, and Finish with cardio minutes and a note.
+- **Today:** the day's workout with full how-to details per exercise (muscles worked, steps, key cue, mistakes to avoid), set logging (kg × reps), a rest timer, and Finish with cardio minutes and a note.
 - **Calendar:** a month view of logged and missed days, with adherence, cardio and volume, and per-day session details.
 - **Progress:** body-weight log (date and time, 7-day average, trend chart) plus per-exercise trend lines and "ready to add weight" cues.
 - **Tutorials:** animated GIF demos and steps, fetched live from the free [ExerciseDB](https://oss.exercisedb.dev/) API. Nothing is stored.
-- **Plan:** your routines (the built-in Gym PPL is locked; duplicate it or start blank to build your own), a day-by-day editor with an exercise picker (your exercises, the ExerciseDB library, or custom), plus rules, start date and the sync account.
+- **Plan:** your routines (two built-in, locked routines: Gym PPL and Gym PPL v2; duplicate it or start blank to build your own), a day-by-day editor with an exercise picker (your exercises, the ExerciseDB library, or custom), plus rules, start date and the sync account.
 
 Stack: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Supabase (auth + Postgres), and vite-plugin-pwa.
 

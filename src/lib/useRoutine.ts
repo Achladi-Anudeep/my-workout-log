@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useWorkout } from '../store/workout';
-import { BUILTIN, DAY_IDS, findRoutine, planOf } from './routines';
+import { BUILTINS, DAY_IDS, findRoutine, planOf } from './routines';
 import type { Day, DayId, Exercise } from '../types';
 
 /** The active routine and its 7 days, as the screens consume them. */
@@ -20,7 +20,7 @@ export function useAllExercises() {
   const routines = useWorkout(s => s.routines);
   const activeId = useWorkout(s => s.activeRoutineId);
   return useMemo(() => {
-    const ordered = [findRoutine(routines, activeId), BUILTIN, ...routines];
+    const ordered = [findRoutine(routines, activeId), ...BUILTINS, ...routines];
     const m = new Map<string, Exercise>();
     ordered.forEach(r => DAY_IDS.forEach(d => r.days[d]?.exercises.forEach(e => { if (!m.has(e.id)) m.set(e.id, e); })));
     return [...m.values()];

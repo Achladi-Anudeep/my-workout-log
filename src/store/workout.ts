@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DAY } from '../data/plan';
 import { isoDay, lastFor, uid } from '../lib/utils';
-import { BUILTIN, BUILTIN_ID, DAY_IDS, clone, emptyDay, findRoutine, toDay } from '../lib/routines';
+import { BUILTIN, BUILTIN_ID, DAY_IDS, clone, emptyDay, findRoutine, isBuiltin, toDay } from '../lib/routines';
 import type { Active, Day, DayId, Exercise, Routine, RoutineDay, Session, SetLog, WeightEntry } from '../types';
 
 /** The day an in-progress workout runs on: its snapshot, or the built-in day for workouts started before routines existed. */
@@ -129,7 +129,7 @@ export const useWorkout = create<WorkoutState>()(
       },
       renameRoutine: (id, name) => editRoutine(set, id, r => { r.name = name.trim() || r.name; }),
       deleteRoutine: id => set(s => {
-        if (id === BUILTIN_ID) return {};
+        if (isBuiltin(id)) return {};
         const wasActive = s.activeRoutineId === id;
         return {
           routines: s.routines.filter(r => r.id !== id),
@@ -173,7 +173,7 @@ export const useWorkout = create<WorkoutState>()(
         const pendingRUp = [...new Set([...s.pendingRUp.filter(id => !rows.some(r => r.id === id && r.deleted)), ...localOnly])];
         let activeRoutineId = s.activeRoutineId;
         if (!s.activeRoutineDirty && remoteActiveId) activeRoutineId = remoteActiveId;
-        if (activeRoutineId !== BUILTIN_ID && !kept.some(r => r.id === activeRoutineId)) activeRoutineId = BUILTIN_ID;
+        if (!isBuiltin(activeRoutineId) && !kept.some(r => r.id === activeRoutineId)) activeRoutineId = BUILTIN_ID;
         return { routines: kept, pendingRUp, activeRoutineId };
       }),
       markRoutineUploaded: id => set(s => ({ pendingRUp: s.pendingRUp.filter(x => x !== id) })),
@@ -272,7 +272,7 @@ export const useWorkout = create<WorkoutState>()(
 
 /** Apply an edit to a copy of one of your routines and queue it for sync. The built-in plan is never edited. */
 function editRoutine(set: (fn: (s: WorkoutState) => Partial<WorkoutState>) => void, id: string, fn: (r: Routine) => void) {
-  if (id === BUILTIN_ID) return;
+  if (isBuiltin(id)) return;
   set(s => {
     const i = s.routines.findIndex(r => r.id === id);
     if (i < 0) return {};

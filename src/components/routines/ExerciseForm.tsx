@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import type { Exercise, Unit } from '../../types';
+import { detailsOf } from '../../data/details';
 
 /** Bottom sheet to add or edit one exercise in a routine day. */
 export default function ExerciseForm({ draft, mode, onSave, onClose }: {
   draft: Exercise; mode: 'add' | 'edit'; onSave: (ex: Exercise) => void; onClose: () => void;
 }) {
+  const base = detailsOf(draft);
   const [f, setF] = useState({
+    targets: base?.targets ?? '',
+    steps: (base?.steps ?? []).join('\n'),
+    mistakes: (base?.mistakes ?? []).join('\n'),
     name: draft.name,
     sets: String(draft.sets),
     unit: draft.unit as Unit,
@@ -20,6 +25,7 @@ export default function ExerciseForm({ draft, mode, onSave, onClose }: {
   const [err, setErr] = useState('');
   const up = (p: Partial<typeof f>) => { setF({ ...f, ...p }); setErr(''); };
 
+  const lines = (t: string) => t.split('\n').map(x => x.replace(/^\s*(\d+[.)]|[-•✕])\s*/, '').trim()).filter(Boolean);
   const save = () => {
     const sets = Number(f.sets), min = Number(f.min), max = Number(f.max || f.min), rest = Number(f.rest || 0);
     const start = f.start.trim() === '' ? null : Number(f.start.replace(',', '.'));
@@ -33,6 +39,9 @@ export default function ExerciseForm({ draft, mode, onSave, onClose }: {
       name: f.name.trim(), sets, unit: f.unit, min, max, start, rest, perSide: f.perSide,
       wNote: f.wNote.trim() || (start == null ? 'Bodyweight' : `${start} kg`),
       cue: f.cue.trim(),
+      targets: f.targets.trim() || undefined,
+      steps: lines(f.steps),
+      mistakes: lines(f.mistakes),
     });
   };
 
@@ -96,6 +105,18 @@ export default function ExerciseForm({ draft, mode, onSave, onClose }: {
           <label htmlFor="ex-cue" className="block"><span className="label">Form cue (optional)</span>
             <textarea id="ex-cue" rows={2} value={f.cue} onChange={e => up({ cue: e.target.value })}
               className="mt-1 w-full rounded-lg border border-line bg-bg px-3 py-2" />
+          </label>
+
+          <label htmlFor="ex-targets" className="block"><span className="label">Muscles worked (optional)</span>
+            <input id="ex-targets" placeholder="e.g. Chest · front delts · triceps" value={f.targets} onChange={e => up({ targets: e.target.value })} className={input} />
+          </label>
+          <label htmlFor="ex-steps" className="block"><span className="label">How to do it · one step per line</span>
+            <textarea id="ex-steps" rows={4} value={f.steps} onChange={e => up({ steps: e.target.value })}
+              placeholder={'Set the seat so…\nPress until…\nLower slowly…'} className="mt-1 w-full rounded-lg border border-line bg-bg px-3 py-2" />
+          </label>
+          <label htmlFor="ex-mistakes" className="block"><span className="label">Mistakes to avoid · one per line</span>
+            <textarea id="ex-mistakes" rows={3} value={f.mistakes} onChange={e => up({ mistakes: e.target.value })}
+              placeholder={'Rounding the back\nUsing momentum'} className="mt-1 w-full rounded-lg border border-line bg-bg px-3 py-2" />
           </label>
 
           {err && <p className="text-[13px] text-danger">{err}</p>}

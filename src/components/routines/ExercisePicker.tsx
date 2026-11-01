@@ -15,6 +15,8 @@ function fromLibrary(d: Demo): Exercise {
     id: `exdb-${d.exerciseId}`, name: titleCase(d.name), sets: 3, min: 8, max: 12, unit: 'reps',
     start: null, wNote: bodyweight ? 'Bodyweight' : '', rest: 90, cue: first.length > 160 ? first.slice(0, 157) + '…' : first,
     demo: { id: d.exerciseId, name: d.name, gifUrl: d.gifUrl },
+    targets: [...d.targetMuscles, ...d.secondaryMuscles.slice(0, 2)].map(titleCase).join(' · ') || undefined,
+    steps: d.instructions.map(cleanStep).filter(Boolean),
   };
 }
 

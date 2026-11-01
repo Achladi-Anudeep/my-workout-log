@@ -14,6 +14,14 @@ export interface Exercise {
   rest: number;
   perSide?: boolean;
   cue: string;
+  /** Muscles worked, e.g. "Chest · front delts · triceps". */
+  targets?: string;
+  /** How to do it, in order. */
+  steps?: string[];
+  /** What to avoid. */
+  mistakes?: string[];
+  /** Exercises sharing a superset label are done back to back (e.g. "A1", "A2"). */
+  superset?: string;
   /** Set when the exercise came from the ExerciseDB library: drives its tutorial demo. */
   demo?: { id: string; name: string; gifUrl: string };
 }

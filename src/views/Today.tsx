@@ -5,6 +5,8 @@ import { useActivePlan } from '../lib/useRoutine';
 import { isoDay, mmss, pad, programWeek, progressStatus, range, fmtW, weekdayId } from '../lib/utils';
 import type { Active, Day, DayId, Exercise, Session } from '../types';
 import WeightSheet from '../components/WeightSheet';
+import ExerciseHowTo from '../components/ExerciseHowTo';
+import { detailsOf } from '../data/details';
 import { fmtKg, fmtWhen } from '../lib/weight';
 
 export type OnRest = (secs: number, label: string) => void;
@@ -41,6 +43,7 @@ function RoutineList({ title, items }: { title: string; items: string[] }) {
 
 function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: number; active: Active | null; sessions: Session[]; onRest: OnRest }) {
   const [cue, setCue] = useState(false);
+  const targets = detailsOf(e)?.targets;
   const st = progressStatus(sessions, e);
   const rows = active?.logs[e.id];
   const bw = e.start == null;
@@ -50,8 +53,9 @@ function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: 
       <header className="flex items-start gap-3 px-4 pt-4">
         <span className="num mt-0.5 text-[12px] text-muted">{pad(idx + 1)}</span>
         <div className="min-w-0 flex-1">
-          <h3 className="disp text-[22px] font-bold uppercase leading-tight">{e.name}</h3>
-          <p className="mt-0.5 text-[14px] text-muted"><span className="num font-semibold text-ink">{e.sets}×{range(e)}</span> · {e.wNote} · rest <span className="num">{e.rest}s</span></p>
+          <h3 className="disp text-[22px] font-bold uppercase leading-tight">{e.superset && <span className="mr-2 rounded-md bg-accentSoft px-1.5 align-middle text-[14px] text-accent">{e.superset}</span>}{e.name}</h3>
+          <p className="mt-0.5 text-[14px] text-muted"><span className="num font-semibold text-ink">{e.sets}×{range(e)}</span> · {e.wNote} · {e.rest > 0 ? <>rest <span className="num">{e.rest}s</span></> : 'no rest, go to next'}</p>
+          {targets && <p className="mt-0.5 text-[13px] text-muted">Works: {targets}</p>}
         </div>
         {rows && <span className={`num rounded-md px-2 py-1 text-[12px] font-bold ${doneCount >= e.sets ? 'bg-goodSoft text-good' : 'bg-sunk text-muted'}`}>{doneCount}/{rows.length}</span>}
       </header>
@@ -59,9 +63,9 @@ function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: 
         {st.kind === 'ready' && <Chip tone="good">▲ Ready to progress{st.next != null ? ` · try ${fmtW(st.next)} kg` : ' · harder variation'}</Chip>}
         {st.last && <span className="text-muted">Last: <span className="num text-ink">{st.last.e.sets.map(s => `${fmtW(s.w)}×${s.r}`).join('  ')}</span></span>}
         {!st.last && <span className="text-muted">First time · start at {e.wNote.toLowerCase()}</span>}
-        <button className="ml-auto text-[13px] font-semibold text-accent" onClick={() => setCue(!cue)}>{cue ? 'Hide cue' : 'Form cue'}</button>
+        <button className="ml-auto text-[13px] font-semibold text-accent" aria-expanded={cue} onClick={() => setCue(!cue)}>{cue ? 'Hide details' : 'How to do it'}</button>
       </div>
-      {cue && <p className="mx-4 mt-2 rounded-lg bg-sunk px-3 py-2 text-[14px]">{e.cue}</p>}
+      {cue && <div className="mx-4 mt-3 rounded-xl border border-line bg-bg px-3 py-3"><ExerciseHowTo e={e} /></div>}
       {rows ? (
         <div className="px-3 pb-3 pt-3">
           <div className="grid grid-cols-[28px_1fr_1fr_48px] gap-2 px-1 pb-1">
@@ -80,7 +84,7 @@ function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: 
                 <button aria-label={`Mark set ${i + 1} done`} onClick={() => {
                   const done = !r.done;
                   act().edit(e.id, i, { done, r: done && r.r === '' ? String(e.max) : r.r });
-                  if (done) onRest(e.rest, `${e.name} · set ${i + 1}`);
+                  if (done && e.rest > 0) onRest(e.rest, `${e.name} · set ${i + 1}`);
                 }} className={`grid h-11 w-12 place-items-center rounded-lg border transition ${r.done ? 'border-good bg-good text-surface' : 'border-line bg-surface text-muted'}`}>
                   <Check />
                 </button>

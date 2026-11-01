@@ -1,4 +1,5 @@
 import { PLAN, DAY as BUILTIN_DAY } from '../data/plan';
+import { buildV2 } from '../data/planV2';
 import type { Day, DayId, Exercise, Routine, RoutineDay, Session } from '../types';
 
 export const DAY_IDS: DayId[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
@@ -21,6 +22,15 @@ export const BUILTIN: Routine = {
   })) as Record<DayId, RoutineDay>,
 };
 
+export const BUILTIN_V2_ID = 'builtin-ppl-v2';
+
+/** Gym PPL with the review gaps filled: overhead press, split superset, more biceps and calf work. Also locked. */
+export const BUILTIN_V2: Routine = { id: BUILTIN_V2_ID, name: 'Gym PPL v2', builtin: true, updatedAt: 0, days: buildV2() };
+
+/** Routines that ship with the app. Read-only; duplicate one to customise it. */
+export const BUILTINS: Routine[] = [BUILTIN, BUILTIN_V2];
+export const isBuiltin = (id: string) => BUILTINS.some(r => r.id === id);
+
 export const emptyDay = (): RoutineDay => ({ title: '', focus: '', mins: '', cardio: 'none', warmup: [], cooldown: [], exercises: [] });
 
 export const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
@@ -42,7 +52,7 @@ export function toDay(r: Routine, id: DayId): Day {
 export const planOf = (r: Routine): Day[] => DAY_IDS.map(id => toDay(r, id));
 
 export function findRoutine(routines: Routine[], id: string): Routine {
-  return routines.find(r => r.id === id) ?? BUILTIN;
+  return routines.find(r => r.id === id) ?? BUILTINS.find(r => r.id === id) ?? BUILTIN;
 }
 
 /** Title shown for a logged session. */

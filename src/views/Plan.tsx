@@ -4,7 +4,7 @@ import AccountCard from '../components/AccountCard';
 import RoutineEditor from '../components/routines/RoutineEditor';
 import DayEditor from '../components/routines/DayEditor';
 import { act, useWorkout } from '../store/workout';
-import { BUILTIN, BUILTIN_ID, planOf } from '../lib/routines';
+import { BUILTINS, BUILTIN_ID, BUILTIN_V2_ID, planOf } from '../lib/routines';
 import { useActivePlan } from '../lib/useRoutine';
 import { programWeek } from '../lib/utils';
 import type { DayId } from '../types';
@@ -42,7 +42,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
   const { routine, plan } = useActivePlan();
   const [creating, setCreating] = useState(false);
   const pw = programWeek(startDate);
-  const all = [BUILTIN, ...routines];
+  const all = [...BUILTINS, ...routines];
 
   return (
     <div className="grid gap-4">
@@ -59,6 +59,8 @@ function PlanHome({ open }: { open: (id: string) => void }) {
             <p className="text-[14px] text-muted">Start from:</p>
             <button id="new-from-builtin" className="h-11 rounded-lg bg-sunk text-[14px] font-semibold"
               onClick={() => { setCreating(false); open(act().createRoutine('My Gym PPL', BUILTIN_ID)); }}>A copy of Gym PPL (keeps your history)</button>
+            <button id="new-from-v2" className="h-11 rounded-lg bg-sunk text-[14px] font-semibold"
+              onClick={() => { setCreating(false); open(act().createRoutine('My Gym PPL v2', BUILTIN_V2_ID)); }}>A copy of Gym PPL v2</button>
             <button id="new-blank" className="h-11 rounded-lg bg-sunk text-[14px] font-semibold"
               onClick={() => { setCreating(false); open(act().createRoutine('New routine')); }}>A blank week</button>
           </div>

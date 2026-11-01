@@ -2,8 +2,10 @@ import { useState } from 'react';
 import ExerciseForm from './ExerciseForm';
 import ExercisePicker from './ExercisePicker';
 import { Plate } from '../ui';
+import ExerciseHowTo from '../ExerciseHowTo';
+import { detailsOf } from '../../data/details';
 import { act, useWorkout } from '../../store/workout';
-import { BUILTIN_ID, DAY_LONG, PLATE, emptyDay, findRoutine } from '../../lib/routines';
+import { isBuiltin, DAY_LONG, PLATE, emptyDay, findRoutine } from '../../lib/routines';
 import { range } from '../../lib/utils';
 import type { DayId, Exercise, RoutineDay } from '../../types';
 
@@ -12,7 +14,7 @@ export default function DayEditor({ routineId, dayId, onBack }: { routineId: str
   const routines = useWorkout(s => s.routines);
   const routine = findRoutine(routines, routineId);
   const day: RoutineDay = routine.days[dayId] ?? emptyDay();
-  const ro = routine.id === BUILTIN_ID;
+  const ro = isBuiltin(routine.id);
   const [picking, setPicking] = useState(false);
   const [form, setForm] = useState<{ draft: Exercise; mode: 'add' | 'edit'; replaceId?: string } | null>(null);
   const [del, setDel] = useState<string | null>(null);
@@ -60,8 +62,9 @@ export default function DayEditor({ routineId, dayId, onBack }: { routineId: str
         {day.exercises.map((e, i) => (
           <article key={e.id} className="flex items-center gap-2 rounded-2xl border border-line bg-surface py-2 pl-4 pr-2">
             <button className="min-w-0 flex-1 py-1 text-left" onClick={() => setForm({ draft: { ...e }, mode: 'edit', replaceId: e.id })}>
-              <span className="block font-semibold">{e.name}</span>
-              <span className="block text-[13px] text-muted"><span className="num">{e.sets}×{range(e)}</span> · {e.wNote} · rest {e.rest}s</span>
+              <span className="block font-semibold">{e.superset && <span className="mr-1.5 text-accent">{e.superset}</span>}{e.name}</span>
+              <span className="block text-[13px] text-muted"><span className="num">{e.sets}×{range(e)}</span> · {e.wNote} · {e.rest > 0 ? `rest ${e.rest}s` : 'no rest'}</span>
+              {detailsOf(e)?.targets && <span className="block text-[12px] text-muted">Works: {detailsOf(e)!.targets}</span>}
             </button>
             {!ro && (
               <div className="flex shrink-0 items-center">
@@ -103,11 +106,11 @@ export default function DayEditor({ routineId, dayId, onBack }: { routineId: str
 function ReadOnlyExercise({ ex, onClose }: { ex: Exercise; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/50" onClick={onClose}>
-      <div className="w-full rounded-t-3xl border-t border-line bg-surface px-4 pt-5" style={{ paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))' }} onClick={e => e.stopPropagation()}>
-        <div className="mx-auto grid max-w-xl gap-2">
+      <div className="max-h-[90vh] w-full overflow-y-auto rounded-t-3xl border-t border-line bg-surface px-4 pt-5" style={{ paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))' }} onClick={e => e.stopPropagation()}>
+        <div className="mx-auto grid max-w-xl gap-3">
           <h2 className="disp text-[26px] font-bold uppercase">{ex.name}</h2>
           <p className="text-[15px]"><span className="num font-semibold">{ex.sets}×{range(ex)}</span> · {ex.wNote} · rest {ex.rest}s</p>
-          {ex.cue && <p className="rounded-lg bg-sunk px-3 py-2 text-[14px]">{ex.cue}</p>}
+          <ExerciseHowTo e={ex} />
           <button className="mt-2 h-11 text-[14px] font-semibold text-muted" onClick={onClose}>Close</button>
         </div>
       </div>
