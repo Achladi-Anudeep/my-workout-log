@@ -10,6 +10,9 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # The Supabase URL and publishable key are public by design (they ship inside the app; row level security
+  # protects the data), so Netlify's secret scanner should not block builds for finding them.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY"
 
 # Test environment (develop branch). The URL and anon key are public values (they ship inside the web app);
 # row level security keeps each account's data private.
