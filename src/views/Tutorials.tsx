@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { cleanStep, useDemos, ytUrl } from '../lib/exercisedb';
 import ExerciseHowTo from '../components/ExerciseHowTo';
+import DemoGif from '../components/exercise/DemoGif';
+import MachineNote from '../components/exercise/MachineNote';
+import { demoGif } from '../data/demos';
+import { detailsOf } from '../data/details';
 import type { Exercise } from '../types';
 import { DEMO_Q } from '../data/plan';
 import { exDays } from '../lib/routines';
@@ -20,7 +24,27 @@ function DemoError({ name }: { name: string }) {
 
 interface DemoTarget { title: string; query: string; exercise?: Exercise; }
 
-function DemoView({ title, query, exercise, onBack }: DemoTarget & { onBack: () => void }) {
+/** A plan exercise with a pinned demo: shows instantly, no library search unless you ask for other versions. */
+function PinnedDemoView({ title, query, exercise, onBack }: DemoTarget & { exercise: Exercise; onBack: () => void }) {
+  const [more, setMore] = useState(false);
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [exercise.id]);
+  if (more) return <DemoView title={title} query={query} onBack={() => setMore(false)} backLabel={`‹ ${exercise.name}`} />;
+  return (
+    <div className="grid gap-4">
+      <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>‹ All tutorials</button>
+      <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{title}</h2>
+      <DemoGif e={exercise} className="mx-auto aspect-square w-full max-w-sm" />
+      <MachineNote exId={exercise.id} />
+      <div className="rounded-xl border border-line bg-surface px-4 py-3"><ExerciseHowTo e={exercise} /></div>
+      <div className="flex flex-wrap gap-x-4 gap-y-2">
+        <button className="text-[14px] font-semibold text-accent" onClick={() => setMore(true)}>See other versions in the library</button>
+        <a href={ytUrl(title)} target="_blank" rel="noopener noreferrer" className="text-[14px] font-semibold text-accent">Watch a video on YouTube ↗</a>
+      </div>
+    </div>
+  );
+}
+
+function DemoView({ title, query, exercise, onBack, backLabel = '‹ All tutorials' }: DemoTarget & { onBack: () => void; backLabel?: string }) {
   const { data, error } = useDemos(query, 6);
   const [pick, setPick] = useState(0);
   const [imgFailed, setImgFailed] = useState(false);
@@ -29,7 +53,7 @@ function DemoView({ title, query, exercise, onBack }: DemoTarget & { onBack: () 
 
   return (
     <div className="grid gap-4">
-      <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>‹ All tutorials</button>
+      <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>{backLabel}</button>
       <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{title}</h2>
       {exercise && <div className="rounded-xl border border-line bg-surface px-4 py-3"><ExerciseHowTo e={exercise} /></div>}
       {error && <DemoError name={title} />}
@@ -82,6 +106,7 @@ export default function Tutorials() {
   const results = useDemos(search, 12);
 
   const { plan, byId } = useActivePlan();
+  if (view?.exercise && demoGif(view.exercise)) return <PinnedDemoView {...view} exercise={view.exercise} onBack={() => setView(null)} />;
   if (view) return <DemoView {...view} onBack={() => setView(null)} />;
 
   const planList = (day === 'all' ? [...new Map(plan.flatMap(d => d.exercises).map(e => [e.id, e])).values()] : byId[day].exercises).filter(e => !q || e.name.toLowerCase().includes(q.toLowerCase()));
@@ -129,7 +154,8 @@ export default function Tutorials() {
           {planList.map((e, i) => (
             <button key={e.id} onClick={() => setView({ title: e.name, query: e.demo?.name ?? DEMO_Q[e.id] ?? e.name, exercise: e })}
               className={`flex w-full items-center gap-3 px-4 py-3 text-left ${i ? 'border-t border-line' : ''}`}>
-              <span className="min-w-0 flex-1"><span className="block font-semibold">{e.name}</span><span className="block text-[12px] text-muted">{exDays(plan, e.id).join(' · ')}</span></span>
+              <DemoGif e={e} size={48} />
+              <span className="min-w-0 flex-1"><span className="block font-semibold">{e.name}</span><span className="block text-[12px] text-muted">{exDays(plan, e.id).join(' · ')}{detailsOf(e)?.equipment ? ` · ${detailsOf(e)!.equipment}` : ''}</span></span>
               <span className="text-[13px] font-semibold text-accent">Demo ›</span>
             </button>
           ))}

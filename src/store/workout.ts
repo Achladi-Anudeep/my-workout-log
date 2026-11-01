@@ -14,6 +14,8 @@ export type Tab = 'today' | 'calendar' | 'progress' | 'tutorials' | 'plan';
 export interface RemoteRow { id: string; data: Session | null; deleted: boolean; }
 export interface RemoteWeightRow { id: string; at: number; kg: number | null; deleted: boolean; }
 export interface RemoteRoutineRow { id: string; data: Routine | null; deleted: boolean; }
+/** Your machine settings per exercise, e.g. "Seat 4, pin 15 kg". `at` decides which edit wins across devices. */
+export type MachineNotes = Record<string, { text: string; at: number }>;
 
 export interface WorkoutState {
   startDate: string;
@@ -53,6 +55,17 @@ export interface WorkoutState {
   markRoutineUploaded: (id: string) => void;
   markRoutineDeleted: (id: string) => void;
   markActiveRoutineSaved: () => void;
+
+  machineNotes: MachineNotes;
+  /** Bumped on every local edit; sync clears the dirty state only for the version it uploaded. */
+  notesVersion: number;
+  notesSyncedVersion: number;
+  setMachineNote: (exId: string, text: string) => void;
+  applyRemoteNotes: (remote: MachineNotes | null) => void;
+  markNotesSaved: (version: number) => void;
+
+  /** Replace an exercise in the running workout (machine busy). Swapping back restores the planned one. */
+  swapExercise: (fromId: string, to: Exercise) => void;
 
   setTab: (t: Tab) => void;
   setStartDate: (d: string) => void;
@@ -180,6 +193,46 @@ export const useWorkout = create<WorkoutState>()(
       markRoutineDeleted: id => set(s => ({ pendingRDel: s.pendingRDel.filter(x => x !== id) })),
       markActiveRoutineSaved: () => set({ activeRoutineDirty: false }),
 
+      machineNotes: {},
+      notesVersion: 0,
+      notesSyncedVersion: 0,
+      setMachineNote: (exId, text) => set(s => ({
+        machineNotes: { ...s.machineNotes, [exId]: { text: text.slice(0, 200), at: Date.now() } },
+        notesVersion: s.notesVersion + 1,
+      })),
+      applyRemoteNotes: remote => set(s => {
+        if (!remote) return {};
+        const merged: MachineNotes = { ...remote };
+        let localNewer = false;
+        for (const [k, v] of Object.entries(s.machineNotes)) {
+          if (!merged[k] || v.at > merged[k].at) { merged[k] = v; if (!remote[k] || v.at > remote[k].at) localNewer = true; }
+        }
+        // If this device has edits the server lacks, make sure they get uploaded.
+        return { machineNotes: merged, ...(localNewer && s.notesVersion === s.notesSyncedVersion ? { notesVersion: s.notesVersion + 1 } : {}) };
+      }),
+      markNotesSaved: version => set({ notesSyncedVersion: version }),
+
+      swapExercise: (fromId, to) => set(s => {
+        const a = s.active;
+        if (!a) return {};
+        const day = clone(activeDay(a));
+        const i = day.exercises.findIndex(e => e.id === fromId);
+        if (i < 0 || day.exercises.some(e => e.id === to.id)) return {};
+        const from = day.exercises[i];
+        const original = from.swappedFor ?? { id: from.id, name: from.name };
+        const back = to.id === original.id;
+        const next: Exercise = { ...clone(to), sets: from.sets, superset: from.superset, swappedFor: back ? undefined : original };
+        if (back) delete next.swappedFor;
+        day.exercises[i] = next;
+        const last = lastFor(s.sessions, next.id);
+        const lw = last?.e.sets[0]?.w;
+        const w = lw != null ? String(lw) : next.start != null ? String(next.start) : '';
+        const logs = { ...a.logs };
+        delete logs[fromId];
+        logs[next.id] = Array.from({ length: next.sets }, () => ({ w, r: '', done: false }));
+        return { active: { ...a, day, logs } };
+      }),
+
       setTab: tab => set({ tab }),
       setStartDate: startDate => set({ startDate, settingsDirty: true }),
 
@@ -220,7 +273,7 @@ export const useWorkout = create<WorkoutState>()(
         const day = activeDay(a);
         const ex = day.exercises
           .map(e => ({
-            id: e.id, name: e.name, unit: e.unit,
+            id: e.id, name: e.name, unit: e.unit, ...(e.swappedFor ? { swappedFor: e.swappedFor.name } : {}),
             sets: (a.logs[e.id] ?? []).filter(r => r.done && r.r !== '').map(r => ({ w: r.w === '' ? null : Number(r.w), r: Number(r.r) })),
           }))
           .filter(e => e.sets.length);
@@ -266,6 +319,7 @@ export const useWorkout = create<WorkoutState>()(
         weights: s.weights, pendingWUp: s.pendingWUp, pendingWDel: s.pendingWDel,
         routines: s.routines, activeRoutineId: s.activeRoutineId, pendingRUp: s.pendingRUp, pendingRDel: s.pendingRDel,
         activeRoutineDirty: s.activeRoutineDirty,
+        machineNotes: s.machineNotes, notesVersion: s.notesVersion, notesSyncedVersion: s.notesSyncedVersion,
       }),
     },
   ),

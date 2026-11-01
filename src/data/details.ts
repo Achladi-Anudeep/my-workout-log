@@ -1,6 +1,6 @@
 import type { Exercise } from '../types';
 
-export interface ExerciseDetails { targets: string; steps: string[]; mistakes: string[]; }
+export interface ExerciseDetails { targets: string; equipment?: string; steps: string[]; mistakes: string[]; }
 
 /**
  * How-to details for every exercise in the built-in routines, keyed by exercise id.
@@ -9,6 +9,7 @@ export interface ExerciseDetails { targets: string; steps: string[]; mistakes: s
 export const DETAILS: Record<string, ExerciseDetails> = {
   // ---------- Push ----------
   'chest-press': {
+    equipment: 'Chest press machine (seated, handles at mid-chest)',
     targets: 'Chest · front delts · triceps',
     steps: [
       'Set the seat so the handles line up with the middle of your chest.',
@@ -19,6 +20,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Shoulders rolling forward at the end of each rep', 'Elbows flared straight out at 90°', 'Letting the weight stack slam between reps'],
   },
   'incline-press': {
+    equipment: 'Two dumbbells + adjustable bench set to 30–45°',
     targets: 'Upper chest · front delts · triceps',
     steps: [
       'Set the bench to 30–45° and sit back with a dumbbell on each thigh.',
@@ -29,6 +31,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Bench set too steep (it becomes a shoulder press)', 'Arching the lower back off the bench', 'Bouncing the dumbbells out of the bottom'],
   },
   dips: {
+    equipment: 'Assisted dip machine (kneel on the pad) or parallel dip bars',
     targets: 'Lower chest · triceps · front delts',
     steps: [
       'Use the assisted dip machine, or grip the parallel bars with straight arms.',
@@ -39,6 +42,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Going deeper than 90° (strains the shoulder joint)', 'Shrugging the shoulders up toward the ears', 'Swinging the legs for momentum'],
   },
   'lateral-raise': {
+    equipment: 'Two light dumbbells',
     targets: 'Side delts',
     steps: [
       'Stand tall with a dumbbell at each side, a slight bend in the elbows.',
@@ -49,6 +53,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Shrugging, so the traps take over', 'Swinging the body to lift the weight', 'Lifting above shoulder height'],
   },
   'triceps-pushdown': {
+    equipment: 'Cable machine · pulley at the top · straight bar or rope',
     targets: 'Triceps',
     steps: [
       'Set the cable at the top and hold the bar or rope with elbows bent.',
@@ -59,6 +64,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Elbows drifting forward', 'Leaning over the bar to push with body weight', 'Cutting the range short at the top'],
   },
   'shoulder-press': {
+    equipment: 'Two dumbbells + bench set upright (90°)',
     targets: 'Front & side delts · triceps · upper chest',
     steps: [
       'Set a bench upright (or one notch back) and sit with your back flat against it.',
@@ -71,6 +77,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
 
   // ---------- Pull ----------
   deadlift: {
+    equipment: 'Olympic barbell (20 kg) on the floor, plates optional',
     targets: 'Hamstrings · glutes · lower back · grip',
     steps: [
       'Stand with the bar over the middle of your feet, feet hip-width apart.',
@@ -82,6 +89,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Rounding the lower back', 'Bar drifting away from the legs', 'Leaning back at the top', 'Jerking the bar off the floor'],
   },
   'lat-pulldown': {
+    equipment: 'Lat pulldown machine · wide bar · thigh pad',
     targets: 'Lats · upper back · biceps',
     steps: [
       'Set the thigh pad so your legs are locked in.',
@@ -92,6 +100,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Pulling the bar behind the neck', 'Leaning far back and rowing it down', 'Letting the weight yank the arms up'],
   },
   'bent-over-row': {
+    equipment: 'Two dumbbells (no bench needed)',
     targets: 'Mid-back · lats · rear delts · biceps',
     steps: [
       'Hold a dumbbell in each hand and hinge at the hips to about 45°, knees soft.',
@@ -102,6 +111,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Rounding the back', 'Standing up more with every rep', 'Jerking the weight with the hips'],
   },
   'low-row': {
+    equipment: 'Seated cable row machine · V-handle · foot platform',
     targets: 'Mid-back · lats · rear delts',
     steps: [
       'Sit with feet on the platform, knees slightly bent, back upright.',
@@ -112,6 +122,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Rocking the torso back and forth', 'Shrugging the shoulders up', 'Rounding forward on the way back'],
   },
   'face-pull': {
+    equipment: 'Cable machine · pulley at face height · rope attachment',
     targets: 'Rear delts · upper back · rotator cuff',
     steps: [
       'Set the cable at about face height with a rope attachment.',
@@ -122,6 +133,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Elbows dropping below shoulder height', 'Leaning back to pull with body weight', 'Using too much weight to finish the rep'],
   },
   shrug: {
+    equipment: 'Two dumbbells',
     targets: 'Upper traps',
     steps: [
       'Stand tall with a dumbbell in each hand at your sides.',
@@ -134,6 +146,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
 
   // ---------- Legs ----------
   squat: {
+    equipment: 'Squat rack + Olympic barbell (20 kg) · a bench behind you for depth',
     targets: 'Quads · glutes · core',
     steps: [
       'Set the bar on your upper back (not your neck); feet shoulder-width, toes slightly out.',
@@ -144,6 +157,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Knees caving inward', 'Heels lifting off the floor', 'Going deeper than your knee allows', 'Rounding the back at the bottom'],
   },
   'leg-press': {
+    equipment: '45° leg press machine (sled with a foot platform)',
     targets: 'Quads · glutes',
     steps: [
       'Sit back in the seat and place your feet hip-width in the middle of the platform.',
@@ -154,6 +168,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Lowering so deep your hips lift off the seat', 'Locking the knees hard at the top', 'Knees caving inward'],
   },
   rdl: {
+    equipment: 'Two dumbbells',
     targets: 'Hamstrings · glutes',
     steps: [
       'Stand with a dumbbell in each hand in front of your thighs, knees soft.',
@@ -164,6 +179,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Rounding the back to reach lower', 'Bending the knees so it becomes a squat', 'Dumbbells drifting away from the legs'],
   },
   'wall-sit': {
+    equipment: 'Any flat wall',
     targets: 'Quads',
     steps: [
       'Stand with your back against a wall and feet about 60 cm in front of you.',
@@ -174,6 +190,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Knees going past the toes', 'Hands pushing on the thighs', 'Holding your breath'],
   },
   'leg-curl': {
+    equipment: 'Lying leg curl machine (pad behind your ankles)',
     targets: 'Hamstrings',
     steps: [
       'Adjust the machine so your knees line up with its pivot point and the pad sits just above your heels.',
@@ -184,6 +201,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Hips lifting off the pad', 'Letting the weight drop', 'Short, fast reps'],
   },
   'seated-calf': {
+    equipment: 'Seated calf raise machine (pad on your thighs)',
     targets: 'Calves (soleus)',
     steps: [
       'Sit with the balls of your feet on the platform and the pad snug on your thighs.',
@@ -194,6 +212,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Bouncing at the bottom', 'Half reps', 'Rushing through the set'],
   },
   'standing-calf': {
+    equipment: 'Standing calf raise machine, or a step + one dumbbell',
     targets: 'Calves (gastrocnemius)',
     steps: [
       'Stand with the balls of your feet on a step or plate, heels hanging off. Use the machine, or hold a dumbbell and a rail.',
@@ -204,6 +223,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Bending the knees to bounce', 'Cutting the stretch short', 'Rushing the reps'],
   },
   'side-plank': {
+    equipment: 'Floor mat',
     targets: 'Obliques · hips',
     steps: [
       'Lie on your side with your elbow directly under your shoulder.',
@@ -216,6 +236,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
 
   // ---------- Arms ----------
   flies: {
+    equipment: 'Two dumbbells + flat bench',
     targets: 'Chest',
     steps: [
       'Lie on a flat bench with dumbbells above your chest, palms facing each other.',
@@ -226,6 +247,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Going too deep, which strains the shoulders', 'Bending the elbows more so it becomes a press', 'Clanking the dumbbells at the top'],
   },
   'bicep-curl': {
+    equipment: 'Two dumbbells',
     targets: 'Biceps',
     steps: [
       'Stand tall with a dumbbell in each hand, palms forward.',
@@ -236,6 +258,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Swinging the body', 'Elbows moving forward', 'Stopping before the arms are straight'],
   },
   'tri-bi-superset': {
+    equipment: 'One 6 kg dumbbell (triceps) + two 4 kg dumbbells (curls)',
     targets: 'Triceps · biceps',
     steps: [
       'Do a full set of triceps extensions (6 kg).',
@@ -245,6 +268,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Resting between the two exercises', 'Rushing reps because you are tired'],
   },
   'ss-triceps-ext': {
+    equipment: 'One dumbbell, held with both hands',
     targets: 'Triceps (long head)',
     steps: [
       'Sit or stand and hold one dumbbell with both hands above your head.',
@@ -255,6 +279,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Elbows flaring out wide', 'Arching the lower back', 'Lowering only a little'],
   },
   'ss-curl': {
+    equipment: 'Two light dumbbells',
     targets: 'Biceps',
     steps: [
       'Right after the triceps set, pick up the curl dumbbells.',
@@ -265,6 +290,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Swinging the body', 'Skipping the full stretch at the bottom'],
   },
   'hammer-curl': {
+    equipment: 'Two dumbbells',
     targets: 'Biceps · brachialis · forearms',
     steps: [
       'Stand tall with a dumbbell in each hand, palms facing your body.',
@@ -275,6 +301,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Swinging the dumbbells', 'Twisting the wrists', 'Elbows drifting forward'],
   },
   'front-raise': {
+    equipment: 'Two light dumbbells',
     targets: 'Front delts',
     steps: [
       'Stand tall with dumbbells in front of your thighs, palms facing you.',
@@ -285,6 +312,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Leaning back to swing the weight up', 'Lifting above eye level', 'Shrugging'],
   },
   'rear-delt-fly': {
+    equipment: 'Two light dumbbells (or the reverse-fly setting on a pec deck)',
     targets: 'Rear delts · upper back',
     steps: [
       'Hold light dumbbells and hinge forward until your chest is nearly parallel to the floor, back flat.',
@@ -297,6 +325,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
 
   // ---------- Grip & core ----------
   'farmers-carry': {
+    equipment: 'Two heavy dumbbells + a clear walkway',
     targets: 'Grip · forearms · traps · core',
     steps: [
       'Pick up a heavy dumbbell in each hand with a flat back, as in a deadlift.',
@@ -307,6 +336,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Leaning to one side', 'Shoulders rounding forward', 'Rushing with long strides'],
   },
   'leg-raise': {
+    equipment: 'Floor mat (or a flat bench)',
     targets: 'Lower abs · hip flexors',
     steps: [
       'Lie on your back, hands under your hips or by your sides.',
@@ -317,6 +347,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Lower back arching off the floor', 'Swinging the legs', 'Dropping the legs quickly'],
   },
   plank: {
+    equipment: 'Floor mat',
     targets: 'Core · shoulders',
     steps: [
       'Set your forearms on the floor, elbows under your shoulders.',
@@ -329,6 +360,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
 
   // ---------- Home ----------
   'bw-squat': {
+    equipment: 'None (bodyweight)',
     targets: 'Quads · glutes',
     steps: [
       'Stand with feet shoulder-width apart, arms out in front for balance.',
@@ -339,6 +371,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Knees caving inward', 'Heels lifting', 'Dropping fast to the bottom'],
   },
   'glute-bridge': {
+    equipment: 'Floor mat',
     targets: 'Glutes · hamstrings',
     steps: [
       'Lie on your back with knees bent and feet flat, hip-width apart.',
@@ -349,6 +382,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Arching the lower back instead of squeezing the glutes', 'Feet too far from the body', 'Rushing the reps'],
   },
   'step-up': {
+    equipment: 'A low, stable step or stair',
     targets: 'Quads · glutes',
     steps: [
       'Stand facing a low, stable step and place one whole foot on it.',
@@ -359,6 +393,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Pushing off with the back foot', 'Knee caving inward', 'Step too high for a pain-free knee'],
   },
   'single-leg-calf': {
+    equipment: 'A stair edge + wall or rail to hold',
     targets: 'Calves',
     steps: [
       'Stand on one foot on a stair edge, heel hanging off, holding the wall or rail.',
@@ -369,6 +404,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Bouncing at the bottom', 'Bending the knee to help', 'Half reps'],
   },
   'push-up': {
+    equipment: 'Floor (or a table/counter for incline push-ups)',
     targets: 'Chest · triceps · front delts · core',
     steps: [
       'Set your hands a little wider than shoulders. Use a table or counter for incline push-ups if needed.',
@@ -379,6 +415,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Hips sagging', 'Elbows flaring straight out', 'Half reps'],
   },
   'russian-twist': {
+    equipment: 'Floor mat',
     targets: 'Obliques · abs',
     steps: [
       'Sit with knees bent and lean back slightly with a straight back.',
@@ -389,6 +426,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Only moving the arms', 'Rounding the back', 'Going too fast'],
   },
   'dead-bug': {
+    equipment: 'Floor mat',
     targets: 'Deep core',
     steps: [
       'Lie on your back with arms pointing at the ceiling and knees bent at 90° above your hips.',
@@ -399,6 +437,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Lower back lifting off the floor', 'Moving too fast', 'Holding your breath'],
   },
   'lying-leg-raise': {
+    equipment: 'Floor mat',
     targets: 'Lower abs · hip flexors',
     steps: [
       'Lie on your back, hands under your hips.',
@@ -408,14 +447,138 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     ],
     mistakes: ['Lower back arching', 'Swinging the legs', 'Dropping them fast'],
   },
+
+  // ---------- Alternatives (for swapping when a machine is busy) ----------
+  'db-bench-press': {
+    equipment: 'Two dumbbells + flat bench',
+    targets: 'Chest · front delts · triceps',
+    steps: [
+      'Sit on the end of a flat bench with a dumbbell on each thigh, then lie back and bring them to chest level.',
+      'Plant your feet and pinch your shoulder blades together.',
+      'Press the dumbbells up over your chest until the arms are almost straight.',
+      'Lower slowly until they are level with your chest.',
+    ],
+    mistakes: ['Elbows flared straight out', 'Bouncing at the bottom', 'Feet off the floor'],
+  },
+  'bench-dip': {
+    equipment: 'A flat bench or sturdy chair',
+    targets: 'Triceps · chest · front delts',
+    steps: [
+      'Sit on the edge of the bench with hands beside your hips, fingers forward.',
+      'Slide your hips off the bench, knees bent and feet flat.',
+      'Bend your elbows to lower your body until the elbows reach about 90°.',
+      'Push back up to straight arms.',
+    ],
+    mistakes: ['Going deeper than 90°', 'Hips drifting far from the bench', 'Shrugging the shoulders'],
+  },
+  'cable-lateral-raise': {
+    equipment: 'Cable machine · pulley at the bottom · single handle',
+    targets: 'Side delts',
+    steps: [
+      'Stand side-on to the machine and hold the handle with the far hand, cable across your body.',
+      'With a slight elbow bend, raise the arm out to the side up to shoulder height.',
+      'Pause, then lower slowly.',
+      'Finish all reps, then switch sides.',
+    ],
+    mistakes: ['Leaning away to swing the weight', 'Lifting above shoulder height', 'Shrugging'],
+  },
+  'machine-shoulder-press': {
+    equipment: 'Shoulder press machine (seated, handles at shoulder height)',
+    targets: 'Front & side delts · triceps',
+    steps: [
+      'Set the seat so the handles start level with your shoulders.',
+      'Sit with your back flat against the pad and grip the handles.',
+      'Press up until the arms are almost straight.',
+      'Lower slowly back to shoulder height.',
+    ],
+    mistakes: ['Seat too low (handles start below the shoulders)', 'Arching off the back pad', 'Locking out hard'],
+  },
+  'back-extension': {
+    equipment: '45° back extension (hyperextension) bench',
+    targets: 'Lower back · glutes · hamstrings',
+    steps: [
+      'Set the pad just below your hip bones and hook your ankles under the rollers.',
+      'Cross your arms over your chest.',
+      'Lower your upper body by bending at the hips, back flat.',
+      'Squeeze your glutes to come back up until your body is in a straight line.',
+    ],
+    mistakes: ['Arching past straight at the top', 'Rounding the back', 'Swinging fast'],
+  },
+  'assisted-pull-up': {
+    equipment: 'Assisted pull-up machine (kneel on the pad; more weight = more help)',
+    targets: 'Lats · upper back · biceps',
+    steps: [
+      'Pick an assistance weight, kneel on the pad and grip the handles a little wider than your shoulders.',
+      'Start hanging with straight arms.',
+      'Pull your chest up toward the bar, driving your elbows down.',
+      'Lower slowly to straight arms.',
+    ],
+    mistakes: ['Kicking the legs', 'Half reps that stop short of straight arms', 'Shrugging the shoulders up'],
+  },
+  'single-arm-db-row': {
+    equipment: 'One dumbbell + flat bench',
+    targets: 'Lats · mid-back · biceps',
+    steps: [
+      'Put one knee and the same hand on the bench, back flat and parallel to the floor.',
+      'Hold the dumbbell in the other hand with the arm straight down.',
+      'Pull the dumbbell toward your hip, elbow close to your side.',
+      'Lower slowly; finish the set, then switch sides.',
+    ],
+    mistakes: ['Twisting the torso to lift', 'Pulling to the chest instead of the hip', 'Rounding the back'],
+  },
+  'band-pull-apart': {
+    equipment: 'A light resistance band (or a light cable with two handles)',
+    targets: 'Rear delts · upper back',
+    steps: [
+      'Hold the band at shoulder height with straight arms, hands shoulder-width apart.',
+      'Pull your hands apart until the band touches your chest.',
+      'Squeeze your shoulder blades for a moment.',
+      'Return slowly.',
+    ],
+    mistakes: ['Bending the elbows a lot', 'Shrugging', 'Letting the band snap back'],
+  },
+  'goblet-squat': {
+    equipment: 'One dumbbell, held vertically at your chest',
+    targets: 'Quads · glutes · core',
+    steps: [
+      'Hold one end of a dumbbell against your chest, elbows pointing down.',
+      'Feet shoulder-width apart, toes slightly out.',
+      'Sit down between your heels to a pain-free depth, chest up.',
+      'Drive up through the whole foot.',
+    ],
+    mistakes: ['Knees caving in', 'Heels lifting', 'Going deeper than your knee allows'],
+  },
+  'cable-crossover': {
+    equipment: 'Cable machine with two pulleys set high · two handles',
+    targets: 'Chest',
+    steps: [
+      'Set both pulleys high, take a handle in each hand and step forward into a split stance.',
+      'With a slight bend in the elbows, bring the handles down and together in front of your chest.',
+      'Squeeze your chest for a moment.',
+      'Let the arms open slowly until you feel a stretch.',
+    ],
+    mistakes: ['Bending the elbows so it becomes a press', 'Leaning too far forward', 'Letting the weights slam'],
+  },
+  'cable-curl': {
+    equipment: 'Cable machine · pulley at the bottom · straight or EZ bar',
+    targets: 'Biceps',
+    steps: [
+      'Stand facing the machine holding the bar with palms up, arms straight.',
+      'Keep your elbows pinned to your sides.',
+      'Curl the bar up toward your shoulders.',
+      'Lower slowly to straight arms.',
+    ],
+    mistakes: ['Leaning back', 'Elbows drifting forward', 'Stopping short at the bottom'],
+  },
 };
 
 /** The details to show for an exercise: its own, or the built-in ones for its id. */
 export function detailsOf(e: Exercise): ExerciseDetails | null {
   const base = DETAILS[e.id];
   const targets = e.targets ?? base?.targets ?? '';
+  const equipment = e.equipment ?? base?.equipment;
   const steps = e.steps?.length ? e.steps : base?.steps ?? [];
   const mistakes = e.mistakes?.length ? e.mistakes : base?.mistakes ?? [];
-  if (!targets && !steps.length && !mistakes.length) return null;
-  return { targets, steps, mistakes };
+  if (!targets && !steps.length && !mistakes.length && !equipment) return null;
+  return { targets, equipment, steps, mistakes };
 }

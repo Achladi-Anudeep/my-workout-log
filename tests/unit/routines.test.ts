@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BUILTIN, BUILTIN_ID, BUILTIN_V2, BUILTINS, DAY_IDS, findRoutine, isBuiltin, planOf, routineName, toDay } from '../../src/lib/routines';
 import { DETAILS, detailsOf } from '../../src/data/details';
+import { ALT_EXERCISES, ALTERNATIVES, EXERCISE_LIBRARY, swapOptions } from '../../src/data/alternatives';
+import { DEMO_ID, demoGif } from '../../src/data/demos';
 import type { Routine } from '../../src/types';
 
 const names = (r: Routine, d: keyof Routine['days']) => r.days[d].exercises.map(e => e.name);
@@ -83,7 +85,7 @@ describe('every built-in routine', () => {
   }
 
   it('has no orphaned detail entries', () => {
-    const used = new Set(BUILTINS.flatMap(r => DAY_IDS.flatMap(d => r.days[d].exercises.map(e => e.id))));
+    const used = new Set([...BUILTINS.flatMap(r => DAY_IDS.flatMap(d => r.days[d].exercises.map(e => e.id))), ...ALT_EXERCISES.map(e => e.id)]);
     for (const id of Object.keys(DETAILS)) expect(used.has(id), id).toBe(true);
   });
 });
@@ -111,5 +113,45 @@ describe('routine helpers', () => {
 
   it('builds a 7-day plan', () => {
     expect(planOf(BUILTIN).map(d => d.id)).toEqual(DAY_IDS);
+  });
+});
+
+describe('finding the machine and doing it right', () => {
+  const all = [...EXERCISE_LIBRARY.values()];
+
+  it('every exercise says what equipment to look for', () => {
+    for (const e of all) expect(detailsOf(e)?.equipment, e.id).toBeTruthy();
+  });
+
+  it('every swap-in exercise has full how-to details', () => {
+    for (const e of ALT_EXERCISES) {
+      const d = detailsOf(e)!;
+      expect(d.steps.length, e.id).toBeGreaterThanOrEqual(3);
+      expect(d.mistakes.length, e.id).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('every built-in exercise has at least one swap, and every swap points at a known exercise', () => {
+    for (const r of BUILTINS) for (const d of DAY_IDS) for (const e of r.days[d].exercises) {
+      expect(ALTERNATIVES[e.id]?.length, e.id).toBeGreaterThan(0);
+    }
+    for (const [from, tos] of Object.entries(ALTERNATIVES)) for (const to of tos) {
+      expect(EXERCISE_LIBRARY.has(to), `${from} → ${to}`).toBe(true);
+      expect(to).not.toBe(from);
+    }
+  });
+
+  it('swap options skip exercises already in the workout and offer the original back first', () => {
+    const chest = EXERCISE_LIBRARY.get('chest-press')!;
+    expect(swapOptions(chest, ['chest-press', 'push-up']).map(e => e.id)).toEqual(['db-bench-press']);
+    const swapped = { ...EXERCISE_LIBRARY.get('db-bench-press')!, swappedFor: { id: 'chest-press', name: 'Chest Press' } };
+    expect(swapOptions(swapped, ['db-bench-press']).map(e => e.id)).toEqual(['chest-press', 'push-up']);
+  });
+
+  it('nearly every exercise has a pinned demo; the rest show an icon', () => {
+    const missing = all.filter(e => !demoGif(e)).map(e => e.id).sort();
+    expect(missing).toEqual(['back-extension', 'plank', 'wall-sit']);
+    for (const id of Object.values(DEMO_ID)) expect(id).toMatch(/^[A-Za-z0-9]{7}$/);
+    for (const k of Object.keys(DEMO_ID)) expect(EXERCISE_LIBRARY.has(k), k).toBe(true);
   });
 });

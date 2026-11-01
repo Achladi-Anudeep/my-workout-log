@@ -16,12 +16,16 @@ export interface Exercise {
   cue: string;
   /** Muscles worked, e.g. "Chest · front delts · triceps". */
   targets?: string;
+  /** What to look for in the gym, e.g. "Cable machine · pulley at the top · rope". */
+  equipment?: string;
   /** How to do it, in order. */
   steps?: string[];
   /** What to avoid. */
   mistakes?: string[];
   /** Exercises sharing a superset label are done back to back (e.g. "A1", "A2"). */
   superset?: string;
+  /** Set on an exercise swapped in during a workout: the planned exercise it replaces. */
+  swappedFor?: { id: string; name: string };
   /** Set when the exercise came from the ExerciseDB library: drives its tutorial demo. */
   demo?: { id: string; name: string; gifUrl: string };
 }
@@ -68,7 +72,7 @@ export interface SetLog { w: string; r: string; done: boolean; }
 export interface Active { dayId: DayId; startedAt: number; logs: Record<string, SetLog[]>; routineId?: string; day?: Day; }
 
 export interface LoggedSet { w: number | null; r: number; }
-export interface SessionExercise { id: string; name: string; unit: Unit; sets: LoggedSet[]; }
+export interface SessionExercise { id: string; name: string; unit: Unit; sets: LoggedSet[]; /** Name of the planned exercise this replaced, when swapped. */ swappedFor?: string; }
 export interface Session {
   id: string;
   dayId: DayId;

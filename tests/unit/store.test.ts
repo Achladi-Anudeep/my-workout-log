@@ -115,3 +115,59 @@ it('logWorkout helper works', async () => {
   const d = await device(null);
   expect(logWorkout(d).ex[0].sets[0]).toEqual({ w: 22.5, r: 12 });
 });
+
+describe('swapping an exercise when the machine is busy', () => {
+  it('replaces it in the running workout, logs it under its own name, and can swap back', async () => {
+    const d = await device(null);
+    d.act().start('mon');
+    d.act().edit('chest-press', 0, { w: '12.5', r: '15', done: true });
+    const alt = { ...(await import('../../src/data/alternatives')).EXERCISE_LIBRARY.get('db-bench-press')! };
+    d.act().swapExercise('chest-press', alt);
+    let day = d.state().active!.day!;
+    expect(day.exercises[0]).toMatchObject({ id: 'db-bench-press', sets: 3, swappedFor: { id: 'chest-press', name: 'Chest Press' } });
+    expect(d.state().active!.logs['chest-press']).toBeUndefined();
+    expect(d.state().active!.logs['db-bench-press'][0].w).toBe('6'); // its own starting weight
+
+    // swap back restores the planned exercise
+    const orig = (await import('../../src/data/alternatives')).EXERCISE_LIBRARY.get('chest-press')!;
+    d.act().swapExercise('db-bench-press', orig);
+    day = d.state().active!.day!;
+    expect(day.exercises[0].id).toBe('chest-press');
+    expect(day.exercises[0].swappedFor).toBeUndefined();
+
+    d.act().swapExercise('chest-press', alt);
+    d.act().edit('db-bench-press', 0, { w: '7', r: '12', done: true });
+    d.act().finish(0, '');
+    expect(d.state().sessions[0].ex[0]).toMatchObject({ id: 'db-bench-press', name: 'Dumbbell Bench Press', swappedFor: 'Chest Press' });
+    // the routine itself is unchanged
+    d.act().start('mon');
+    expect(d.state().active!.day!.exercises[0].id).toBe('chest-press');
+  });
+
+  it('refuses a swap into an exercise already in the workout', async () => {
+    const d = await device(null);
+    d.act().start('mon');
+    const incline = (await import('../../src/data/alternatives')).EXERCISE_LIBRARY.get('incline-press')!;
+    d.act().swapExercise('chest-press', incline);
+    expect(d.state().active!.day!.exercises.map(e => e.id).filter(id => id === 'incline-press')).toHaveLength(1);
+  });
+});
+
+describe('machine settings notes', () => {
+  it('saves a note per exercise and marks it for sync', async () => {
+    const d = await device(null);
+    d.act().setMachineNote('leg-press', 'Seat 3, feet mid-platform');
+    expect(d.state().machineNotes['leg-press'].text).toBe('Seat 3, feet mid-platform');
+    expect(d.state().notesVersion).not.toBe(d.state().notesSyncedVersion);
+  });
+
+  it('merges notes from another device, newest edit wins per exercise', async () => {
+    const d = await device(null);
+    d.act().setMachineNote('a', 'mine new');
+    const mine = d.state().machineNotes['a'].at;
+    d.act().applyRemoteNotes({ a: { text: 'old remote', at: mine - 1000 }, b: { text: 'remote only', at: 5 } });
+    expect(d.state().machineNotes).toMatchObject({ a: { text: 'mine new' }, b: { text: 'remote only' } });
+    d.act().applyRemoteNotes({ a: { text: 'newer remote', at: mine + 1000 } });
+    expect(d.state().machineNotes['a'].text).toBe('newer remote');
+  });
+});

@@ -191,4 +191,61 @@ test.describe('@local', () => {
     await expect(page.locator('#app-version')).toContainText('local environment');
     await expect(page.locator('#env-badge')).toHaveText('local');
   });
+
+  test('each exercise shows its demo, equipment and your machine settings', async ({ page }) => {
+    await page.locator('#day-wed').click();
+    const card = page.locator('article', { hasText: 'Leg Press' }).first();
+    await expect(card.locator('img[alt="Demo of Leg Press"]')).toBeVisible();
+    await expect(card).toContainText('Equipment: 45° leg press machine');
+
+    await card.getByRole('button', { name: '+ Add my machine settings' }).click();
+    await card.locator('#note-leg-press').fill('Seat 3, feet mid-platform');
+    await card.getByRole('button', { name: 'Save' }).click();
+    await expect(card).toContainText('My setup: Seat 3, feet mid-platform');
+
+    // tap the demo for the big view with everything in one place
+    await card.getByRole('button', { name: 'Show how to do Leg Press' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Leg Press' });
+    await expect(sheet.locator('img[alt="Demo of Leg Press"]')).toBeVisible();
+    await expect(sheet).toContainText('Seat 3, feet mid-platform');
+    await expect(sheet).toContainText('Release the safety');
+    await sheet.getByRole('button', { name: 'Close' }).click();
+
+    // the note survives a restart and also shows on other days with the same exercise
+    await page.reload();
+    await page.locator('#day-wed').click();
+    await expect(page.locator('article', { hasText: 'Leg Press' }).first()).toContainText('My setup: Seat 3');
+  });
+
+  test('swap a busy machine during a workout, and swap back', async ({ page }) => {
+    await page.locator('#day-tue').click();
+    await expect(page.getByRole('button', { name: 'Swap Lat Pulldown' })).toHaveCount(0); // only during a workout
+    await page.locator('#start-workout').click();
+    await page.getByRole('button', { name: 'Swap Lat Pulldown' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Swap Lat Pulldown' });
+    await expect(sheet).toContainText('Assisted pull-up machine');
+    await sheet.locator('#swap-to-assisted-pull-up').click();
+
+    const card = page.locator('article', { hasText: 'Assisted Pull-up' }).first();
+    await expect(card).toContainText('Swapped in for Lat Pulldown');
+    await expect(card).toContainText('Equipment: Assisted pull-up machine');
+    await card.locator('#assisted-pull-up-r-0').fill('10');
+    await card.getByRole('button', { name: 'Mark set 1 done' }).click();
+    await page.getByRole('button', { name: 'Skip' }).click();
+
+    await card.getByRole('button', { name: 'Swap Assisted Pull-up' }).click();
+    await expect(page.getByRole('dialog').locator('#swap-to-lat-pulldown')).toContainText('Back to Lat Pulldown');
+    await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
+
+    await page.getByRole('button', { name: 'Finish ›' }).click();
+    await page.getByRole('button', { name: 'Save workout' }).click();
+    await page.locator('article button[aria-expanded]').first().click();
+    await expect(page.locator('article').first()).toContainText('Assisted Pull-up');
+
+    // next Tuesday the plan is unchanged
+    await tab(page, 'today');
+    await page.locator('#day-tue').click();
+    await expect(page.locator('main')).toContainText('Lat Pulldown');
+    await expect(page.locator('main')).not.toContainText('Swapped in for');
+  });
 });

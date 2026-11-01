@@ -9,6 +9,7 @@ import { PlateLogo } from './components/ui';
 import { act, useWorkout, type Tab } from './store/workout';
 import { useSync, type SyncMode } from './store/sync';
 import { APP_ENV } from './lib/env';
+import { primeAudio } from './lib/beep';
 import { reloadNow, useUpdate } from './lib/update';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -57,7 +58,7 @@ export default function App() {
   const [timer, setTimer] = useState<Timer | null>(null);
   // Tapping the tab you're already on goes back to that tab's start screen, like other iPhone apps.
   const [resets, setResets] = useState(0);
-  const onRest = (secs: number, label: string) => setTimer({ end: Date.now() + secs * 1000, total: secs, label });
+  const onRest = (secs: number, label: string) => { primeAudio(); setTimer({ end: Date.now() + secs * 1000, total: secs, label }); };
 
   // Older saved state may hold a tab that no longer exists
   useEffect(() => { if (!TABS.some(t => t.id === tab)) act().setTab('today'); }, [tab]);

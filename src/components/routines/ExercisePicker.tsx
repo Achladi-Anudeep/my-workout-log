@@ -17,6 +17,7 @@ function fromLibrary(d: Demo): Exercise {
     demo: { id: d.exerciseId, name: d.name, gifUrl: d.gifUrl },
     targets: [...d.targetMuscles, ...d.secondaryMuscles.slice(0, 2)].map(titleCase).join(' · ') || undefined,
     steps: d.instructions.map(cleanStep).filter(Boolean),
+    equipment: d.equipments.map(titleCase).join(' · ') || undefined,
   };
 }
 

@@ -31,7 +31,8 @@ export async function device(db: FakeDb | null, user = { id: 'user-1', email: 'm
         await new Promise(r => setTimeout(r, 5));
         const s = store.useWorkout.getState();
         const waiting = s.pendingUp.length + s.pendingDel.length + s.pendingWUp.length + s.pendingWDel.length
-          + s.pendingRUp.length + s.pendingRDel.length + (s.settingsDirty ? 1 : 0) + (s.activeRoutineDirty ? 1 : 0);
+          + s.pendingRUp.length + s.pendingRDel.length + (s.settingsDirty ? 1 : 0) + (s.activeRoutineDirty ? 1 : 0)
+          + (s.notesVersion !== s.notesSyncedVersion ? 1 : 0);
         if (!waiting && sync.useSync.getState().mode === 'synced') return;
       }
       throw new Error(`sync did not settle: ${JSON.stringify(sync.useSync.getState())}`);

@@ -2,11 +2,14 @@ import { detailsOf } from '../data/details';
 import type { Exercise } from '../types';
 
 /** Targets, steps, key cue and common mistakes for one exercise. */
-export default function ExerciseHowTo({ e }: { e: Exercise }) {
+export default function ExerciseHowTo({ e, hideEquipment = false }: { e: Exercise; hideEquipment?: boolean }) {
   const d = detailsOf(e);
   if (!d && !e.cue) return <p className="text-[14px] text-muted">No details yet. Edit the exercise in your routine to add some.</p>;
   return (
     <div className="grid gap-3 text-[14px]">
+      {!hideEquipment && d?.equipment && (
+        <div><div className="label">Equipment</div><p className="mt-0.5">{d.equipment}</p></div>
+      )}
       {d?.targets && (
         <div><div className="label">Works</div><p className="mt-0.5">{d.targets}</p></div>
       )}

@@ -60,6 +60,11 @@ test.describe('@env', () => {
     await page.locator('#weight-kg').fill('65.4');
     await page.getByRole('button', { name: 'Save weight' }).click();
 
+    await page.locator('#day-wed').click();
+    await page.locator('article', { hasText: 'Leg Press' }).first().getByRole('button', { name: '+ Add my machine settings' }).click();
+    await page.locator('#note-leg-press').fill(`Seat 3 ${tag}`);
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+
     await tab(page, 'plan');
     await page.locator('#new-routine').click();
     await page.locator('#new-from-v2').click();
@@ -80,6 +85,9 @@ test.describe('@env', () => {
     await expect(lap.locator('main')).toContainText('65.4 kg');
     await tab(lap, 'plan');
     await expect(lap.locator('main')).toContainText(`Running Routine ${tag}`);
+    await tab(lap, 'today');
+    await lap.locator('#day-wed').click();
+    await expect(lap.locator('article', { hasText: 'Leg Press' }).first()).toContainText(`My setup: Seat 3 ${tag}`);
 
     // ---- laptop deletes the workout → gone on the phone
     await tab(lap, 'calendar');

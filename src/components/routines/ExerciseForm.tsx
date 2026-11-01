@@ -9,6 +9,7 @@ export default function ExerciseForm({ draft, mode, onSave, onClose }: {
   const base = detailsOf(draft);
   const [f, setF] = useState({
     targets: base?.targets ?? '',
+    equipment: base?.equipment ?? '',
     steps: (base?.steps ?? []).join('\n'),
     mistakes: (base?.mistakes ?? []).join('\n'),
     name: draft.name,
@@ -40,6 +41,7 @@ export default function ExerciseForm({ draft, mode, onSave, onClose }: {
       wNote: f.wNote.trim() || (start == null ? 'Bodyweight' : `${start} kg`),
       cue: f.cue.trim(),
       targets: f.targets.trim() || undefined,
+      equipment: f.equipment.trim() || undefined,
       steps: lines(f.steps),
       mistakes: lines(f.mistakes),
     });
@@ -107,6 +109,9 @@ export default function ExerciseForm({ draft, mode, onSave, onClose }: {
               className="mt-1 w-full rounded-lg border border-line bg-bg px-3 py-2" />
           </label>
 
+          <label htmlFor="ex-equipment" className="block"><span className="label">Equipment &amp; setup (optional)</span>
+            <input id="ex-equipment" placeholder="e.g. Cable machine · pulley at the top · rope" value={f.equipment} onChange={e => up({ equipment: e.target.value })} className={input} />
+          </label>
           <label htmlFor="ex-targets" className="block"><span className="label">Muscles worked (optional)</span>
             <input id="ex-targets" placeholder="e.g. Chest · front delts · triceps" value={f.targets} onChange={e => up({ targets: e.target.value })} className={input} />
           </label>

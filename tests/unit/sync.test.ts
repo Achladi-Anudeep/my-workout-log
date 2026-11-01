@@ -144,4 +144,20 @@ describe('sync between phone and laptop', () => {
     await new Promise(r => setTimeout(r, 200));
     expect(db.calls - before).toBeLessThan(60);
   });
+
+  it('syncs machine settings notes between devices', async () => {
+    const db = createDb();
+    const phone = await device(db);
+    phone.act().setMachineNote('leg-press', 'Seat 3');
+    await phone.settle();
+    const laptop = await device(db);
+    await laptop.settle();
+    expect(laptop.state().machineNotes['leg-press'].text).toBe('Seat 3');
+    laptop.act().setMachineNote('leg-press', 'Seat 4');
+    await laptop.settle();
+    await phone.settle();
+    expect(phone.state().machineNotes['leg-press'].text).toBe('Seat 4');
+    // the notes row never shows up as a routine
+    expect(phone.state().routines).toEqual([]);
+  });
 });

@@ -51,6 +51,8 @@ async function syncWeights() {
 /** False while the routines table is missing; routines then stay on this device. */
 let routinesReady = true;
 const activeRowId = () => `active-${userId}`;
+/** Machine-settings notes share the routines table as one row per account (no extra table to set up). */
+const notesRowId = () => `notes-${userId}`;
 
 async function syncRoutines() {
   if (!supabase || !userId) return;
@@ -75,11 +77,21 @@ async function syncRoutines() {
       if (error) throw error;
       act().markActiveRoutineSaved();
     }
+    const notesVersion = act().notesVersion;
+    if (notesVersion !== act().notesSyncedVersion) {
+      const { error } = await supabase.from('routines').upsert({
+        id: notesRowId(), user_id: userId, data: { notes: act().machineNotes }, deleted: false, updated_at: now(),
+      });
+      if (error) throw error;
+      act().markNotesSaved(notesVersion);
+    }
     const { data, error } = await supabase.from('routines').select('id, data, deleted');
     if (error) throw error;
     const rows = (data ?? []) as { id: string; data: any; deleted: boolean }[];
     const activeRow = rows.find(r => r.id === activeRowId());
-    act().applyRemoteRoutines(rows.filter(r => r.id !== activeRowId()) as RemoteRoutineRow[], activeRow?.data?.activeId ?? null);
+    const notesRow = rows.find(r => r.id === notesRowId());
+    act().applyRemoteRoutines(rows.filter(r => r.id !== activeRowId() && r.id !== notesRowId()) as RemoteRoutineRow[], activeRow?.data?.activeId ?? null);
+    act().applyRemoteNotes(notesRow?.data?.notes ?? null);
     routinesReady = true;
   } catch (err: any) {
     const missing = err?.code === '42P01' || err?.code === 'PGRST205' || /could not find the table|does not exist/i.test(err?.message ?? '');
@@ -133,7 +145,8 @@ async function syncNow() {
     await syncRoutines();
 
     // applyRemote may have queued items that were only on this device
-    if (act().pendingUp.length || (weightsReady && act().pendingWUp.length) || (routinesReady && act().pendingRUp.length)) again = true;
+    if (act().pendingUp.length || (weightsReady && act().pendingWUp.length)
+      || (routinesReady && (act().pendingRUp.length || act().notesVersion !== act().notesSyncedVersion))) again = true;
     patch({ mode: 'synced', lastSync: Date.now() });
   } catch (err: any) {
     const offline = typeof navigator !== 'undefined' && !navigator.onLine;
@@ -179,9 +192,9 @@ export const Sync = {
       const changed = s.pendingUp !== prev.pendingUp || s.pendingDel !== prev.pendingDel
         || s.pendingWUp !== prev.pendingWUp || s.pendingWDel !== prev.pendingWDel || (s.settingsDirty && !prev.settingsDirty)
         || s.pendingRUp !== prev.pendingRUp || s.pendingRDel !== prev.pendingRDel || (s.activeRoutineDirty && !prev.activeRoutineDirty)
-        || s.routines !== prev.routines;
+        || s.routines !== prev.routines || s.notesVersion !== prev.notesVersion;
       const hasWork = s.pendingUp.length || s.pendingDel.length || s.pendingWUp.length || s.pendingWDel.length || s.settingsDirty
-        || s.pendingRUp.length || s.pendingRDel.length || s.activeRoutineDirty;
+        || s.pendingRUp.length || s.pendingRDel.length || s.activeRoutineDirty || s.notesVersion !== s.notesSyncedVersion;
       if (changed && hasWork) scheduleSync();
     });
 
