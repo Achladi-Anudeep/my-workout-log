@@ -65,13 +65,45 @@ async function signedIn(req: Request): Promise<boolean> {
   }
 }
 
-function tiers(): Tier[] {
+/**
+ * Google retires model names over time, so ask which Flash models exist right now (newest first) and use those
+ * after the "-latest" alias. Cached while this function instance stays warm; falls back to the fixed list.
+ */
+let discovered: { at: number; flash: string[] } | null = null;
+export async function liveFlashModels(key: string): Promise<string[]> {
+  if (discovered && Date.now() - discovered.at < 6 * 3600_000) return discovered.flash;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3000);
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers: { 'x-goog-api-key': key }, signal: ctrl.signal });
+    clearTimeout(t);
+    if (!res.ok) return [];
+    const data = (await res.json()) as { models?: { name: string; supportedGenerationMethods?: string[] }[] };
+    const version = (n: string) => Number(/gemini-(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0);
+    const flash = (data.models ?? [])
+      .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+      .map(m => m.name.replace(/^models\//, ''))
+      .filter(n => /^gemini-[\d.]+-flash(-preview)?$/.test(n)) // plain Flash: not lite, image, audio, TTS or dated snapshots
+      .sort((a, b) => version(b) - version(a) || a.length - b.length);
+    discovered = { at: Date.now(), flash };
+    return flash;
+  } catch {
+    return [];
+  }
+}
+
+async function tiers(): Promise<Tier[]> {
   const out: Tier[] = [];
   const pro = env('GEMINI_PRO_KEY');
   const free = env('GEMINI_API_KEY');
+  const uniq = (xs: (string | undefined)[]) => [...new Set(xs.filter((m): m is string => !!m))];
   // Pro thinks before answering, so it gets more time; the free models are fast.
-  if (pro) out.push({ name: 'pro', key: pro, models: [env('GEMINI_PRO_MODEL'), ...PRO_MODELS].filter((m): m is string => !!m), perTry: 15000 });
-  if (free) out.push({ name: 'free', key: free, models: [env('GEMINI_MODEL'), ...FREE_MODELS].filter((m): m is string => !!m), perTry: 8000 });
+  if (pro) out.push({ name: 'pro', key: pro, models: uniq([env('GEMINI_PRO_MODEL'), ...PRO_MODELS]), perTry: 15000 });
+  if (free) {
+    const live = await liveFlashModels(free);
+    const [first, ...rest] = FREE_MODELS; // "-latest" alias first, Flash-Lite last
+    out.push({ name: 'free', key: free, models: uniq([env('GEMINI_MODEL'), first, ...live.slice(0, 2), ...rest]), perTry: 8000 });
+  }
   return out;
 }
 
@@ -86,7 +118,7 @@ async function gemini(body: Json): Promise<Result> {
   const left = () => DEADLINE_MS - (Date.now() - started);
   let busy = false;
   let lastError = 'no-model';
-  for (const tier of tiers()) {
+  for (const tier of await tiers()) {
     for (const model of tier.models) {
       if (left() < 4000) break;
       for (const [i, speed] of SPEED.entries()) {
@@ -147,7 +179,7 @@ export default async (req: Request): Promise<Response> => {
   if (req.method !== 'POST') return reply(405, { error: 'method' });
   if (Number(req.headers.get('content-length') ?? 0) > 2_000_000) return reply(413, { error: 'too-big' });
   if (!(await signedIn(req))) return reply(401, { error: 'sign-in' });
-  if (!tiers().length) return reply(503, { error: 'not-configured' });
+  if (!env('GEMINI_API_KEY') && !env('GEMINI_PRO_KEY')) return reply(503, { error: 'not-configured' });
 
   let body: Json;
   try { body = (await req.json()) as Json; } catch { return reply(400, { error: 'bad-json' }); }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import handler from '../../netlify/functions/ai';
+import handler, { liveFlashModels } from '../../netlify/functions/ai';
 
 const PROJECT = 'https://vzdeaxytytzrjjdwdpwk.supabase.co';
 const env = (globalThis as any).process.env;
@@ -17,6 +17,15 @@ function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: bo
   const calls: { url: string; body?: any }[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, body: init?.body ? JSON.parse(init.body as string) : undefined });
+    if (url.includes('/v1beta/models?')) {
+      return new Response(JSON.stringify({ models: [
+        { name: 'models/gemini-3.8-flash', supportedGenerationMethods: ['generateContent'] },
+        { name: 'models/gemini-3.5-flash-lite', supportedGenerationMethods: ['generateContent'] },
+        { name: 'models/gemini-3.5-flash', supportedGenerationMethods: ['generateContent'] },
+        { name: 'models/gemini-3.8-flash-image', supportedGenerationMethods: ['generateContent'] },
+        { name: 'models/text-embedding-005', supportedGenerationMethods: ['embedContent'] },
+      ] }), { status: 200 });
+    }
     if (url.endsWith('/auth/v1/user')) {
       const ok = (init?.headers as Record<string, string>).authorization === 'Bearer good';
       return new Response(JSON.stringify(ok ? { id: 'u1' } : { msg: 'bad' }), { status: ok ? 200 : 401 });
@@ -56,7 +65,7 @@ describe('AI function', () => {
     const calls = fakeNet('Keep your knees over your toes.');
     const res = await handler(req({ task: 'ask', question: 'Is this safe?', context: 'Exercise: Leg Press' }));
     expect(await res.json()).toMatchObject({ text: 'Keep your knees over your toes.', tier: 'free' });
-    const g = calls.find(c => c.url.includes('generativelanguage'))!;
+    const g = calls.find(c => c.url.includes(':generateContent'))!;
     expect(g.url).not.toContain('secret-key');
     expect(g.body.systemInstruction.parts[0].text).toContain('Exercise: Leg Press');
     expect(g.body.generationConfig.thinkingConfig).toEqual({ thinkingLevel: 'low' });
@@ -74,16 +83,16 @@ describe('AI function', () => {
     env.GEMINI_API_KEY = 'k';
     const calls = fakeNet('Lite answer', { overloadFirst: true });
     const res = await handler(req({ task: 'ask', question: 'q', context: 'c' }));
-    expect(await res.json()).toMatchObject({ text: 'Lite answer', model: 'gemini-2.5-flash' });
-    expect(calls.filter(c => c.url.includes('generativelanguage')).map(c => c.url.split('/models/')[1].split(':')[0]))
-      .toEqual(['gemini-flash-latest', 'gemini-2.5-flash']);
+    expect(await res.json()).toMatchObject({ text: 'Lite answer', model: 'gemini-3.8-flash' });
+    expect(calls.filter(c => c.url.includes(':generateContent')).map(c => c.url.split('/models/')[1].split(':')[0]))
+      .toEqual(['gemini-flash-latest', 'gemini-3.8-flash']);
   });
 
   it('a model that rejects one "thinking" setting is retried with the other style', async () => {
     env.GEMINI_API_KEY = 'k';
     const calls = fakeNet('ok', { rejectBudget: true });
     expect(await (await handler(req({ task: 'ask', question: 'q' }))).json()).toMatchObject({ text: 'ok' });
-    const sent = calls.filter(c => c.url.includes('generativelanguage')).map(c => c.body.generationConfig.thinkingConfig);
+    const sent = calls.filter(c => c.url.includes(':generateContent')).map(c => c.body.generationConfig.thinkingConfig);
     expect(sent).toEqual([{ thinkingLevel: 'low' }, { thinkingBudget: 0 }]);
   });
 
@@ -91,7 +100,7 @@ describe('AI function', () => {
     env.GEMINI_API_KEY = 'free-key'; env.GEMINI_PRO_KEY = 'pro-key';
     const calls = fakeNet('free answer', { pro: 'ok' });
     expect(await (await handler(req({ task: 'ask', question: 'q' }))).json()).toEqual({ text: 'Pro answer', model: 'gemini-pro-latest', tier: 'pro' });
-    expect(calls.filter(c => c.url.includes('generativelanguage'))).toHaveLength(1);
+    expect(calls.filter(c => c.url.includes(':generateContent'))).toHaveLength(1);
   });
 
   it('falls back to the free models when Pro has no billing or hits its daily cap', async () => {
@@ -107,11 +116,16 @@ describe('AI function', () => {
     const calls = fakeNet('Yes, 3 sets.');
     await handler(req({ task: 'ask', question: 'And how many sets?', context: 'Exercise: Leg Press',
       history: [{ role: 'user', text: 'Is leg press ok for my knee?' }, { role: 'model', text: 'Yes, to 90°.' }, { role: 'hacker', text: 'x' }] }));
-    const g = calls.find(c => c.url.includes('generativelanguage'))!;
+    const g = calls.find(c => c.url.includes(':generateContent'))!;
     expect(g.body.contents.map((c: any) => [c.role, c.parts[0].text])).toEqual([
       ['user', 'Is leg press ok for my knee?'], ['model', 'Yes, to 90°.'], ['user', 'And how many sets?'],
     ]);
     expect(g.body.systemInstruction.parts[0].text).toContain('Exercise: Leg Press');
+  });
+
+  it('finds the Flash models Google offers right now, newest first, skipping Lite/image variants', async () => {
+    fakeNet('x');
+    expect(await liveFlashModels('k')).toEqual(['gemini-3.8-flash', 'gemini-3.5-flash']);
   });
 
   it('identifies a machine only from your own exercise list', async () => {
