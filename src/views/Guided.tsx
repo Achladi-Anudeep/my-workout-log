@@ -13,6 +13,7 @@ import SetRows, { type OnRest } from '../components/exercise/SetRows';
 import SwapSheet from '../components/exercise/SwapSheet';
 import ExerciseHowTo from '../components/ExerciseHowTo';
 import Advice from '../components/Advice';
+import AskAI from '../components/ai/AskAI';
 
 const doneSets = (a: Active, e: Exercise) => (a.logs[e.id] ?? []).filter(r => r.done).length;
 const allDone = (a: Active, e: Exercise) => { const rows = a.logs[e.id] ?? []; return rows.length > 0 && rows.every(r => r.done); };
@@ -118,6 +119,7 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
         {canSwap && <button className="text-[14px] font-semibold text-accent" onClick={() => setSwap(true)} aria-label={`Swap ${e.name}`}>⇄ Machine busy? Swap</button>}
       </div>
       {howTo && <div className="rounded-xl border border-line bg-surface px-3 py-3"><ExerciseHowTo e={e} hideEquipment /></div>}
+      <AskAI key={e.id} e={e} />
       {swap && <SwapSheet e={e} inWorkout={inWorkout} onClose={() => setSwap(false)} />}
 
       <div className="fixed inset-x-0 z-20 px-4" style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>

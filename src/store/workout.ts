@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { DAY } from '../data/plan';
 import { isoDay, lastFor, programWeek, uid } from '../lib/utils';
 import { advise } from '../lib/coach';
+import { DEFAULT_PROFILE } from '../lib/ai';
 import { BUILTIN, BUILTIN_ID, DAY_IDS, clone, emptyDay, findRoutine, isBuiltin, toDay } from '../lib/routines';
 import type { Active, Day, DayId, Exercise, Routine, RoutineDay, Session, SetLog, WeightEntry } from '../types';
 
@@ -79,6 +80,9 @@ export interface WorkoutState {
 
   /** Replace an exercise in the running workout (machine busy). Swapping back restores the planned one. */
   swapExercise: (fromId: string, to: Exercise) => void;
+  /** What the AI knows about you (Plan → About me). */
+  aiProfile: string;
+  setAiProfile: (text: string) => void;
   /** Show one exercise at a time (index), or null for the list. */
   setGuided: (idx: number | null) => void;
 
@@ -271,6 +275,9 @@ export const useWorkout = create<WorkoutState>()(
       setTab: tab => set({ tab }),
       setStartDate: startDate => set({ startDate, settingsDirty: true }),
 
+      aiProfile: DEFAULT_PROFILE,
+      setAiProfile: text => set({ aiProfile: text.trim().slice(0, 1200) || DEFAULT_PROFILE }),
+
       setGuided: idx => set(s => {
         if (!s.active) return {};
         const a = { ...s.active };
@@ -363,7 +370,7 @@ export const useWorkout = create<WorkoutState>()(
         routines: s.routines, activeRoutineId: s.activeRoutineId, pendingRUp: s.pendingRUp, pendingRDel: s.pendingRDel,
         activeRoutineDirty: s.activeRoutineDirty,
         machineNotes: s.machineNotes, notesVersion: s.notesVersion, notesSyncedVersion: s.notesSyncedVersion,
-        photos: s.photos, pendingPUp: s.pendingPUp, pendingPDel: s.pendingPDel,
+        photos: s.photos, pendingPUp: s.pendingPUp, pendingPDel: s.pendingPDel, aiProfile: s.aiProfile,
       }),
     },
   ),

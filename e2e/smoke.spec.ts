@@ -39,6 +39,12 @@ test.describe('@smoke', () => {
     errs.assertNone();
   });
 
+  test('the AI helper is deployed and refuses requests without a signed-in account', async ({ request }) => {
+    test.skip(!process.env.BASE_URL, 'functions run on Netlify, not the local preview server');
+    const res = await request.post('/.netlify/functions/ai', { data: { task: 'ask', question: 'hi' } });
+    expect(res.status()).toBe(401);
+  });
+
   test('is installable and works offline after the first visit', async ({ page, context, request, browserName }) => {
     const manifest = await (await request.get('/manifest.webmanifest')).json();
     expect(manifest.display).toBe('standalone');

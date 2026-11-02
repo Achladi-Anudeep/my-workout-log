@@ -16,6 +16,7 @@ import MachineNote from '../components/exercise/MachineNote';
 import SetRows from '../components/exercise/SetRows';
 import { PhotoThumb } from '../components/exercise/MachinePhoto';
 import Guided from './Guided';
+import MachineFinder from '../components/ai/MachineFinder';
 import { swapOptions } from '../data/alternatives';
 import { useWakeLock } from '../lib/wakeLock';
 import { detailsOf } from '../data/details';
@@ -168,6 +169,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
   const today = weekdayId();
   const [sel, setSel] = useState<DayId>(active?.dayId ?? today);
   const [finishing, setFinishing] = useState(false);
+  const [finder, setFinder] = useState(false);
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
   const { routine, plan, byId } = useActivePlan();
@@ -194,6 +196,12 @@ export default function Today({ onRest }: { onRest: OnRest }) {
         <span className="block text-muted">{pw.deload ? 'Easy week due: drop weights ~20% this week.' : `${pw.rir}. Form over weight.`}</span>
       </div>
       <WeightQuickRow />
+      <button id="machine-finder" onClick={() => setFinder(true)} className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-2.5 text-left">
+        <span aria-hidden className="text-[20px]">📷</span>
+        <span className="min-w-0 flex-1"><span className="block text-[14px] font-semibold">What's this machine?</span><span className="block text-[12px] text-muted">Snap it, AI tells you which exercise and how</span></span>
+        <span className="text-accent">›</span>
+      </button>
+      {finder && <MachineFinder onClose={() => setFinder(false)} />}
       <DayStrip sel={sel} onSel={setSel} today={today} plan={plan} />
       <section>
         <div className="flex items-center gap-2"><Plate color={day.plate} size={14} /><span className="label">{day.short}{sel === today ? ' · today' : ''}{day.home ? ' · at home' : ''} · {routineName(routine)}</span></div>

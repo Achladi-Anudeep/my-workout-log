@@ -306,6 +306,32 @@ test.describe('@local', () => {
     await expect(page.locator('html')).not.toHaveAttribute('data-theme', /./);
   });
 
+  test('AI features ask you to sign in when there is no account (nothing is sent)', async ({ page }) => {
+    let called = false;
+    await page.route('**/.netlify/functions/ai', r => { called = true; return r.fulfill({ status: 500 }); });
+    await page.locator('#day-wed').click();
+    await page.locator('article', { hasText: 'Leg Press' }).first().getByRole('button', { name: 'Show how to do Leg Press' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Leg Press' });
+    await sheet.getByRole('button', { name: '✨ Ask AI about this exercise' }).click();
+    await sheet.getByRole('button', { name: 'Is this safe for my knee? Anything to change?' }).click();
+    await expect(sheet.locator('.ai-error')).toContainText('Sign in');
+    await sheet.getByRole('button', { name: 'Close', exact: true }).first().click();
+
+    await tab(page, 'today');
+    await page.locator('#machine-finder').click();
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==', 'base64');
+    await page.locator('#machine-finder-input').setInputFiles({ name: 'm.png', mimeType: 'image/png', buffer: png });
+    await expect(page.getByRole('dialog', { name: "What's this machine?" }).locator('.ai-error')).toContainText('Sign in');
+    await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
+
+    await tab(page, 'progress');
+    await page.locator('#ai-review').click();
+    await expect(page.locator('.ai-error')).toContainText('Sign in');
+    await tab(page, 'plan');
+    await expect(page.locator('main')).toContainText('About me (for AI)');
+    expect(called).toBe(false);
+  });
+
   test('swap a busy machine during a workout, and swap back', async ({ page }) => {
     await page.locator('#day-tue').click();
     await expect(page.getByRole('button', { name: 'Swap Lat Pulldown' })).toHaveCount(0); // only during a workout

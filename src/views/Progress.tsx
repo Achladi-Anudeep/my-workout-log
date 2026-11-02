@@ -6,6 +6,7 @@ import { useWorkout } from '../store/workout';
 import { fmtW, lastFor, programWeek, range } from '../lib/utils';
 import { advise, type AdviceKind } from '../lib/coach';
 import Advice from '../components/Advice';
+import WeekReview from '../components/ai/WeekReview';
 
 function Spark({ pts }: { pts: number[] }) {
   if (pts.length < 2) return <div className="h-8 w-24" />;
@@ -49,6 +50,7 @@ export default function Progress() {
     <div className="grid gap-4">
       <h2 className="disp text-[36px] font-extrabold uppercase leading-none">Progress</h2>
       <BodyWeight />
+      <WeekReview />
       <div className="label mt-2">Lifts</div>
       <p className="-mt-2 text-[14px] text-muted">The coach checks your last workouts: add weight when every set hits the top of the range, stay and add reps while building, go lighter after two tough workouts in a row. Tap a suggestion to see why.</p>
       {(ready > 0 || lighter > 0) && <div className="flex flex-wrap gap-2">{ready > 0 && <Chip tone="good">▲ {ready} ready to go up</Chip>}{lighter > 0 && <Chip tone="warn">▼ {lighter} to go lighter</Chip>}</div>}
