@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { cleanStep, useDemos, ytUrl } from '../lib/exercisedb';
 import ExerciseHowTo from '../components/ExerciseHowTo';
 import DemoGif from '../components/exercise/DemoGif';
+import MachinePhoto from '../components/exercise/MachinePhoto';
 import MachineNote from '../components/exercise/MachineNote';
 import { DEMO_NOTE, demoGif } from '../data/demos';
 import { detailsOf } from '../data/details';
@@ -35,6 +36,7 @@ function PinnedDemoView({ title, query, exercise, onBack }: DemoTarget & { exerc
       <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{title}</h2>
       <DemoGif e={exercise} className="mx-auto aspect-square w-full max-w-sm" />
       {!exercise.demo && DEMO_NOTE[exercise.id] && <p className="demo-note rounded-lg bg-sunk px-3 py-2 text-[13px]">{DEMO_NOTE[exercise.id]}</p>}
+      <MachinePhoto exId={exercise.id} />
       <MachineNote exId={exercise.id} />
       <div className="rounded-xl border border-line bg-surface px-4 py-3"><ExerciseHowTo e={exercise} /></div>
       <div className="flex flex-wrap gap-x-4 gap-y-2">

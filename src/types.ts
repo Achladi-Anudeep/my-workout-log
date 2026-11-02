@@ -69,7 +69,11 @@ export interface WeightEntry { id: string; at: number; kg: number; }
 
 export interface SetLog { w: string; r: string; done: boolean; }
 /** A workout in progress. `day` is a snapshot taken at start, so editing the routine mid-workout can't break it. */
-export interface Active { dayId: DayId; startedAt: number; logs: Record<string, SetLog[]>; routineId?: string; day?: Day; }
+export interface Active {
+  dayId: DayId; startedAt: number; logs: Record<string, SetLog[]>; routineId?: string; day?: Day;
+  /** Guided mode: which exercise is on screen. Unset = the normal list. */
+  guided?: number;
+}
 
 export interface LoggedSet { w: number | null; r: number; }
 export interface SessionExercise { id: string; name: string; unit: Unit; sets: LoggedSet[]; /** Name of the planned exercise this replaced, when swapped. */ swappedFor?: string; }

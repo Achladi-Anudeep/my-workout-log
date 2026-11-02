@@ -58,6 +58,9 @@ test.describe('@local', () => {
     await tab(page, 'today');
     await page.locator('#day-mon').click();
     await expect(page.locator('main')).toContainText('Last: 12.5×15');
+    // the coach says what to do next time, and why
+    await page.locator('article', { hasText: 'Chest Press' }).first().getByRole('button', { name: /Stay at 12.5 kg/ }).click();
+    await expect(page.locator('main')).toContainText('Add weight once every set hits 15 reps');
   });
 
   test('logs body weight with validation and shows the trend', async ({ page }) => {
@@ -227,6 +230,80 @@ test.describe('@local', () => {
     await sheet.getByRole('button', { name: 'Close' }).click();
     await page.locator('#day-fri').click();
     await expect(page.locator('article', { hasText: 'Plank' }).last().locator('img[alt="Demo of Plank"]')).toBeVisible();
+  });
+
+  test('guided mode: one exercise at a time, supersets alternate, rest timer says what is next', async ({ page }) => {
+    await tab(page, 'plan');
+    await page.locator('button', { hasText: 'Gym PPL v2' }).click();
+    await page.locator('#set-active').click();
+    await tab(page, 'today');
+    await page.locator('#day-thu').click();
+    await page.locator('#start-guided').click();
+    await expect(page.locator('#guided-pos')).toHaveText('1 / 7');
+    await expect(page.locator('#guided h2')).toHaveText('Incline Press');
+    await expect(page.locator('#guided')).toContainText('Equipment: Two dumbbells');
+    await expect(page.locator('#guided img[alt="Demo of Incline Press"]')).toBeVisible();
+
+    // finishing all sets moves on and the rest timer names the next exercise
+    for (const i of [1, 2, 3]) {
+      await page.getByRole('button', { name: `Mark set ${i} done` }).click();
+      if (i < 3) await page.getByRole('button', { name: 'Skip' }).click();
+    }
+    await expect(page.getByText('Next up: Flies')).toBeVisible();
+    await page.getByRole('button', { name: 'Skip' }).click();
+    await expect(page.locator('#guided h2')).toHaveText('Flies');
+
+    // jump to the superset: A1 → A2 with no rest, A2 → back to A1 after resting
+    await page.locator('#guided-next').click();
+    await page.locator('#guided-next').click();
+    await expect(page.locator('#guided h2')).toHaveText('Overhead Triceps Extension');
+    await page.getByRole('button', { name: 'Mark set 1 done' }).click();
+    await expect(page.getByText('Resting')).toHaveCount(0);
+    await expect(page.locator('#guided h2')).toHaveText('Superset Curl');
+    await page.getByRole('button', { name: 'Mark set 1 done' }).click();
+    await expect(page.getByText('Overhead Triceps Extension · set 2')).toBeVisible();
+    await page.getByRole('button', { name: 'Skip' }).click();
+    await expect(page.locator('#guided h2')).toHaveText('Overhead Triceps Extension');
+
+    // survives a reload, and the list view is one tap away
+    await page.reload();
+    await expect(page.locator('#guided h2')).toHaveText('Overhead Triceps Extension');
+    await page.locator('#guided-exit').click();
+    await expect(page.locator('#guided-open')).toBeVisible();
+    await page.locator('#guided-open').click(); // opens at the first exercise that isn't finished
+    await expect(page.locator('#guided h2')).toHaveText('Flies');
+    await page.locator('#guided-prev').click();
+    await expect(page.locator('#guided-pos')).toHaveText('1 / 7');
+  });
+
+  test('add a photo of your gym machine; it shows on the card and in the demo', async ({ page }) => {
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==', 'base64');
+    await page.locator('#day-wed').click();
+    const card = page.locator('article', { hasText: 'Leg Press' }).first();
+    await card.getByRole('button', { name: 'Show how to do Leg Press' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Leg Press' });
+    await sheet.locator('#photo-input-leg-press').setInputFiles({ name: 'machine.png', mimeType: 'image/png', buffer: png });
+    await expect(sheet.locator('img[alt="My photo of the machine"]')).toBeVisible();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await expect(card.locator('img[alt="My photo of the machine"]')).toBeVisible();
+    await page.reload();
+    await page.locator('#day-wed').click();
+    await expect(page.locator('article', { hasText: 'Leg Press' }).first().locator('img[alt="My photo of the machine"]')).toBeVisible();
+  });
+
+  test('day and night mode can be picked and are remembered', async ({ page }) => {
+    await tab(page, 'plan');
+    await page.locator('#theme-dark').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(bg).toBe('rgb(13, 15, 19)');
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await tab(page, 'plan');
+    await page.locator('#theme-light').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await page.locator('#theme-auto').click();
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme', /./);
   });
 
   test('swap a busy machine during a workout, and swap back', async ({ page }) => {

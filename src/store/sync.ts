@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
+import { PhotoStore } from '../lib/photoStore';
 import { act, useWorkout, type RemoteRoutineRow, type RemoteRow, type RemoteWeightRow } from './workout';
 
 export type SyncMode = 'unconfigured' | 'signed-out' | 'syncing' | 'synced' | 'offline';
@@ -100,6 +101,56 @@ async function syncRoutines() {
   }
 }
 
+/** False while the photos table is missing; photos then stay on this device. */
+let photosReady = true;
+const photoRowId = (exId: string) => `${userId}:${exId}`;
+
+async function syncPhotos() {
+  if (!supabase || !userId) return;
+  try {
+    const now = () => new Date().toISOString();
+    for (const exId of [...act().pendingPUp]) {
+      const at = act().photos[exId];
+      const data = at != null ? await PhotoStore.get(exId) : null;
+      if (at == null || !data) { act().markPhotoUploaded(exId); continue; }
+      const { error } = await supabase.from('photos').upsert({ id: photoRowId(exId), user_id: userId, ex_id: exId, data, at, deleted: false, updated_at: now() });
+      if (error) throw error;
+      act().markPhotoUploaded(exId);
+    }
+    for (const exId of [...act().pendingPDel]) {
+      const { error } = await supabase.from('photos').upsert({ id: photoRowId(exId), user_id: userId, ex_id: exId, data: null, at: Date.now(), deleted: true, updated_at: now() });
+      if (error) throw error;
+      act().markPhotoDeleted(exId);
+    }
+    // Pull only the list first; download an image only when it's newer than the one on this device.
+    const { data, error } = await supabase.from('photos').select('id, ex_id, at, deleted');
+    if (error) throw error;
+    const rows = (data ?? []) as { id: string; ex_id: string; at: number; deleted: boolean }[];
+    const remote = new Set(rows.map(r => r.ex_id));
+    for (const r of rows) {
+      const s = act();
+      if (s.pendingPUp.includes(r.ex_id) || s.pendingPDel.includes(r.ex_id)) continue;
+      const local = s.photos[r.ex_id];
+      if (r.deleted) {
+        if (local != null && local <= Number(r.at)) { await PhotoStore.del(r.ex_id); act().photoGone(r.ex_id); }
+      } else if (local == null || Number(r.at) > local) {
+        const { data: one, error: e2 } = await supabase.from('photos').select('data').eq('id', r.id).maybeSingle();
+        if (e2) throw e2;
+        if (one?.data) { await PhotoStore.put(r.ex_id, one.data as string); act().photoArrived(r.ex_id, Number(r.at)); }
+      } else if (Number(r.at) < local) {
+        act().setPhoto(r.ex_id, local); // this device has the newer one
+      }
+    }
+    // Photos taken before signing in, or on a device that was offline, go up too.
+    for (const exId of Object.keys(act().photos)) if (!remote.has(exId)) act().setPhoto(exId, act().photos[exId]);
+    photosReady = true;
+  } catch (err: any) {
+    const missing = err?.code === '42P01' || err?.code === 'PGRST205' || /could not find the table|does not exist/i.test(err?.message ?? '');
+    if (missing) { photosReady = false; return; }
+    throw err;
+  }
+}
+
 /** Push pending changes, then pull everything. Safe to call often; calls coalesce. */
 async function syncNow() {
   if (!supabase || !userId) return;
@@ -143,10 +194,12 @@ async function syncNow() {
 
     await syncWeights();
     await syncRoutines();
+    await syncPhotos();
 
     // applyRemote may have queued items that were only on this device
     if (act().pendingUp.length || (weightsReady && act().pendingWUp.length)
-      || (routinesReady && (act().pendingRUp.length || act().notesVersion !== act().notesSyncedVersion))) again = true;
+      || (routinesReady && (act().pendingRUp.length || act().notesVersion !== act().notesSyncedVersion))
+      || (photosReady && (act().pendingPUp.length || act().pendingPDel.length))) again = true;
     patch({ mode: 'synced', lastSync: Date.now() });
   } catch (err: any) {
     const offline = typeof navigator !== 'undefined' && !navigator.onLine;
@@ -192,9 +245,11 @@ export const Sync = {
       const changed = s.pendingUp !== prev.pendingUp || s.pendingDel !== prev.pendingDel
         || s.pendingWUp !== prev.pendingWUp || s.pendingWDel !== prev.pendingWDel || (s.settingsDirty && !prev.settingsDirty)
         || s.pendingRUp !== prev.pendingRUp || s.pendingRDel !== prev.pendingRDel || (s.activeRoutineDirty && !prev.activeRoutineDirty)
-        || s.routines !== prev.routines || s.notesVersion !== prev.notesVersion;
+        || s.routines !== prev.routines || s.notesVersion !== prev.notesVersion
+        || s.pendingPUp !== prev.pendingPUp || s.pendingPDel !== prev.pendingPDel;
       const hasWork = s.pendingUp.length || s.pendingDel.length || s.pendingWUp.length || s.pendingWDel.length || s.settingsDirty
-        || s.pendingRUp.length || s.pendingRDel.length || s.activeRoutineDirty || s.notesVersion !== s.notesSyncedVersion;
+        || s.pendingRUp.length || s.pendingRDel.length || s.activeRoutineDirty || s.notesVersion !== s.notesSyncedVersion
+        || s.pendingPUp.length || s.pendingPDel.length;
       if (changed && hasWork) scheduleSync();
     });
 

@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DAY } from '../data/plan';
-import { isoDay, lastFor, uid } from '../lib/utils';
+import { isoDay, lastFor, programWeek, uid } from '../lib/utils';
+import { advise } from '../lib/coach';
 import { BUILTIN, BUILTIN_ID, DAY_IDS, clone, emptyDay, findRoutine, isBuiltin, toDay } from '../lib/routines';
 import type { Active, Day, DayId, Exercise, Routine, RoutineDay, Session, SetLog, WeightEntry } from '../types';
 
@@ -61,15 +62,29 @@ export interface WorkoutState {
   notesVersion: number;
   notesSyncedVersion: number;
   setMachineNote: (exId: string, text: string) => void;
+
+  /** Which exercises have a machine photo on this device (exercise id → when it was taken). The images are in IndexedDB. */
+  photos: Record<string, number>;
+  pendingPUp: string[];
+  pendingPDel: string[];
+  setPhoto: (exId: string, at: number) => void;
+  removePhoto: (exId: string) => void;
+  /** A newer photo (or a delete) arrived from another device. */
+  photoArrived: (exId: string, at: number) => void;
+  photoGone: (exId: string) => void;
+  markPhotoUploaded: (exId: string) => void;
+  markPhotoDeleted: (exId: string) => void;
   applyRemoteNotes: (remote: MachineNotes | null) => void;
   markNotesSaved: (version: number) => void;
 
   /** Replace an exercise in the running workout (machine busy). Swapping back restores the planned one. */
   swapExercise: (fromId: string, to: Exercise) => void;
+  /** Show one exercise at a time (index), or null for the list. */
+  setGuided: (idx: number | null) => void;
 
   setTab: (t: Tab) => void;
   setStartDate: (d: string) => void;
-  start: (dayId: DayId) => void;
+  start: (dayId: DayId, guided?: boolean) => void;
   edit: (exId: string, i: number, patch: Partial<SetLog>) => void;
   addSet: (exId: string) => void;
   removeSet: (exId: string) => void;
@@ -195,6 +210,24 @@ export const useWorkout = create<WorkoutState>()(
 
       machineNotes: {},
       notesVersion: 0,
+
+      photos: {},
+      pendingPUp: [],
+      pendingPDel: [],
+      setPhoto: (exId, at) => set(s => ({
+        photos: { ...s.photos, [exId]: at },
+        pendingPUp: s.pendingPUp.includes(exId) ? s.pendingPUp : [...s.pendingPUp, exId],
+        pendingPDel: s.pendingPDel.filter(x => x !== exId),
+      })),
+      removePhoto: exId => set(s => {
+        const photos = { ...s.photos };
+        delete photos[exId];
+        return { photos, pendingPUp: s.pendingPUp.filter(x => x !== exId), pendingPDel: s.pendingPDel.includes(exId) ? s.pendingPDel : [...s.pendingPDel, exId] };
+      }),
+      photoArrived: (exId, at) => set(s => ({ photos: { ...s.photos, [exId]: at } })),
+      photoGone: exId => set(s => { const photos = { ...s.photos }; delete photos[exId]; return { photos }; }),
+      markPhotoUploaded: exId => set(s => ({ pendingPUp: s.pendingPUp.filter(x => x !== exId) })),
+      markPhotoDeleted: exId => set(s => ({ pendingPDel: s.pendingPDel.filter(x => x !== exId) })),
       notesSyncedVersion: 0,
       setMachineNote: (exId, text) => set(s => ({
         machineNotes: { ...s.machineNotes, [exId]: { text: text.slice(0, 200), at: Date.now() } },
@@ -238,17 +271,25 @@ export const useWorkout = create<WorkoutState>()(
       setTab: tab => set({ tab }),
       setStartDate: startDate => set({ startDate, settingsDirty: true }),
 
-      start: dayId => {
+      setGuided: idx => set(s => {
+        if (!s.active) return {};
+        const a = { ...s.active };
+        if (idx == null) delete a.guided; else a.guided = Math.max(0, Math.min(idx, activeDay(a).exercises.length - 1));
+        return { active: a };
+      }),
+
+      start: (dayId, guided = false) => {
         const routine = findRoutine(get().routines, get().activeRoutineId);
         const day = clone(toDay(routine, dayId));
         const logs: Record<string, SetLog[]> = {};
+        const deload = programWeek(get().startDate).deload;
         day.exercises.forEach(e => {
-          const last = lastFor(get().sessions, e.id);
-          const lw = last?.e.sets[0]?.w;
-          const w = lw != null ? String(lw) : e.start != null ? String(e.start) : '';
+          // Prefill the weight the coach suggests (add, stay, or go lighter).
+          const kg = advise(get().sessions, e, { deload }).weight;
+          const w = kg != null && kg > 0 ? String(kg) : '';
           logs[e.id] = Array.from({ length: e.sets }, () => ({ w, r: '', done: false }));
         });
-        set({ active: { dayId, startedAt: Date.now(), logs, routineId: routine.id, day } });
+        set({ active: { dayId, startedAt: Date.now(), logs, routineId: routine.id, day, ...(guided ? { guided: 0 } : {}) } });
       },
 
       edit: (exId, i, patch) => set(s => {
@@ -322,6 +363,7 @@ export const useWorkout = create<WorkoutState>()(
         routines: s.routines, activeRoutineId: s.activeRoutineId, pendingRUp: s.pendingRUp, pendingRDel: s.pendingRDel,
         activeRoutineDirty: s.activeRoutineDirty,
         machineNotes: s.machineNotes, notesVersion: s.notesVersion, notesSyncedVersion: s.notesSyncedVersion,
+        photos: s.photos, pendingPUp: s.pendingPUp, pendingPDel: s.pendingPDel,
       }),
     },
   ),

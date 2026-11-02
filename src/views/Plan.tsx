@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Chip, Plate } from '../components/ui';
 import AccountCard from '../components/AccountCard';
+import ThemeCard from '../components/ThemeCard';
 import RoutineEditor from '../components/routines/RoutineEditor';
 import DayEditor from '../components/routines/DayEditor';
 import { act, useWorkout } from '../store/workout';
@@ -101,6 +102,8 @@ function PlanHome({ open }: { open: (id: string) => void }) {
       </section>
 
       <AccountCard />
+
+      <ThemeCard />
 
       {RULES.map(([h, items]) => (
         <section key={h} className="rounded-2xl border border-line bg-surface px-4 py-3">

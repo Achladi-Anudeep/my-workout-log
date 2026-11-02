@@ -3,7 +3,9 @@ import { useActivePlan, useAllExercises } from '../lib/useRoutine';
 import { Chip } from '../components/ui';
 import BodyWeight from '../components/BodyWeight';
 import { useWorkout } from '../store/workout';
-import { fmtW, progressStatus, range } from '../lib/utils';
+import { fmtW, lastFor, programWeek, range } from '../lib/utils';
+import { advise, type AdviceKind } from '../lib/coach';
+import Advice from '../components/Advice';
 
 function Spark({ pts }: { pts: number[] }) {
   if (pts.length < 2) return <div className="h-8 w-24" />;
@@ -20,47 +22,47 @@ function Spark({ pts }: { pts: number[] }) {
   );
 }
 
-const ORDER = { ready: 0, building: 1, new: 2 } as const;
+const ORDER: Record<AdviceKind, number> = { up: 0, harder: 0, down: 1, comeback: 1, 'easy-week': 2, hold: 3, new: 4 };
 
 export default function Progress() {
   const sessions = useWorkout(s => s.sessions);
+  const startDate = useWorkout(s => s.startDate);
+  const deload = programWeek(startDate).deload;
   const { plan } = useActivePlan();
   const allEx = useAllExercises();
   // Exercises in the active routine, plus anything else you've actually logged.
   const loggedIds = new Set(sessions.flatMap(s => s.ex.map(e => e.id)));
   const inPlan = new Set(plan.flatMap(d => d.exercises.map(e => e.id)));
   const rows = allEx.filter(e => inPlan.has(e.id) || loggedIds.has(e.id)).map(e => {
-    const st = progressStatus(sessions, e);
+    const adv = advise(sessions, e, { deload });
+    const last = lastFor(sessions, e.id);
     const hist = sessions.slice().reverse()
       .map(s => s.ex.find(x => x.id === e.id))
       .filter((x): x is NonNullable<typeof x> => !!x && x.sets.length > 0)
       .map(x => (e.start != null ? Math.max(...x.sets.map(s => s.w ?? 0)) : Math.max(...x.sets.map(s => s.r))));
-    return { e, st, hist };
-  }).sort((a, b) => ORDER[a.st.kind] - ORDER[b.st.kind]);
-  const ready = rows.filter(r => r.st.kind === 'ready').length;
+    return { e, adv, last, hist };
+  }).sort((a, b) => ORDER[a.adv.kind] - ORDER[b.adv.kind]);
+  const ready = rows.filter(r => r.adv.kind === 'up' || r.adv.kind === 'harder').length;
+  const lighter = rows.filter(r => r.adv.kind === 'down').length;
 
   return (
     <div className="grid gap-4">
       <h2 className="disp text-[36px] font-extrabold uppercase leading-none">Progress</h2>
       <BodyWeight />
       <div className="label mt-2">Lifts</div>
-      <p className="-mt-2 text-[14px] text-muted">Add weight only when all 3 sets hit the top of the rep range with good form. Then add 2.5–5% and drop back to the bottom of the range.</p>
-      {ready > 0 && <div><Chip tone="good">▲ {ready} exercise{ready > 1 ? 's' : ''} ready to progress</Chip></div>}
+      <p className="-mt-2 text-[14px] text-muted">The coach checks your last workouts: add weight when every set hits the top of the range, stay and add reps while building, go lighter after two tough workouts in a row. Tap a suggestion to see why.</p>
+      {(ready > 0 || lighter > 0) && <div className="flex flex-wrap gap-2">{ready > 0 && <Chip tone="good">▲ {ready} ready to go up</Chip>}{lighter > 0 && <Chip tone="warn">▼ {lighter} to go lighter</Chip>}</div>}
       <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-        {rows.map(({ e, st, hist }, i) => (
+        {rows.map(({ e, adv, last, hist }, i) => (
           <div key={e.id} className={`flex items-center gap-3 px-4 py-3 ${i ? 'border-t border-line' : ''}`}>
             <div className="min-w-0 flex-1">
               <div className="truncate text-[15px] font-semibold">{e.name}</div>
               <div className="text-[12px] text-muted">{exDays(plan, e.id).join(' · ') || 'Not in active routine'} · target {e.sets}×{range(e)}</div>
-              <div className="mt-1">
-                {st.kind === 'ready' && <Chip tone="good">Go {st.next != null ? `${fmtW(st.next)} kg` : 'harder'}</Chip>}
-                {st.kind === 'building' && <Chip tone="accent">Building reps</Chip>}
-                {st.kind === 'new' && <Chip tone="muted">Not logged · start {e.wNote.toLowerCase()}</Chip>}
-              </div>
+              <div className="mt-1"><Advice kind={adv.kind} title={adv.title} detail={adv.detail} /></div>
             </div>
             <Spark pts={hist} />
             <div className="w-16 text-right">
-              <div className="num text-[17px] font-bold">{st.last ? (e.start != null ? fmtW(st.last.e.sets[0].w) : `${st.last.e.sets[0].r}${e.unit === 'sec' ? 's' : ''}`) : '—'}</div>
+              <div className="num text-[17px] font-bold">{last ? (e.start != null ? fmtW(last.e.sets[0].w) : `${last.e.sets[0].r}${e.unit === 'sec' ? 's' : ''}`) : '—'}</div>
               <div className="text-[11px] text-muted">{e.start != null ? 'kg last' : e.unit === 'sec' ? 'hold last' : 'reps last'}</div>
             </div>
           </div>

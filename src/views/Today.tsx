@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { CheckIcon as Check, Chip, Plate } from '../components/ui';
+import { Chip, Plate } from '../components/ui';
 import { act, activeDay, useWorkout } from '../store/workout';
 import { useActivePlan } from '../lib/useRoutine';
 import { routineName } from '../lib/routines';
-import { isoDay, mmss, pad, programWeek, progressStatus, range, fmtW, weekdayId } from '../lib/utils';
+import { isoDay, lastFor, mmss, pad, programWeek, range, fmtW, weekdayId } from '../lib/utils';
+import { advise } from '../lib/coach';
+import Advice from '../components/Advice';
 import type { Active, Day, DayId, Exercise, Session } from '../types';
 import WeightSheet from '../components/WeightSheet';
 import ExerciseHowTo from '../components/ExerciseHowTo';
@@ -11,6 +13,9 @@ import DemoGif from '../components/exercise/DemoGif';
 import DemoSheet from '../components/exercise/DemoSheet';
 import SwapSheet from '../components/exercise/SwapSheet';
 import MachineNote from '../components/exercise/MachineNote';
+import SetRows from '../components/exercise/SetRows';
+import { PhotoThumb } from '../components/exercise/MachinePhoto';
+import Guided from './Guided';
 import { swapOptions } from '../data/alternatives';
 import { useWakeLock } from '../lib/wakeLock';
 import { detailsOf } from '../data/details';
@@ -55,15 +60,16 @@ function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: 
   const targets = det?.targets;
   const inWorkout = active ? activeDay(active).exercises.map(x => x.id) : [];
   const canSwap = !!active && swapOptions(e, inWorkout).length > 0;
-  const st = progressStatus(sessions, e);
+  const startDate = useWorkout(s => s.startDate);
+  const adv = advise(sessions, e, { deload: programWeek(startDate).deload });
+  const last = lastFor(sessions, e.id);
   const rows = active?.logs[e.id];
-  const bw = e.start == null;
   const doneCount = rows?.filter(r => r.done).length ?? 0;
   return (
     <article className="rounded-2xl border border-line bg-surface">
       <header className="flex items-start gap-3 px-4 pt-4">
         <button className="relative shrink-0" onClick={() => setSheet('demo')} aria-label={`Show how to do ${e.name}`}>
-          <DemoGif e={e} size={72} />
+          <span className="flex gap-1.5"><DemoGif e={e} size={72} /><PhotoThumb exId={e.id} /></span>
           <span className="num absolute -left-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-ink px-1 text-[11px] font-bold text-bg">{idx + 1}</span>
         </button>
         <div className="min-w-0 flex-1">
@@ -82,9 +88,8 @@ function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: 
       )}
       <div className="mx-4 mt-2"><MachineNote exId={e.id} compact /></div>
       <div className="flex flex-wrap items-center gap-2 px-4 pt-2 text-[13px]">
-        {st.kind === 'ready' && <Chip tone="good">▲ Ready to progress{st.next != null ? ` · try ${fmtW(st.next)} kg` : ' · harder variation'}</Chip>}
-        {st.last && <span className="text-muted">Last: <span className="num text-ink">{st.last.e.sets.map(s => `${fmtW(s.w)}×${s.r}`).join('  ')}</span></span>}
-        {!st.last && <span className="text-muted">First time · start at {e.wNote.toLowerCase()}</span>}
+        <Advice kind={adv.kind} title={adv.title} detail={adv.detail} />
+        {last && <span className="text-muted">Last: <span className="num text-ink">{last.e.sets.map(x => `${fmtW(x.w)}×${x.r}`).join('  ')}</span></span>}
         <span className="ml-auto flex items-center gap-3">
           {canSwap && <button className="text-[13px] font-semibold text-accent" onClick={() => setSheet('swap')} aria-label={`Swap ${e.name}`}>⇄ Swap</button>}
           <button className="text-[13px] font-semibold text-accent" aria-expanded={cue} onClick={() => setCue(!cue)}>{cue ? 'Hide details' : 'How to do it'}</button>
@@ -93,37 +98,7 @@ function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: 
       {cue && <div className="mx-4 mt-3 rounded-xl border border-line bg-bg px-3 py-3"><ExerciseHowTo e={e} hideEquipment /></div>}
       {sheet === 'demo' && <DemoSheet e={e} onClose={() => setSheet(null)} />}
       {sheet === 'swap' && <SwapSheet e={e} inWorkout={inWorkout} onClose={() => setSheet(null)} />}
-      {rows ? (
-        <div className="px-3 pb-3 pt-3">
-          <div className="grid grid-cols-[28px_1fr_1fr_48px] gap-2 px-1 pb-1">
-            <span className="label">Set</span><span className="label">{bw ? 'Added kg' : 'kg'}</span><span className="label">{e.unit === 'sec' ? 'Seconds' : 'Reps'}</span><span />
-          </div>
-          <div className="grid gap-1.5">
-            {rows.map((r, i) => (
-              <div key={i} className={`grid grid-cols-[28px_1fr_1fr_48px] items-center gap-2 rounded-xl px-1 py-1 ${r.done ? 'bg-goodSoft' : ''}`}>
-                <span className="num text-center text-[14px] font-bold text-muted">{i + 1}</span>
-                <input id={`${e.id}-w-${i}`} inputMode="decimal" type="number" step="0.5" placeholder={bw ? 'BW' : '—'} value={r.w}
-                  onChange={ev => act().edit(e.id, i, { w: ev.target.value })}
-                  className="num h-11 w-full min-w-0 rounded-lg border border-line bg-bg px-3 text-ink placeholder:text-muted" />
-                <input id={`${e.id}-r-${i}`} inputMode="numeric" type="number" placeholder={`${e.max}`} value={r.r}
-                  onChange={ev => act().edit(e.id, i, { r: ev.target.value })}
-                  className="num h-11 w-full min-w-0 rounded-lg border border-line bg-bg px-3 text-ink placeholder:text-muted" />
-                <button aria-label={`Mark set ${i + 1} done`} onClick={() => {
-                  const done = !r.done;
-                  act().edit(e.id, i, { done, r: done && r.r === '' ? String(e.max) : r.r });
-                  if (done && e.rest > 0) onRest(e.rest, `${e.name} · set ${i + 1}`);
-                }} className={`grid h-11 w-12 place-items-center rounded-lg border transition ${r.done ? 'border-good bg-good text-surface' : 'border-line bg-surface text-muted'}`}>
-                  <Check />
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="mt-2 flex gap-2 px-1">
-            <button className="rounded-lg px-2 py-1.5 text-[13px] font-semibold text-accent" onClick={() => act().addSet(e.id)}>+ Add set</button>
-            {rows.length > 1 && <button className="rounded-lg px-2 py-1.5 text-[13px] font-semibold text-muted" onClick={() => act().removeSet(e.id)}>Remove last</button>}
-          </div>
-        </div>
-      ) : <div className="h-4" />}
+      {rows ? <SetRows e={e} rows={rows} onRest={onRest} /> : <div className="h-4" />}
     </article>
   );
 }
@@ -203,6 +178,15 @@ export default function Today({ onRest }: { onRest: OnRest }) {
   useWakeLock(isActiveHere);
   const doneToday = sessions.find(s => s.date === isoDay() && s.dayId === sel);
 
+  if (isActiveHere && active && active.guided != null && day.exercises.length) {
+    return (
+      <>
+        <Guided active={active} sessions={sessions} startDate={startDate} onRest={onRest} onFinish={() => setFinishing(true)} />
+        {finishing && <FinishPanel day={day} onClose={() => setFinishing(false)} />}
+      </>
+    );
+  }
+
   return (
     <div className="grid gap-4">
       <div className={`rounded-xl px-4 py-3 text-[14px] ${pw.tone === 'warn' ? 'bg-warnSoft' : 'bg-accentSoft'}`}>
@@ -227,6 +211,12 @@ export default function Today({ onRest }: { onRest: OnRest }) {
       ) : (
         <>
           {doneToday && !isActiveHere && <div><Chip tone="good">✓ Logged today · {doneToday.mins} min</Chip></div>}
+          {isActiveHere && (
+            <button id="guided-open" className="flex h-12 items-center justify-center gap-2 rounded-xl border border-accent bg-accentSoft text-[15px] font-bold text-accent"
+              onClick={() => act().setGuided(Math.max(0, day.exercises.findIndex(x => !(active!.logs[x.id] ?? []).every(r => r.done))))}>
+              ▶ Guided mode · one exercise at a time
+            </button>
+          )}
           <RoutineList title="Warm-up · 5–7 min" items={day.warmup} />
           {day.exercises.map((e, i) => <ExerciseCard key={e.id} e={e} idx={i} active={isActiveHere ? active : null} sessions={sessions} onRest={onRest} />)}
           <RoutineList title="Cool-down · hold 30s each" items={day.cooldown} />
@@ -243,9 +233,14 @@ export default function Today({ onRest }: { onRest: OnRest }) {
                   {activeDay(active).title} workout in progress · go back
                 </button>
               ) : (
-                <button id="start-workout" className="h-12 w-full rounded-xl bg-accent text-[16px] font-bold text-accentInk shadow-lg" onClick={() => act().start(sel)}>
-                  Start {day.title} workout
-                </button>
+                <div className="flex gap-2">
+                  <button id="start-guided" className="h-12 flex-1 rounded-xl bg-accent text-[16px] font-bold text-accentInk shadow-lg" onClick={() => act().start(sel, true)}>
+                    ▶ Start {day.title}
+                  </button>
+                  <button id="start-workout" className="h-12 rounded-xl border border-line bg-surface px-4 text-[14px] font-semibold shadow-lg" onClick={() => act().start(sel)}>
+                    List
+                  </button>
+                </div>
               )}
             </div>
           </div>

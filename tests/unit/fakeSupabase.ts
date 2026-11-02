@@ -44,14 +44,16 @@ export function createFakeSupabase(db: FakeDb, user: { id: string; email: string
       select(cols: string) {
         const pick = (r: Row) => Object.fromEntries(cols.split(',').map(c => c.trim()).map(c => [c, r[c]]));
         let order: { col: string; asc: boolean } | null = null;
+        const eqs: [string, unknown][] = [];
         const run = () => {
           const g = guard(table); if (g) return g;
-          let rows = [...tableOf(table).values()].filter(r => r.user_id === user!.id);
+          let rows = [...tableOf(table).values()].filter(r => r.user_id === user!.id && eqs.every(([c, v]) => r[c] === v));
           if (order) { const o = order; rows.sort((a, b) => (a[o.col] - b[o.col]) * (o.asc ? 1 : -1)); }
           return { data: JSON.parse(JSON.stringify(rows.map(pick))), error: null };
         };
         const q: any = {
           order(col: string, opts?: { ascending?: boolean }) { order = { col, asc: opts?.ascending !== false }; return q; },
+          eq(col: string, v: unknown) { eqs.push([col, v]); return q; },
           async maybeSingle() {
             const res: any = run();
             if (res.error) return res;

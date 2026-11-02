@@ -14,6 +14,7 @@ export async function device(db: FakeDb | null, user = { id: 'user-1', email: 'm
   (globalThis as any).__fakeSupabase = db ? createFakeSupabase(db, user) : null;
   const store = await import('../../src/store/workout');
   const sync = await import('../../src/store/sync');
+  const photos = (await import('../../src/lib/photoStore')).PhotoStore;
   if (db) {
     sync.Sync.init();
     await vi.waitFor(() => { if (!sync.useSync.getState().email) throw new Error('not signed in yet'); });
@@ -21,6 +22,7 @@ export async function device(db: FakeDb | null, user = { id: 'user-1', email: 'm
   return {
     store,
     sync,
+    photos,
     act: store.act,
     state: () => store.useWorkout.getState(),
     syncState: () => sync.useSync.getState(),
@@ -32,7 +34,7 @@ export async function device(db: FakeDb | null, user = { id: 'user-1', email: 'm
         const s = store.useWorkout.getState();
         const waiting = s.pendingUp.length + s.pendingDel.length + s.pendingWUp.length + s.pendingWDel.length
           + s.pendingRUp.length + s.pendingRDel.length + (s.settingsDirty ? 1 : 0) + (s.activeRoutineDirty ? 1 : 0)
-          + (s.notesVersion !== s.notesSyncedVersion ? 1 : 0);
+          + (s.notesVersion !== s.notesSyncedVersion ? 1 : 0) + s.pendingPUp.length + s.pendingPDel.length;
         if (!waiting && sync.useSync.getState().mode === 'synced') return;
       }
       throw new Error(`sync did not settle: ${JSON.stringify(sync.useSync.getState())}`);

@@ -30,7 +30,8 @@ export function buildV2(): Record<DayId, RoutineDay> {
   ];
 
   const thu = strip('thu');
-  thu.focus = 'Chest · biceps · triceps · rear delts';
+  thu.mins = '55';
+  thu.focus = 'Chest · biceps · triceps · side & rear delts';
   thu.exercises = [
     ex('thu', 'incline-press'),
     ex('thu', 'flies'),
@@ -40,6 +41,8 @@ export function buildV2(): Record<DayId, RoutineDay> {
     E('ss-curl', 'Superset Curl', 3, 12, 12, 'reps', 4, '4 kg', 60,
       'Superset A2: right after A1, then rest 60s.', { superset: 'A2' }),
     ex('thu', 'rear-delt-fly'),
+    // Side delts make the shoulders look wider; Monday alone was only 3 sets a week.
+    { ...ex('mon', 'lateral-raise'), cue: 'Light weight, slow lowering. Lead with the elbows, stop at shoulder height.' },
   ];
 
   const fri = strip('fri');
@@ -57,22 +60,31 @@ export function buildV2(): Record<DayId, RoutineDay> {
     ex('fri', 'plank'),
   ];
 
+  // Saturday at home: a gentle second leg session plus back and shoulder work with the two resistance bands
+  // (tube band with handles + door anchor, and a loop band).
   const sat = strip('sat');
-  sat.mins = '40';
-  sat.title = 'Home Legs + Core';
-  sat.focus = 'Legs (pain-free) · calves · core · bodyweight';
+  sat.mins = '45';
+  sat.title = 'Home Legs + Bands';
+  sat.focus = 'Gentle legs · back & shoulders with bands · core';
+  sat.warmup = ['Brisk walk, jumping jacks or stairs · 5 min', 'Glute Bridge × 10', 'Band Pull-apart × 10', 'Arm circles × 10 each way'];
   const squat = ex('sat', 'bw-squat');
   squat.min = 15; squat.max = 20;
   squat.cue = 'Lower over 3 seconds to a pain-free depth, stand up normally.';
   sat.exercises = [
     squat,
     ex('sat', 'step-up'),
-    ex('sat', 'glute-bridge'),
-    E('single-leg-calf', 'Single-leg Calf Raise', 3, 12, 15, 'reps', null, 'Bodyweight, on a stair', 30,
-      'Hold the wall, full stretch, pause 1s at the top.', { perSide: true }),
+    E('band-glute-bridge', 'Banded Glute Bridge', 3, 15, 15, 'reps', null, 'Loop band above the knees', 45,
+      'Push the knees out against the band, pause 2s at the top.'),
+    E('monster-walk', 'Monster Walk', 3, 10, 12, 'reps', null, 'Loop band around the legs', 45,
+      'Small steps, knees pushed out, stay in a quarter squat.', { perSide: true }),
+    E('band-row', 'Band Seated Row', 3, 12, 15, 'reps', null, 'Tube band around your feet', 60,
+      'Sit tall, pull the handles to your belly, squeeze the shoulder blades 1s.'),
+    E('band-face-pull', 'Band Face Pull', 3, 15, 15, 'reps', null, 'Tube band on the door anchor, face height', 45,
+      'Pull toward your face with elbows high, split the handles apart.'),
+    E('band-lateral-raise', 'Band Lateral Raise', 3, 15, 15, 'reps', null, 'Stand on the tube band', 45,
+      'Lead with the elbows, stop at shoulder height, lower slowly.'),
     ex('sat', 'push-up'),
     ex('sat', 'dead-bug'),
-    ex('sat', 'lying-leg-raise'),
   ];
 
   return { mon, tue: strip('tue'), wed: strip('wed'), thu, fri, sat, sun: strip('sun') };

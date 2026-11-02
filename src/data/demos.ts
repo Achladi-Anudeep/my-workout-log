@@ -56,6 +56,12 @@ export const DEMO_ID: Record<string, string> = {
   'band-pull-apart': 'sTfvVsG', // band reverse fly
   'db-bench-press': 'SpYC0Kp', // dumbbell bench press
   'bench-dip': 'VuoerH0', // triceps dip (bench leg)
+  // home bands (Saturday)
+  'band-glute-bridge': 'u0cNiij',    // glute bridge on the floor: see note
+  'monster-walk': 'O95afRA',         // monster walk
+  'band-row': 'Nu7jqFE',             // band seated straight back row
+  'band-face-pull': 'tc5dYrf',       // band standing rear delt row = face pull with a band
+  'band-lateral-raise': 'DsgkuIt',   // dumbbell lateral raise, same movement: see note
   // swap-ins
   'cable-lateral-raise': 'goJ6ezq',  // cable lateral raise
   'machine-shoulder-press': 'dNFYIU1', // Machine Shoulder Press (seated)
@@ -73,6 +79,9 @@ export const DEMO_NOTE: Record<string, string> = {
   'rear-delt-fly': 'The demo is seated on the end of a bench. Standing and bent over works the same.',
   'single-leg-calf': 'The demo uses both feet. Do one foot at a time and hold the wall.',
   'tri-bi-superset': 'The demo shows the triceps half. The curl half is the same as Bicep Curl.',
+  'band-glute-bridge': 'Same movement with a loop band just above your knees. Push the knees out against it.',
+  'band-lateral-raise': 'The demo uses dumbbells. Stand on the middle of the tube band and hold a handle in each hand.',
+  'band-row': 'The demo sits on a bench. Sitting on the floor with legs straight works the same.',
 };
 
 export const gifUrl = (id: string) => `https://static.exercisedb.dev/media/${id}.gif`;

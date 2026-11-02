@@ -16,6 +16,7 @@ export const ALT_EXERCISES: Exercise[] = [
   E('band-pull-apart', 'Band Pull-apart', 3, 15, 15, 'reps', null, 'Light band', 45, 'Straight arms, squeeze the shoulder blades.'),
   E('goblet-squat', 'Goblet Squat', 3, 10, 12, 'reps', 8, '8–12 kg', 90, 'Pain-free depth, chest up.'),
   E('cable-crossover', 'Cable Crossover', 3, 12, 15, 'reps', 5, '5–7.5 kg per side', 60, 'Fixed elbow bend, hug the handles together.'),
+  E('single-leg-calf', 'Single-leg Calf Raise', 3, 12, 15, 'reps', null, 'Bodyweight, on a stair', 30, 'Hold the wall, full stretch, pause 1s at the top.', true),
   E('cable-curl', 'Cable Curl', 3, 12, 15, 'reps', 10, '10–15 kg', 60, 'Elbows pinned, no leaning back.'),
 ];
 
@@ -60,6 +61,11 @@ export const ALTERNATIVES: Record<string, string[]> = {
   'dead-bug': ['plank', 'lying-leg-raise'],
   'lying-leg-raise': ['leg-raise', 'dead-bug'],
   'single-leg-calf': ['standing-calf', 'seated-calf'],
+  'band-glute-bridge': ['glute-bridge', 'step-up'],
+  'monster-walk': ['band-glute-bridge', 'glute-bridge'],
+  'band-row': ['band-pull-apart', 'band-face-pull'],
+  'band-face-pull': ['band-pull-apart', 'band-row'],
+  'band-lateral-raise': ['band-pull-apart'],
 };
 
 /** Every exercise the app knows how to describe: the built-in routines plus the swap-only ones. */

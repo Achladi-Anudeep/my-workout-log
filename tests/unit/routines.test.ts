@@ -38,7 +38,18 @@ describe('Gym PPL v2', () => {
     expect(names(BUILTIN_V2, 'mon')).toContain('Seated DB Shoulder Press');
     expect(names(BUILTIN_V2, 'thu')).not.toContain('Front Raises');
     expect(names(BUILTIN_V2, 'fri')).toEqual(expect.arrayContaining(['Hammer Curl', 'Standing Calf Raise']));
-    expect(names(BUILTIN_V2, 'sat')).toContain('Single-leg Calf Raise');
+    expect(names(BUILTIN_V2, 'sat')).toEqual(expect.arrayContaining(['Band Seated Row', 'Band Face Pull', 'Band Lateral Raise', 'Monster Walk']));
+  });
+
+  it('trains side delts on three days a week', () => {
+    const days = DAY_IDS.filter(d => BUILTIN_V2.days[d].exercises.some(e => /lateral-raise/.test(e.id)));
+    expect(days).toEqual(['mon', 'thu', 'sat']);
+  });
+
+  it('keeps Saturday a gentle home session: bodyweight and bands only, no machines', () => {
+    const sat = BUILTIN_V2.days.sat;
+    expect(sat.home).toBe(true);
+    for (const e of sat.exercises) expect(e.start, e.id).toBeNull();
   });
 
   it('splits the superset into two logged exercises, with no rest between them', () => {

@@ -448,6 +448,63 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Lower back arching', 'Swinging the legs', 'Dropping them fast'],
   },
 
+  // ---------- Home bands (Saturday) ----------
+  'band-glute-bridge': {
+    equipment: 'Loop band (Slovic 7–15 kg) just above the knees + floor mat',
+    targets: 'Glutes · hamstrings · outer hips',
+    steps: [
+      'Put the loop band just above your knees and lie on your back, knees bent, feet flat and hip-width.',
+      'Push your knees out against the band and keep that tension the whole set.',
+      'Drive through your heels and lift your hips until knees, hips and shoulders form a line.',
+      'Squeeze your glutes for 2 seconds, then lower slowly.',
+    ],
+    mistakes: ['Knees caving in toward each other', 'Arching the lower back instead of squeezing the glutes', 'Rushing the pause at the top'],
+  },
+  'monster-walk': {
+    equipment: 'Loop band (Slovic 7–15 kg) around the legs, just above the knees (harder: around the ankles)',
+    targets: 'Outer glutes · hips (protects the knees)',
+    steps: [
+      'Put the band above your knees, feet hip-width, and sit into a quarter squat.',
+      'Step sideways with one foot, then follow with the other, keeping tension on the band.',
+      'Take 10–12 steps one way, then the same back. That is one set.',
+      'Stay low and keep your knees pushed out the whole time.',
+    ],
+    mistakes: ['Standing up tall between steps', 'Letting the knees collapse inward', 'Big steps that make the band go slack'],
+  },
+  'band-row': {
+    equipment: 'Tube band with handles (Boldfit 20 kg) looped around your feet',
+    targets: 'Mid-back · lats · biceps',
+    steps: [
+      'Sit on the floor with legs straight and loop the middle of the band around the soles of your feet.',
+      'Hold a handle in each hand, arms straight, and sit tall.',
+      'Pull the handles to your belly, elbows close to your sides, and squeeze your shoulder blades for 1 second.',
+      'Let the arms go forward slowly. Hold the handles lower down the band to make it harder.',
+    ],
+    mistakes: ['Leaning back to pull with your body', 'Shrugging the shoulders', 'Letting the band snap back'],
+  },
+  'band-face-pull': {
+    equipment: 'Tube band (Boldfit 20 kg) on the door anchor at face height',
+    targets: 'Rear delts · upper back · rotator cuff',
+    steps: [
+      'Close the door anchor into the door at face height and step back until the band is tight with arms straight.',
+      'Hold the handles with palms facing down.',
+      'Pull toward your face, elbows high and wide, hands ending beside your ears.',
+      'Pause for a moment, then return slowly.',
+    ],
+    mistakes: ['Elbows dropping below the shoulders', 'Leaning back', 'Anchor on the hinge side of the door (use the side that closes)'],
+  },
+  'band-lateral-raise': {
+    equipment: 'Tube band (Boldfit 20 kg), standing on the middle of it',
+    targets: 'Side delts',
+    steps: [
+      'Stand on the middle of the band, feet hip-width, a handle in each hand at your sides.',
+      'With a slight bend in the elbows, raise your arms out to the sides, leading with the elbows.',
+      'Stop at shoulder height and pause.',
+      'Lower slowly. For less tension, stand on the band with one foot only.',
+    ],
+    mistakes: ['Shrugging', 'Swinging the body', 'Raising above shoulder height'],
+  },
+
   // ---------- Alternatives (for swapping when a machine is busy) ----------
   'db-bench-press': {
     equipment: 'Two dumbbells + flat bench',

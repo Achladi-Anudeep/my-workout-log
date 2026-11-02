@@ -160,4 +160,43 @@ describe('sync between phone and laptop', () => {
     // the notes row never shows up as a routine
     expect(phone.state().routines).toEqual([]);
   });
+
+  it('syncs machine photos: new, replaced and removed', async () => {
+    const db = createDb();
+    const phone = await device(db);
+    await phone.photos.put('leg-press', 'data:image/jpeg;base64,AAA');
+    phone.act().setPhoto('leg-press', 1000);
+    await phone.settle();
+    expect(db.tables.photos.get('user-1:leg-press')).toMatchObject({ ex_id: 'leg-press', at: 1000, deleted: false });
+
+    const laptop = await device(db);
+    await laptop.settle();
+    expect(laptop.state().photos['leg-press']).toBe(1000);
+    expect(await laptop.photos.get('leg-press')).toBe('data:image/jpeg;base64,AAA');
+
+    await laptop.photos.put('leg-press', 'data:image/jpeg;base64,BBB');
+    laptop.act().setPhoto('leg-press', 2000);
+    await laptop.settle();
+    await phone.settle();
+    expect(await phone.photos.get('leg-press')).toBe('data:image/jpeg;base64,BBB');
+
+    phone.act().removePhoto('leg-press');
+    await phone.settle();
+    await laptop.settle();
+    expect(laptop.state().photos['leg-press']).toBeUndefined();
+    expect(await laptop.photos.get('leg-press')).toBeNull();
+  });
+
+  it('a missing photos table keeps photos on the device without blocking sync', async () => {
+    const db = createDb();
+    db.missing.add('photos');
+    const phone = await device(db);
+    await phone.photos.put('leg-press', 'data:x');
+    phone.act().setPhoto('leg-press', 1);
+    const s = logWorkout(phone);
+    await phone.sync.Sync.syncNow();
+    await vi.waitFor(() => expect(phone.syncState().mode).toBe('synced'));
+    expect(db.tables.sessions.get(s.id)).toBeTruthy();
+    expect(phone.state().photos['leg-press']).toBe(1);
+  });
 });

@@ -2,11 +2,13 @@
 
 A phone-first workout logger for the 6-day Push / Pull / Legs / Arms plan. It's an installable PWA for iPhone, and workouts sync between your phone and laptop.
 
-- **Today:** the day's workout. Each exercise shows its demo animation (tap for a big view), the equipment to look for, your own machine settings (seat, pin, pad; synced), full how-to details, and **Swap** for when a machine is busy. The screen stays on during a workout and the rest timer beeps. Set logging (kg × reps), a rest timer, and Finish with cardio minutes and a note.
+- **Today:** the day's workout, as a list or in **guided mode** (one exercise at a time, supersets alternate automatically, the rest timer names the next exercise and its equipment). Each exercise shows its demo animation, the equipment to look for, a photo of your own gym's machine and your machine settings (both synced), full how-to details, a coach suggestion (add weight / stay / go lighter, with the reason), and **Swap** for when a machine is busy. The screen stays on during a workout and the rest timer beeps. Set logging (kg × reps), a rest timer, and Finish with cardio minutes and a note.
 - **Calendar:** a month view of logged and missed days, with adherence, cardio and volume, and per-day session details.
 - **Progress:** body-weight log (date and time, 7-day average, trend chart) plus per-exercise trend lines and "ready to add weight" cues.
 - **Tutorials:** animated GIF demos and steps, fetched live from the free [ExerciseDB](https://oss.exercisedb.dev/) API. Nothing is stored.
 - **Plan:** your routines (two built-in, locked routines: Gym PPL and Gym PPL v2; duplicate it or start blank to build your own), a day-by-day editor with an exercise picker (your exercises, the ExerciseDB library, or custom), plus rules, start date and the sync account.
+
+Appearance follows the phone's light/dark setting, or pick Day or Night under **Plan → Appearance**.
 
 Stack: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Supabase (auth + Postgres), and vite-plugin-pwa.
 
@@ -36,6 +38,7 @@ When both devices are signed in, go to **Supabase → Authentication → Sign In
 If you set the project up before these features existed, run these once in the SQL Editor:
 - `supabase/002_weights.sql` (body weight)
 - `supabase/003_routines.sql` (custom routines)
+- `supabase/004_photos.sql` (machine photos)
 
 ## How sync works
 - Every workout is saved on the device first, so logging works with no signal at the gym.
