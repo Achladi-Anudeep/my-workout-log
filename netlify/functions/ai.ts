@@ -43,8 +43,11 @@ async function signedIn(req: Request): Promise<boolean> {
   }
 }
 
-/** Short answers don't need the model's slow "thinking" step; some models don't accept the setting, so it's retried without. */
-const FAST = { thinkingConfig: { thinkingBudget: 0 } };
+/**
+ * Short answers don't need the model's slow "thinking" step. Older Flash models take thinkingBudget, newer ones
+ * thinkingLevel; a model that rejects one (HTTP 400) is retried with the next, and finally with no setting.
+ */
+const SPEED: Json[] = [{ thinkingConfig: { thinkingBudget: 0 } }, { thinkingConfig: { thinkingLevel: 'low' } }, {}];
 const PER_TRY_MS = 8000;
 
 async function gemini(key: string, body: Json, models = MODELS): Promise<{ ok: true; text: string } | { ok: false; status: number; error: string }> {
@@ -53,8 +56,8 @@ async function gemini(key: string, body: Json, models = MODELS): Promise<{ ok: t
   const started = Date.now();
   for (const model of [env('GEMINI_MODEL'), ...models].filter((m): m is string => !!m)) {
     if (Date.now() - started > 19000) break; // stay well inside Netlify's time limit
-    for (const fast of [true, false]) {
-      const cfg = { ...(body.generationConfig as Json), ...(fast ? FAST : {}) };
+    for (const [i, speed] of SPEED.entries()) {
+      const cfg = { ...(body.generationConfig as Json), ...speed };
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), PER_TRY_MS);
       let res: Response;
@@ -81,7 +84,7 @@ async function gemini(key: string, body: Json, models = MODELS): Promise<{ ok: t
         break;
       }
       const detail = (await res.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 300);
-      if (res.status === 400 && fast && /thinking/i.test(detail)) continue; // retry this model without the setting
+      if (res.status === 400 && i < SPEED.length - 1) continue; // this model doesn't accept that setting: try the next style
       if (res.status === 404) { console.warn(`[ai] model ${model} not found, trying the next one`); break; }
       if (res.status === 429 || res.status === 503 || res.status === 500) {
         console.warn(`[ai] ${model} busy (${res.status}), trying the next model`);

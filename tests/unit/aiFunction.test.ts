@@ -13,7 +13,7 @@ function req(body: unknown, headers: Record<string, string> = {}) {
 }
 
 /** Fake Supabase (token "good" is signed in) and fake Gemini (returns `answer`). */
-function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: boolean; overloadFirst?: boolean } = {}) {
+function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: boolean; overloadFirst?: boolean; rejectBudget?: boolean } = {}) {
   const calls: { url: string; body?: any }[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, body: init?.body ? JSON.parse(init.body as string) : undefined });
@@ -22,6 +22,7 @@ function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: bo
       return new Response(JSON.stringify(ok ? { id: 'u1' } : { msg: 'bad' }), { status: ok ? 200 : 401 });
     }
     if (opts.missingFirstModel && url.includes('gemini-flash-latest')) return new Response('{}', { status: 404 });
+    if (opts.rejectBudget && (init?.body as string).includes('thinkingBudget')) return new Response('{"error":{"code":400,"message":"Request contains an invalid argument."}}', { status: 400 });
     if (opts.overloadFirst && url.includes('gemini-flash-latest')) return new Response('{"error":{"code":503}}', { status: 503 });
     if (opts.status) return new Response('{}', { status: opts.status });
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: answer }] } }] }), { status: 200 });
@@ -70,6 +71,14 @@ describe('AI function', () => {
     expect(await res.json()).toEqual({ text: 'Lite answer' });
     expect(calls.filter(c => c.url.includes('generativelanguage')).map(c => c.url.split('/models/')[1].split(':')[0]))
       .toEqual(['gemini-flash-latest', 'gemini-flash-lite-latest']);
+  });
+
+  it('a model that rejects one "thinking" setting is retried with the other style', async () => {
+    env.GEMINI_API_KEY = 'k';
+    const calls = fakeNet('ok', { rejectBudget: true });
+    expect(await (await handler(req({ task: 'ask', question: 'q' }))).json()).toEqual({ text: 'ok' });
+    const sent = calls.filter(c => c.url.includes('generativelanguage')).map(c => c.body.generationConfig.thinkingConfig);
+    expect(sent).toEqual([{ thinkingBudget: 0 }, { thinkingLevel: 'low' }]);
   });
 
   it('identifies a machine only from your own exercise list', async () => {
