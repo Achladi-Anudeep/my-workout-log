@@ -10,7 +10,8 @@
 /** This app's two databases (production and test). Their URLs are public; anything else is refused. */
 const ALLOWED_PROJECTS = ['https://anutvisbezcefrbkxplo.supabase.co', 'https://vzdeaxytytzrjjdwdpwk.supabase.co'];
 
-const MODELS = ['gemini-flash-latest', 'gemini-2.5-flash'];
+/** Tried in order: if one is overloaded, slow or retired, the next one answers. All are on the free tier. */
+const MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash'];
 const LIMITS = { question: 600, context: 9000, image: 1_400_000, candidates: 150 };
 
 const COACH = `You are a careful, encouraging strength coach inside the user's personal workout app.
@@ -42,30 +43,58 @@ async function signedIn(req: Request): Promise<boolean> {
   }
 }
 
-async function gemini(key: string, body: Json): Promise<{ ok: true; text: string } | { ok: false; status: number; error: string }> {
-  for (const model of [env('GEMINI_MODEL'), ...MODELS].filter((m): m is string => !!m)) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify(body),
-    });
-    if (res.status === 404) { console.warn(`[ai] model ${model} not found, trying the next one`); continue; }
-    if (res.status === 429) return { ok: false, status: 429, error: 'busy' };
-    if (!res.ok) {
-      const detail = (await res.text().catch(() => '')).slice(0, 300);
+/** Short answers don't need the model's slow "thinking" step; some models don't accept the setting, so it's retried without. */
+const FAST = { thinkingConfig: { thinkingBudget: 0 } };
+const PER_TRY_MS = 8000;
+
+async function gemini(key: string, body: Json, models = MODELS): Promise<{ ok: true; text: string } | { ok: false; status: number; error: string }> {
+  let busy = false;
+  let lastError = 'no-model';
+  const started = Date.now();
+  for (const model of [env('GEMINI_MODEL'), ...models].filter((m): m is string => !!m)) {
+    if (Date.now() - started > 19000) break; // stay well inside Netlify's time limit
+    for (const fast of [true, false]) {
+      const cfg = { ...(body.generationConfig as Json), ...(fast ? FAST : {}) };
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), PER_TRY_MS);
+      let res: Response;
+      try {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify({ ...body, generationConfig: cfg }),
+          signal: ctrl.signal,
+        });
+      } catch {
+        console.warn(`[ai] ${model} timed out or failed to connect, trying the next model`);
+        busy = true;
+        clearTimeout(timer);
+        break; // next model
+      }
+      clearTimeout(timer);
+      if (res.ok) {
+        const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[] };
+        const text = (data.candidates?.[0]?.content?.parts ?? []).map(p => p.text ?? '').join('').trim();
+        if (text) return { ok: true, text };
+        lastError = `empty (${data.candidates?.[0]?.finishReason ?? 'no candidates'})`;
+        console.error(`[ai] ${model} ${lastError}`);
+        break;
+      }
+      const detail = (await res.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 300);
+      if (res.status === 400 && fast && /thinking/i.test(detail)) continue; // retry this model without the setting
+      if (res.status === 404) { console.warn(`[ai] model ${model} not found, trying the next one`); break; }
+      if (res.status === 429 || res.status === 503 || res.status === 500) {
+        console.warn(`[ai] ${model} busy (${res.status}), trying the next model`);
+        busy = true;
+        break;
+      }
       console.error(`[ai] gemini ${model} ${res.status}: ${detail}`);
-      return { ok: false, status: 502, error: `gemini ${res.status}: ${detail.replace(/\s+/g, ' ').slice(0, 160)}` };
+      return { ok: false, status: 502, error: `gemini ${res.status}: ${detail.slice(0, 160)}` };
     }
-    const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[] };
-    const text = (data.candidates?.[0]?.content?.parts ?? []).map(p => p.text ?? '').join('').trim();
-    if (!text) {
-      console.error(`[ai] gemini ${model} empty answer, finishReason=${data.candidates?.[0]?.finishReason}`);
-      return { ok: false, status: 502, error: `empty (${data.candidates?.[0]?.finishReason ?? 'no candidates'})` };
-    }
-    return { ok: true, text };
   }
-  console.error('[ai] no Gemini model name worked');
-  return { ok: false, status: 502, error: 'no-model' };
+  if (busy) return { ok: false, status: 429, error: 'busy' };
+  console.error(`[ai] no model answered: ${lastError}`);
+  return { ok: false, status: 502, error: lastError };
 }
 
 export default async (req: Request): Promise<Response> => {

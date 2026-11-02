@@ -13,7 +13,7 @@ function req(body: unknown, headers: Record<string, string> = {}) {
 }
 
 /** Fake Supabase (token "good" is signed in) and fake Gemini (returns `answer`). */
-function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: boolean } = {}) {
+function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: boolean; overloadFirst?: boolean } = {}) {
   const calls: { url: string; body?: any }[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, body: init?.body ? JSON.parse(init.body as string) : undefined });
@@ -22,6 +22,7 @@ function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: bo
       return new Response(JSON.stringify(ok ? { id: 'u1' } : { msg: 'bad' }), { status: ok ? 200 : 401 });
     }
     if (opts.missingFirstModel && url.includes('gemini-flash-latest')) return new Response('{}', { status: 404 });
+    if (opts.overloadFirst && url.includes('gemini-flash-latest')) return new Response('{"error":{"code":503}}', { status: 503 });
     if (opts.status) return new Response('{}', { status: opts.status });
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: answer }] } }] }), { status: 200 });
   }));
@@ -51,14 +52,24 @@ describe('AI function', () => {
     const g = calls.find(c => c.url.includes('generativelanguage'))!;
     expect(g.url).not.toContain('secret-key');
     expect(g.body.contents[0].parts[0].text).toContain('Exercise: Leg Press');
+    expect(g.body.generationConfig.thinkingConfig).toEqual({ thinkingBudget: 0 });
   });
 
-  it('falls back to another model name if one is retired, and reports a busy free tier', async () => {
+  it('falls back to another model if one is retired or overloaded, and reports a busy free tier', async () => {
     env.GEMINI_API_KEY = 'k';
     fakeNet('ok', { missingFirstModel: true });
     expect((await handler(req({ task: 'review', context: 'c' }))).status).toBe(200);
-    fakeNet('x', { status: 429 });
+    fakeNet('x', { status: 503 }); // every model overloaded
     expect((await handler(req({ task: 'review', context: 'c' }))).status).toBe(429);
+  });
+
+  it('when the main model is overloaded, the next one answers', async () => {
+    env.GEMINI_API_KEY = 'k';
+    const calls = fakeNet('Lite answer', { overloadFirst: true });
+    const res = await handler(req({ task: 'ask', question: 'q', context: 'c' }));
+    expect(await res.json()).toEqual({ text: 'Lite answer' });
+    expect(calls.filter(c => c.url.includes('generativelanguage')).map(c => c.url.split('/models/')[1].split(':')[0]))
+      .toEqual(['gemini-flash-latest', 'gemini-flash-lite-latest']);
   });
 
   it('identifies a machine only from your own exercise list', async () => {
