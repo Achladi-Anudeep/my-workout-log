@@ -18,7 +18,7 @@ describe('weight coach', () => {
     expect(a([])).toMatchObject({ kind: 'new', weight: 10 });
   });
   it('adds weight once every set hits the top of the range', () => {
-    expect(a([s(2, [[10, 12], [10, 12], [10, 12]])])).toMatchObject({ kind: 'up', weight: 11 });
+    expect(a([s(2, [[10, 12], [10, 12], [10, 12]])])).toMatchObject({ kind: 'up', weight: 10.5 }); // +5%, rounded to 0.5 kg
   });
   it('stays and adds reps while building', () => {
     const r = a([s(2, [[10, 12], [10, 11], [10, 10]])]);
