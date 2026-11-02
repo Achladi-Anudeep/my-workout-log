@@ -129,7 +129,8 @@ test.describe('@env', () => {
     await lap.context().close();
   });
 
-  test('AI answers a question for a signed-in account (Gemini key is set up)', async ({ page }) => {
+  test('AI answers a question for a signed-in account (Gemini key is set up)', async ({ page }, info) => {
+    test.skip(info.project.name !== 'android', 'live AI runs on one device only, to save the free quota');
     await signIn(page);
     await tab(page, 'today');
     await page.locator('#day-wed').click();
@@ -145,7 +146,8 @@ test.describe('@env', () => {
     else expect(text.length).toBeGreaterThan(40);
   });
 
-  test('AI identifies real machine photos, remembers the conversation and reviews the week', async ({ page, request }) => {
+  test('AI identifies real machine photos, remembers the conversation and reviews the week', async ({ page, request }, info) => {
+    test.skip(info.project.name !== 'android', 'live AI runs on one device only, to save the free quota');
     test.setTimeout(240_000);
     await signIn(page);
     const busy = async (loc: import('@playwright/test').Locator) => (await loc.locator('.ai-error').count()) > 0

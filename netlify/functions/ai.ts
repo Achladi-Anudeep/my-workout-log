@@ -14,7 +14,8 @@ const ALLOWED_PROJECTS = ['https://anutvisbezcefrbkxplo.supabase.co', 'https://v
 
 /** Tried in order within each tier; a retired, overloaded or slow model moves on to the next. */
 const PRO_MODELS = ['gemini-pro-latest', 'gemini-3.1-pro-preview', 'gemini-2.5-pro'];
-const FREE_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash'];
+// Each model has its own free quota; Flash-Lite (weakest at photos) is the last resort.
+const FREE_MODELS = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-flash-lite-latest'];
 const LIMITS = { question: 600, context: 12000, image: 1_400_000, candidates: 150, history: 12, turn: 2000 };
 /** Netlify stops a function after ~30 s; leave room to answer. */
 const DEADLINE_MS = 26000;

@@ -74,9 +74,9 @@ describe('AI function', () => {
     env.GEMINI_API_KEY = 'k';
     const calls = fakeNet('Lite answer', { overloadFirst: true });
     const res = await handler(req({ task: 'ask', question: 'q', context: 'c' }));
-    expect(await res.json()).toMatchObject({ text: 'Lite answer', model: 'gemini-flash-lite-latest' });
+    expect(await res.json()).toMatchObject({ text: 'Lite answer', model: 'gemini-2.5-flash' });
     expect(calls.filter(c => c.url.includes('generativelanguage')).map(c => c.url.split('/models/')[1].split(':')[0]))
-      .toEqual(['gemini-flash-latest', 'gemini-flash-lite-latest']);
+      .toEqual(['gemini-flash-latest', 'gemini-2.5-flash']);
   });
 
   it('a model that rejects one "thinking" setting is retried with the other style', async () => {
