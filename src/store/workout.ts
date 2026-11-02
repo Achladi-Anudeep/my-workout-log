@@ -3,9 +3,10 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { DAY } from '../data/plan';
 import { isoDay, lastFor, programWeek, uid } from '../lib/utils';
 import { advise } from '../lib/coach';
-import { DEFAULT_PROFILE, type ChatTurn } from '../lib/ai';
+import { DEFAULT_PROFILE, LEGACY_PROFILES, type ChatTurn } from '../lib/ai';
 import { BUILTIN, BUILTIN_ID, DAY_IDS, clone, emptyDay, findRoutine, isBuiltin, toDay } from '../lib/routines';
-import type { Active, Day, DayId, Exercise, Routine, RoutineDay, Session, SetLog, WeightEntry } from '../types';
+import { HOME_DAYS } from '../data/home';
+import type { Active, Day, DayId, Exercise, Routine, RoutineDay, Session, SetLog, Venue, WeightEntry } from '../types';
 
 /** The day an in-progress workout runs on: its snapshot, or the built-in day for workouts started before routines existed. */
 export const activeDay = (a: Active): Day => a.day ?? DAY[a.dayId];
@@ -92,7 +93,10 @@ export interface WorkoutState {
 
   setTab: (t: Tab) => void;
   setStartDate: (d: string) => void;
-  start: (dayId: DayId, guided?: boolean) => void;
+  start: (dayId: DayId, guided?: boolean, venue?: Venue) => void;
+  /** Last gym/home pick per weekday, so a day you always do at home opens that way. Kept on this device. */
+  venuePick: Partial<Record<DayId, Venue>>;
+  setVenuePick: (dayId: DayId, venue: Venue) => void;
   edit: (exId: string, i: number, patch: Partial<SetLog>) => void;
   addSet: (exId: string) => void;
   removeSet: (exId: string) => void;
@@ -159,7 +163,8 @@ export const useWorkout = create<WorkoutState>()(
       createRoutine: (name, fromId) => {
         const src = fromId ? findRoutine(get().routines, fromId) : null;
         const days = src ? clone(src.days) : Object.fromEntries(DAY_IDS.map(d => [d, emptyDay()])) as Record<DayId, RoutineDay>;
-        const r: Routine = { id: uid(), name: name.trim() || 'New routine', updatedAt: Date.now(), days };
+        const homeDays = src ? clone(src.homeDays ?? HOME_DAYS) : {};
+        const r: Routine = { id: uid(), name: name.trim() || 'New routine', updatedAt: Date.now(), days, homeDays };
         set(s => ({ routines: [...s.routines, r], pendingRUp: [...s.pendingRUp, r.id] }));
         return r.id;
       },
@@ -298,9 +303,13 @@ export const useWorkout = create<WorkoutState>()(
         return { active: a };
       }),
 
-      start: (dayId, guided = false) => {
+      venuePick: {},
+      setVenuePick: (dayId, venue) => set(s => ({ venuePick: { ...s.venuePick, [dayId]: venue } })),
+
+      start: (dayId, guided = false, venue = 'gym') => {
         const routine = findRoutine(get().routines, get().activeRoutineId);
-        const day = clone(toDay(routine, dayId));
+        const day = clone(toDay(routine, dayId, venue));
+        const atHome = venue === 'home' && !!day.home && !routine.days[dayId]?.home;
         const logs: Record<string, SetLog[]> = {};
         const deload = programWeek(get().startDate).deload;
         day.exercises.forEach(e => {
@@ -309,7 +318,7 @@ export const useWorkout = create<WorkoutState>()(
           const w = kg != null && kg > 0 ? String(kg) : '';
           logs[e.id] = Array.from({ length: e.sets }, () => ({ w, r: '', done: false }));
         });
-        set({ active: { dayId, startedAt: Date.now(), logs, routineId: routine.id, day, ...(guided ? { guided: 0 } : {}) } });
+        set({ active: { dayId, startedAt: Date.now(), logs, routineId: routine.id, day, ...(guided ? { guided: 0 } : {}), ...(atHome ? { venue: 'home' as const } : {}) } });
       },
 
       edit: (exId, i, patch) => set(s => {
@@ -343,7 +352,7 @@ export const useWorkout = create<WorkoutState>()(
         const session: Session = {
           id: uid(), dayId: a.dayId, date: isoDay(new Date(a.startedAt)), startedAt: a.startedAt,
           mins: Math.max(1, Math.round((Date.now() - a.startedAt) / 60000)), cardio, note, ex,
-          title: day.title, routineId: a.routineId ?? BUILTIN.id,
+          title: day.title, routineId: a.routineId ?? BUILTIN.id, ...(a.venue ? { venue: a.venue } : {}),
         };
         return { active: null, sessions: [session, ...s.sessions], pendingUp: [...s.pendingUp, session.id], tab: 'calendar' };
       }),
@@ -376,6 +385,12 @@ export const useWorkout = create<WorkoutState>()(
       // Tests run several simulated devices in one page, each with its own key (window.__storeKey).
       name: (globalThis as { __storeKey?: string }).__storeKey ?? 'ppl-log-v1',
       storage: createJSONStorage(() => safeStorage),
+      // An "About me" you never edited follows the newest default (e.g. once home gear was added).
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<WorkoutState>;
+        const aiProfile = !p.aiProfile || LEGACY_PROFILES.includes(p.aiProfile) ? DEFAULT_PROFILE : p.aiProfile;
+        return { ...current, ...p, aiProfile };
+      },
       partialize: s => ({
         startDate: s.startDate, active: s.active, sessions: s.sessions, tab: s.tab,
         pendingUp: s.pendingUp, pendingDel: s.pendingDel, settingsDirty: s.settingsDirty,
@@ -383,7 +398,7 @@ export const useWorkout = create<WorkoutState>()(
         routines: s.routines, activeRoutineId: s.activeRoutineId, pendingRUp: s.pendingRUp, pendingRDel: s.pendingRDel,
         activeRoutineDirty: s.activeRoutineDirty,
         machineNotes: s.machineNotes, notesVersion: s.notesVersion, notesSyncedVersion: s.notesSyncedVersion,
-        photos: s.photos, pendingPUp: s.pendingPUp, pendingPDel: s.pendingPDel, aiProfile: s.aiProfile, aiChats: s.aiChats,
+        photos: s.photos, pendingPUp: s.pendingPUp, pendingPDel: s.pendingPDel, aiProfile: s.aiProfile, aiChats: s.aiChats, venuePick: s.venuePick,
       }),
     },
   ),

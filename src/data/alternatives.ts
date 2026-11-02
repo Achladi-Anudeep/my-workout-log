@@ -1,4 +1,4 @@
-import { BUILTINS, DAY_IDS } from '../lib/routines';
+import { BUILTINS, DAY_IDS, homeDayOf } from '../lib/routines';
 import type { Exercise, Unit } from '../types';
 
 const E = (id: string, name: string, sets: number, min: number, max: number, unit: Unit, start: number | null,
@@ -66,12 +66,35 @@ export const ALTERNATIVES: Record<string, string[]> = {
   'band-row': ['band-pull-apart', 'band-face-pull'],
   'band-face-pull': ['band-pull-apart', 'band-row'],
   'band-lateral-raise': ['band-pull-apart'],
+  // home
+  'stand-push-up': ['decline-push-up', 'band-chest-press'],
+  'band-chest-press': ['stand-push-up', 'banded-push-up'],
+  'decline-push-up': ['stand-push-up', 'banded-push-up'],
+  'band-overhead-press': ['lateral-raise', 'band-y-raise'],
+  'band-pushdown': ['band-overhead-triceps', 'bench-dip'],
+  'band-rdl': ['single-leg-rdl', 'single-leg-bridge'],
+  'band-pulldown': ['single-arm-band-row', 'band-row'],
+  'single-arm-band-row': ['band-row', 'band-pulldown'],
+  'band-shrug': ['band-y-raise'],
+  'band-squat': ['bulgarian-split-squat', 'bw-squat'],
+  'bulgarian-split-squat': ['band-squat', 'step-up'],
+  'single-leg-rdl': ['band-rdl', 'single-leg-bridge'],
+  'band-wall-sit': ['band-squat', 'wall-sit'],
+  'single-leg-bridge': ['glute-bridge', 'band-rdl'],
+  'banded-push-up': ['stand-push-up', 'decline-push-up'],
+  'band-fly': ['band-chest-press', 'stand-push-up'],
+  'band-curl': ['band-hammer-curl'],
+  'band-overhead-triceps': ['band-pushdown', 'bench-dip'],
+  'band-hammer-curl': ['band-curl'],
+  'band-y-raise': ['band-pull-apart', 'band-face-pull'],
+  'reverse-crunch': ['lying-leg-raise', 'dead-bug'],
+  'mountain-climber': ['plank', 'dead-bug'],
 };
 
 /** Every exercise the app knows how to describe: the built-in routines plus the swap-only ones. */
 export const EXERCISE_LIBRARY: Map<string, Exercise> = (() => {
   const m = new Map<string, Exercise>();
-  for (const r of BUILTINS) for (const d of DAY_IDS) for (const e of r.days[d].exercises) if (!m.has(e.id)) m.set(e.id, e);
+  for (const r of BUILTINS) for (const d of DAY_IDS) for (const e of [...r.days[d].exercises, ...(homeDayOf(r, d)?.exercises ?? [])]) if (!m.has(e.id)) m.set(e.id, e);
   for (const e of ALT_EXERCISES) if (!m.has(e.id)) m.set(e.id, e);
   return m;
 })();

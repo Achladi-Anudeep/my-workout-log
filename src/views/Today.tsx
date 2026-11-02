@@ -6,7 +6,7 @@ import { routineName } from '../lib/routines';
 import { isoDay, lastFor, mmss, pad, programWeek, range, fmtW, weekdayId } from '../lib/utils';
 import { advise } from '../lib/coach';
 import Advice from '../components/Advice';
-import type { Active, Day, DayId, Exercise, Session } from '../types';
+import type { Active, Day, DayId, Exercise, Session, Venue } from '../types';
 import WeightSheet from '../components/WeightSheet';
 import ExerciseHowTo from '../components/ExerciseHowTo';
 import DemoGif from '../components/exercise/DemoGif';
@@ -195,10 +195,13 @@ export default function Today({ onRest }: { onRest: OnRest }) {
   const [finder, setFinder] = useState(false);
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
-  const { routine, plan, byId } = useActivePlan();
+  const { routine, plan, byId, homeById } = useActivePlan();
+  const venuePick = useWorkout(s => s.venuePick);
   const isActiveHere = active?.dayId === sel;
+  const homeAvail = !!homeById[sel];
+  const venue: Venue = isActiveHere ? (active?.venue ?? 'gym') : homeAvail ? (venuePick[sel] ?? 'gym') : 'gym';
   // While a workout runs, show the snapshot it started with, even if the routine was edited since.
-  const day = isActiveHere && active ? activeDay(active) : byId[sel];
+  const day = isActiveHere && active ? activeDay(active) : venue === 'home' ? homeById[sel]! : byId[sel];
   const pw = programWeek(startDate);
   useWakeLock(isActiveHere);
   const doneToday = sessions.find(s => s.date === isoDay() && s.dayId === sel);
@@ -229,6 +232,17 @@ export default function Today({ onRest }: { onRest: OnRest }) {
       <section>
         <div className="flex items-center gap-2"><Plate color={day.plate} size={14} /><span className="label">{day.short}{sel === today ? ' · today' : ''}{day.home ? ' · at home' : ''} · {routineName(routine)}</span></div>
         <h2 className="disp mt-1 text-[40px] font-extrabold uppercase leading-[0.95]">{day.title}</h2>
+        {homeAvail && !isActiveHere && (
+          <div role="radiogroup" aria-label="Where are you training today?" className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-sunk p-1">
+            {(['gym', 'home'] as const).map(v => (
+              <button key={v} id={`venue-${v}`} role="radio" aria-checked={venue === v} onClick={() => act().setVenuePick(sel, v)}
+                className={`h-10 rounded-lg text-[14px] font-semibold ${venue === v ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>
+                {v === 'gym' ? '🏋️ Gym' : '🏠 Home'}
+              </button>
+            ))}
+          </div>
+        )}
+        {homeAvail && !isActiveHere && venue === 'home' && <p className="mt-1 text-[13px] text-muted">Home version of {byId[sel].title}: same muscles, with your bands, 2 kg dumbbells, push-up stands, chair and bed.</p>}
         <p className="mt-1 text-muted">{day.focus}{day.mins !== '0' && <> · ~<span className="num">{day.mins}</span> min</>}</p>
         {day.cardio !== 'none' && <p className="mt-1 text-[14px] text-muted">Optional cardio after: 15–20 min, conversational pace{day.cardio === 'home' ? ' (walk, stairs, jog in place)' : ''}.</p>}
         {day.exercises.length > 0 && day.cardio === 'none' && <p className="mt-1 text-[14px] text-muted">No cardio today.</p>}
@@ -265,10 +279,10 @@ export default function Today({ onRest }: { onRest: OnRest }) {
                 </button>
               ) : (
                 <div className="flex gap-2">
-                  <button id="start-guided" className="h-12 flex-1 rounded-xl bg-accent text-[16px] font-bold text-accentInk shadow-lg" onClick={() => act().start(sel, true)}>
+                  <button id="start-guided" className="h-12 flex-1 rounded-xl bg-accent text-[16px] font-bold text-accentInk shadow-lg" onClick={() => act().start(sel, true, venue)}>
                     ▶ Start {day.title}
                   </button>
-                  <button id="start-workout" className="h-12 rounded-xl border border-line bg-surface px-4 text-[14px] font-semibold shadow-lg" onClick={() => act().start(sel)}>
+                  <button id="start-workout" className="h-12 rounded-xl border border-line bg-surface px-4 text-[14px] font-semibold shadow-lg" onClick={() => act().start(sel, false, venue)}>
                     List
                   </button>
                 </div>

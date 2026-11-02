@@ -182,3 +182,27 @@ describe('machine settings notes', () => {
     expect(d.state().machineNotes['a'].text).toBe('newer remote');
   });
 });
+
+describe('training at home', () => {
+  it('starts and logs the home version of a day, and remembers the pick for that weekday', async () => {
+    const d = await device(null);
+    d.act().setVenuePick('mon', 'home');
+    d.act().start('mon', false, 'home');
+    const a = d.state().active!;
+    expect(a.venue).toBe('home');
+    expect(a.day!.title).toBe('Home Push');
+    expect(a.day!.exercises[0].id).toBe('stand-push-up');
+    d.act().edit('stand-push-up', 0, { r: '12', done: true });
+    d.act().finish(0, '');
+    expect(d.state().sessions[0]).toMatchObject({ venue: 'home', title: 'Home Push', dayId: 'mon' });
+    expect(d.state().venuePick.mon).toBe('home');
+  });
+
+  it('a copied routine keeps its home days; a gym start stays a gym workout', async () => {
+    const d = await device(null);
+    const id = d.act().createRoutine('Mine', 'builtin-ppl-v2');
+    expect(d.state().routines.find(r => r.id === id)!.homeDays?.tue?.title).toBe('Home Pull · Hinge');
+    d.act().start('tue');
+    expect(d.state().active!.venue).toBeUndefined();
+  });
+});

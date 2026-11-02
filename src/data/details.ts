@@ -505,6 +505,261 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Shrugging', 'Swinging the body', 'Raising above shoulder height'],
   },
 
+  // ---------- Home versions of the gym days ----------
+  "stand-push-up": {
+    equipment: "Push-up stands + floor or mat",
+    targets: "Chest · front delts · triceps · core",
+    steps: [
+      "Set the stands a little wider than your shoulders and grip the handles.",
+      "Walk your feet back so your body is one straight line, core braced.",
+      "Lower until your chest is just below the handles, elbows about 45° from the body.",
+      "Push back up to straight arms.",
+    ],
+    mistakes: ["Hips sagging or piking up", "Flaring the elbows straight out", "Stopping halfway down"],
+  },
+  "band-chest-press": {
+    equipment: "Blue tube band, wrapped behind your upper back; chair optional",
+    targets: "Chest · front delts · triceps",
+    steps: [
+      "Sit tall on the chair (or stand), the band across your upper back under your armpits, a handle in each hand at chest level.",
+      "Press both handles forward and slightly together until your arms are almost straight.",
+      "Squeeze your chest for a moment.",
+      "Return slowly until your hands are beside your chest.",
+    ],
+    mistakes: ["Shrugging the shoulders forward", "Letting the band snap back", "Band riding up onto your neck"],
+  },
+  "decline-push-up": {
+    equipment: "Bed or chair for your feet + floor or mat",
+    targets: "Upper chest · front delts · triceps",
+    steps: [
+      "Put your feet on the bed or chair and your hands on the floor, a little wider than your shoulders.",
+      "Brace your core so your body is one straight line.",
+      "Lower your chest toward the floor, elbows about 45°.",
+      "Push back up.",
+    ],
+    mistakes: ["Hips sagging", "Head poking forward", "Feet too high at first (start low)"],
+  },
+  "band-overhead-press": {
+    equipment: "Red loop (later the blue tube band), stand on it",
+    targets: "Front & side delts · triceps",
+    steps: [
+      "Stand on the band, feet hip-width, hands at shoulder height, palms forward.",
+      "Brace your abs and squeeze your glutes.",
+      "Press straight up until your arms are almost straight.",
+      "Lower slowly back to the shoulders.",
+    ],
+    mistakes: ["Leaning back to push", "Elbows flaring far behind the body", "Band slipping from under your feet"],
+  },
+  "band-pushdown": {
+    equipment: "Red loop or blue tube band on the door anchor at the top of the door",
+    targets: "Triceps",
+    steps: [
+      "Close the door anchor in the top of the door and hold the band with both hands, elbows bent.",
+      "Pin your elbows to your sides and lean forward very slightly.",
+      "Push down until your arms are straight and squeeze.",
+      "Let the hands rise slowly to chest height.",
+    ],
+    mistakes: ["Elbows drifting forward", "Leaning over the band", "Cutting the range short"],
+  },
+  "band-rdl": {
+    equipment: "Blue tube band, stand on the middle",
+    targets: "Hamstrings · glutes · lower back",
+    steps: [
+      "Stand on the band, feet hip-width, a handle in each hand in front of your thighs.",
+      "Soften your knees and push your hips back, keeping your back flat.",
+      "Lower until you feel a strong hamstring stretch.",
+      "Squeeze your glutes and drive your hips forward to stand tall.",
+    ],
+    mistakes: ["Rounding the back", "Bending the knees into a squat", "Hands drifting away from the legs"],
+  },
+  "band-pulldown": {
+    equipment: "Blue tube band on the door anchor at the top of the door",
+    targets: "Lats · upper back · biceps",
+    steps: [
+      "Close the anchor in the top of the door, kneel facing it, a handle in each hand, arms up.",
+      "Lift your chest and lean back very slightly.",
+      "Pull the handles to your upper chest, driving your elbows down and back.",
+      "Let your arms rise slowly until straight.",
+    ],
+    mistakes: ["Pulling with the arms only (think elbows down)", "Shrugging", "Kneeling too close, so there's no tension"],
+  },
+  "single-arm-band-row": {
+    equipment: "Blue tube band on the door anchor at waist height",
+    targets: "Lats · mid-back · biceps",
+    steps: [
+      "Close the anchor at waist height, step back until the band is tight, one handle in one hand.",
+      "Stagger your feet and brace.",
+      "Pull the handle to your hip, elbow close to your side, squeeze 1 second.",
+      "Return slowly; finish the set, then switch sides.",
+    ],
+    mistakes: ["Twisting the torso", "Pulling to the chest instead of the hip", "Rushing the return"],
+  },
+  "band-shrug": {
+    equipment: "Blue tube band, stand on the middle",
+    targets: "Upper traps",
+    steps: [
+      "Stand on the band, a handle in each hand at your sides.",
+      "Lift your shoulders straight up toward your ears.",
+      "Hold 1 second at the top.",
+      "Lower slowly to a full stretch.",
+    ],
+    mistakes: ["Rolling the shoulders", "Bending the elbows", "Head poking forward"],
+  },
+  "hand-gripper": {
+    equipment: "Your hand gripper",
+    targets: "Grip · forearms",
+    steps: [
+      "Hold the gripper with the handle deep in your palm.",
+      "Squeeze until the handles touch.",
+      "Hold 1 second.",
+      "Open slowly; finish the set, then switch hands.",
+    ],
+    mistakes: ["Half squeezes", "Letting it spring open", "Bending the wrist"],
+  },
+  "band-squat": {
+    equipment: "Blue tube band, stand on the middle, handles at your shoulders",
+    targets: "Quads · glutes",
+    steps: [
+      "Stand on the band, feet shoulder-width, and bring the handles up to your shoulders.",
+      "Brace your core, chest up.",
+      "Sit down between your heels over 3 seconds, knees following your toes.",
+      "Drive up through the whole foot to standing.",
+    ],
+    mistakes: ["Knees caving in", "Heels lifting", "Letting the handles pull you forward"],
+  },
+  "bulgarian-split-squat": {
+    equipment: "Chair or bed for your rear foot; 2 kg dumbbells optional",
+    targets: "Quads · glutes",
+    steps: [
+      "Stand about two steps in front of the chair and put the top of one foot on it behind you.",
+      "Keep most of your weight on the front foot, chest tall.",
+      "Lower straight down until the front thigh is about parallel.",
+      "Push through the front heel to stand; finish the set, then switch legs.",
+    ],
+    mistakes: ["Front foot too close to the chair", "Front knee caving in", "Pushing off the back foot"],
+  },
+  "single-leg-rdl": {
+    equipment: "Bodyweight or your 2 kg dumbbells",
+    targets: "Hamstrings · glutes · balance",
+    steps: [
+      "Stand on one leg with a soft knee, a dumbbell in the opposite hand (or none).",
+      "Hinge forward, the free leg rising behind you, hips square.",
+      "Lower until you feel a strong hamstring stretch, back flat.",
+      "Squeeze the glute to stand tall; finish the set, then switch.",
+    ],
+    mistakes: ["Hips twisting open", "Rounding the back", "Locking the standing knee"],
+  },
+  "band-wall-sit": {
+    equipment: "Red loop band above the knees + any flat wall",
+    targets: "Quads · glutes · outer hips",
+    steps: [
+      "Put the red loop just above your knees and lean your back on the wall.",
+      "Slide down until your thighs are parallel to the floor, knees over ankles.",
+      "Push your knees out against the band.",
+      "Hold for the time, breathing steadily.",
+    ],
+    mistakes: ["Knees collapsing in", "Hands pushing on the thighs", "Holding your breath"],
+  },
+  "single-leg-bridge": {
+    equipment: "Yoga mat",
+    targets: "Glutes · hamstrings",
+    steps: [
+      "Lie on your back, one foot flat near your hips, the other leg straight up or out.",
+      "Push through the heel and lift your hips until they're level.",
+      "Pause 2 seconds and squeeze the glute.",
+      "Lower slowly; finish the set, then switch.",
+    ],
+    mistakes: ["Hips dropping to one side", "Arching the lower back", "Pushing through the toes"],
+  },
+  "banded-push-up": {
+    equipment: "Red loop band across your upper back, ends under your palms",
+    targets: "Chest · front delts · triceps",
+    steps: [
+      "Loop the band across your upper back and trap each end under a palm (or the push-up stands).",
+      "Set up in a push-up with your body in one line.",
+      "Lower your chest toward the floor, elbows about 45°.",
+      "Push all the way up against the band.",
+    ],
+    mistakes: ["Hips sagging", "Band sliding to the neck", "Half reps at the top"],
+  },
+  "band-fly": {
+    equipment: "Blue tube band on the door anchor at chest height",
+    targets: "Chest",
+    steps: [
+      "Close the anchor at chest height, face away from the door, a handle in each hand, arms out wide.",
+      "Step forward until there's tension, split stance.",
+      "With a fixed slight elbow bend, bring the handles together in front of your chest.",
+      "Open slowly until you feel a stretch.",
+    ],
+    mistakes: ["Bending the elbows into a press", "Arms going behind the body", "Leaning far forward"],
+  },
+  "band-curl": {
+    equipment: "Red loop (later the blue tube band), stand on it",
+    targets: "Biceps",
+    steps: [
+      "Stand on the band, hands at your sides, palms forward.",
+      "Pin your elbows to your sides.",
+      "Curl up toward your shoulders.",
+      "Lower slowly over 3 seconds to straight arms.",
+    ],
+    mistakes: ["Swinging the body", "Elbows moving forward", "Stopping before the arms are straight"],
+  },
+  "band-overhead-triceps": {
+    equipment: "Red loop under your back foot, or the blue band on the low door anchor",
+    targets: "Triceps (long head)",
+    steps: [
+      "Stand in a split stance with the band under your back foot, hands behind your head, elbows pointing up.",
+      "Keep your upper arms close to your head.",
+      "Straighten your arms overhead and squeeze.",
+      "Lower slowly behind your head. Go straight to A2.",
+    ],
+    mistakes: ["Elbows flaring wide", "Arching the lower back", "Tiny range of motion"],
+  },
+  "band-hammer-curl": {
+    equipment: "Red loop or blue tube band, stand on it",
+    targets: "Biceps · brachialis · forearms",
+    steps: [
+      "Stand on the band, hands at your sides, palms facing each other.",
+      "Pin your elbows.",
+      "Curl up keeping the palms facing in.",
+      "Lower slowly over 3 seconds.",
+    ],
+    mistakes: ["Swinging", "Twisting the wrists", "Elbows drifting forward"],
+  },
+  "band-y-raise": {
+    equipment: "Red loop under your feet, light",
+    targets: "Lower traps · rear & side delts",
+    steps: [
+      "Stand on the band, hinge slightly forward, hands in front of your thighs, thumbs up.",
+      "Raise your arms up and out into a Y shape.",
+      "Pause at the top, shoulders down.",
+      "Lower slowly.",
+    ],
+    mistakes: ["Shrugging", "Using a band that's too heavy", "Arching the back"],
+  },
+  "reverse-crunch": {
+    equipment: "Yoga mat",
+    targets: "Lower abs",
+    steps: [
+      "Lie on your back, knees bent at 90° above your hips, hands by your sides.",
+      "Curl your hips off the mat toward your chest.",
+      "Pause briefly.",
+      "Lower slowly without letting your feet drop.",
+    ],
+    mistakes: ["Swinging the legs", "Pushing hard with the hands", "Dropping fast"],
+  },
+  "mountain-climber": {
+    equipment: "Yoga mat",
+    targets: "Core · shoulders · conditioning",
+    steps: [
+      "Start in a high plank, shoulders over your hands.",
+      "Drive one knee toward your chest, then switch legs quickly.",
+      "Keep your hips low and level.",
+      "Breathe steadily for the whole time.",
+    ],
+    mistakes: ["Hips bouncing up", "Shoulders drifting behind the hands", "Holding your breath"],
+  },
+
   // ---------- Alternatives (for swapping when a machine is busy) ----------
   'db-bench-press': {
     equipment: 'Two dumbbells + flat bench',

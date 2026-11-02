@@ -16,7 +16,7 @@ const SUGGESTIONS = [
 export default function AskAI({ e }: { e: Exercise }) {
   const hasChat = useWorkout(s => (s.aiChats[`ex:${e.id}`]?.length ?? 0) > 0);
   const [open, setOpen] = useState(false);
-  const { plan } = useActivePlan();
+  const { plan, homeById } = useActivePlan();
   if (!open) {
     return (
       <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={() => setOpen(true)}>
@@ -26,7 +26,7 @@ export default function AskAI({ e }: { e: Exercise }) {
   }
   const context = () => {
     const s = useWorkout.getState();
-    return exerciseContext(s.aiProfile, e, s.sessions, s.machineNotes[e.id]?.text, plan);
+    return exerciseContext(s.aiProfile, e, s.sessions, s.machineNotes[e.id]?.text, plan, homeById);
   };
   return (
     <section className="grid gap-2 rounded-xl border border-line bg-surface p-3">

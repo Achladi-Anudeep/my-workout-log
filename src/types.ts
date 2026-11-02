@@ -1,5 +1,7 @@
 export type Unit = 'reps' | 'sec';
 export type DayId = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+/** Where a workout happens. Each gym day can have a home version that trains the same muscles. */
+export type Venue = 'gym' | 'home';
 
 export interface Exercise {
   id: string;
@@ -50,6 +52,8 @@ export interface Routine {
   builtin?: boolean;
   updatedAt: number;
   days: Record<DayId, RoutineDay>;
+  /** Home version of each gym day (bands, bodyweight). Missing on routines made before this existed: the built-in home days are used. */
+  homeDays?: Partial<Record<DayId, RoutineDay>>;
 }
 
 export interface Day {
@@ -75,6 +79,8 @@ export interface Active {
   dayId: DayId; startedAt: number; logs: Record<string, SetLog[]>; routineId?: string; day?: Day;
   /** Guided mode: which exercise is on screen. Unset = the normal list. */
   guided?: number;
+  /** Set when today's workout is the home version. */
+  venue?: Venue;
 }
 
 export interface LoggedSet { w: number | null; r: number; }
@@ -91,4 +97,6 @@ export interface Session {
   /** Day title and routine at the time (older sessions lack these and fall back to the built-in plan). */
   title?: string;
   routineId?: string;
+  /** "home" when the home version of the day was done. */
+  venue?: Venue;
 }

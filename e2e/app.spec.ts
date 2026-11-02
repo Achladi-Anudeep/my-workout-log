@@ -345,6 +345,31 @@ test.describe('@local', () => {
     await expect(page.getByRole('button', { name: /Show demo of Cat-Camel/ })).toHaveCount(0);
   });
 
+  test('pick Home on a gym day: home exercises, logged as a home workout, remembered next time', async ({ page }) => {
+    await page.locator('#day-tue').click();
+    await expect(page.locator('main h2').first()).toContainText('Pull');
+    await page.locator('#venue-home').click();
+    await expect(page.locator('main')).toContainText('Home Pull · Hinge');
+    await expect(page.locator('main')).toContainText('Band Romanian Deadlift');
+    await expect(page.locator('article', { hasText: 'Band Romanian Deadlift' }).first()).toContainText('Equipment: Blue tube band');
+    await page.locator('#start-workout').click();
+    await page.getByRole('button', { name: 'Mark set 1 done' }).first().click();
+    await page.getByRole('button', { name: 'Skip' }).click();
+    await page.getByRole('button', { name: 'Finish ›' }).click();
+    await page.getByRole('button', { name: 'Save workout' }).click();
+    await expect(page.locator('main')).toContainText('Home Pull · Hinge');
+
+    await page.reload();
+    await tab(page, 'today');
+    await page.locator('#day-tue').click();
+    await expect(page.locator('#venue-home')).toHaveAttribute('aria-checked', 'true');
+    await page.locator('#venue-gym').click();
+    await expect(page.locator('main')).toContainText('Lat Pulldown');
+    await expect(page.locator('#day-sat')).toBeVisible();
+    await page.locator('#day-sat').click();
+    await expect(page.locator('#venue-home')).toHaveCount(0); // Saturday is already a home day
+  });
+
   test('swap a busy machine during a workout, and swap back', async ({ page }) => {
     await page.locator('#day-tue').click();
     await expect(page.getByRole('button', { name: 'Swap Lat Pulldown' })).toHaveCount(0); // only during a workout

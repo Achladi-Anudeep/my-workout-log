@@ -42,7 +42,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
   const startDate = useWorkout(s => s.startDate);
   const routines = useWorkout(s => s.routines);
   const activeId = useWorkout(s => s.activeRoutineId);
-  const { routine, plan } = useActivePlan();
+  const { routine, plan, homeById } = useActivePlan();
   const [creating, setCreating] = useState(false);
   const pw = programWeek(startDate);
   const all = [...BUILTINS, ...routines];
@@ -94,7 +94,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
               <Plate color={d.plate} size={12} />
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{d.title}</span>
-                <span className="block truncate text-[13px] text-muted">{d.exercises.length ? `${d.exercises.length} exercises${d.mins ? ` · ~${d.mins} min` : ''}` : d.focus}</span>
+                <span className="block truncate text-[13px] text-muted">{d.exercises.length ? `${d.exercises.length} exercises${d.mins ? ` · ~${d.mins} min` : ''}${homeById[d.id] ? ' · 🏠 home version' : ''}` : d.focus}</span>
               </span>
               <span className="text-[12px] text-muted">{d.cardio === 'none' ? (d.exercises.length ? 'no cardio' : '') : '+ cardio'}</span>
             </button>

@@ -1,6 +1,7 @@
 import { PLAN, DAY as BUILTIN_DAY } from '../data/plan';
 import { buildV2 } from '../data/planV2';
-import type { Day, DayId, Exercise, Routine, RoutineDay, Session } from '../types';
+import { HOME_DAYS } from '../data/home';
+import type { Day, DayId, Exercise, Routine, RoutineDay, Session, Venue } from '../types';
 
 export const DAY_IDS: DayId[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 export const DAY_SHORT: Record<DayId, string> = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' };
@@ -20,12 +21,13 @@ export const BUILTIN: Routine = {
     const { id: _id, short: _s, plate: _p, ...rest } = d;
     return [d.id, rest];
   })) as Record<DayId, RoutineDay>,
+  homeDays: HOME_DAYS,
 };
 
 export const BUILTIN_V2_ID = 'builtin-ppl-v2';
 
 /** Gym PPL with the review gaps filled: overhead press, split superset, more biceps and calf work. Also locked. */
-export const BUILTIN_V2: Routine = { id: BUILTIN_V2_ID, name: 'Gym PPL v2', builtin: true, updatedAt: 0, days: buildV2() };
+export const BUILTIN_V2: Routine = { id: BUILTIN_V2_ID, name: 'Gym PPL v2', builtin: true, updatedAt: 0, days: buildV2(), homeDays: HOME_DAYS };
 
 /** Routines that ship with the app. Read-only; duplicate one to customise it. */
 export const BUILTINS: Routine[] = [BUILTIN, BUILTIN_V2];
@@ -35,8 +37,17 @@ export const emptyDay = (): RoutineDay => ({ title: '', focus: '', mins: '', car
 
 export const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
 
-export function toDay(r: Routine, id: DayId): Day {
-  const d = r.days[id] ?? emptyDay();
+/** The home version of a day, if there is one. Saturday is already a home day, so it has none. */
+export function homeDayOf(r: Routine, id: DayId): RoutineDay | null {
+  const gym = r.days[id];
+  if (!gym || !gym.exercises.length || gym.home) return null;
+  const home = (r.homeDays ?? HOME_DAYS)[id];
+  return home && home.exercises.length ? home : null;
+}
+
+export function toDay(r: Routine, id: DayId, venue: Venue = 'gym'): Day {
+  const home = venue === 'home' ? homeDayOf(r, id) : null;
+  const d = home ?? r.days[id] ?? emptyDay();
   const isRest = d.exercises.length === 0;
   return {
     ...d,
@@ -46,6 +57,7 @@ export function toDay(r: Routine, id: DayId): Day {
     title: d.title.trim() || (isRest ? 'Rest' : DAY_LONG[id]),
     focus: d.focus || (isRest ? 'Rest day' : ''),
     mins: isRest ? '0' : d.mins,
+    ...(home ? { home: true } : {}),
   };
 }
 

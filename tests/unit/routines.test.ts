@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BUILTIN, BUILTIN_ID, BUILTIN_V2, BUILTINS, DAY_IDS, findRoutine, isBuiltin, planOf, routineName, toDay } from '../../src/lib/routines';
+import { BUILTIN, BUILTIN_ID, BUILTIN_V2, BUILTINS, DAY_IDS, findRoutine, homeDayOf, isBuiltin, planOf, routineName, toDay } from '../../src/lib/routines';
+import { HOME_DAYS } from '../../src/data/home';
 import { DETAILS, detailsOf } from '../../src/data/details';
 import { ALT_EXERCISES, ALTERNATIVES, EXERCISE_LIBRARY, swapOptions } from '../../src/data/alternatives';
 import { DEMO_ID, DEMO_NOTE, demoGif } from '../../src/data/demos';
@@ -162,7 +163,7 @@ describe('finding the machine and doing it right', () => {
 
   it('every exercise has a pinned demo, and every demo note belongs to a real exercise', () => {
     const missing = all.filter(e => !demoGif(e)).map(e => e.id).sort();
-    expect(missing).toEqual([]);
+    expect(missing).toEqual(['hand-gripper']); // no gripper animation exists; it shows an icon
     for (const k of Object.keys(DEMO_NOTE)) expect(EXERCISE_LIBRARY.has(k), k).toBe(true);
     for (const id of Object.values(DEMO_ID)) expect(id).toMatch(/^[A-Za-z0-9]{7}$/);
     for (const k of Object.keys(DEMO_ID)) expect(EXERCISE_LIBRARY.has(k), k).toBe(true);
@@ -182,9 +183,43 @@ describe('finding the machine and doing it right', () => {
   });
 
   it('warm-up and cool-down demos each match a move in the built-in routines', () => {
-    const moves = BUILTINS.flatMap(r => DAY_IDS.flatMap(d => [...r.days[d].warmup, ...r.days[d].cooldown]));
+    const moves = BUILTINS.flatMap(r => DAY_IDS.flatMap(d => [...r.days[d].warmup, ...r.days[d].cooldown, ...(homeDayOf(r, d)?.warmup ?? []), ...(homeDayOf(r, d)?.cooldown ?? [])]));
     for (const d of WARMUP_DEMOS) expect(moves.some(m => d.match.test(m)), String(d.match)).toBe(true);
     expect(warmupDemo('Deep Squat Hamstring Stretch · 30s (pain-free)')).toBeNull(); // no clean demo: stays text-only
     expect(warmupDemo('Hamstring Stretch · 30s')?.id).toBe('99rWm7w');
+  });
+
+  it('every gym day Mon–Fri has a home version; Saturday (already home) and Sunday do not', () => {
+    for (const r of BUILTINS) {
+      expect(DAY_IDS.filter(d => homeDayOf(r, d))).toEqual(['mon', 'tue', 'wed', 'thu', 'fri']);
+      for (const d of ['mon', 'tue', 'wed', 'thu', 'fri'] as const) {
+        const home = toDay(r, d, 'home');
+        expect(home.home).toBe(true);
+        expect(home.exercises.length).toBeGreaterThanOrEqual(6);
+      }
+    }
+  });
+
+  it('home days only use home gear: bands, bodyweight and at most the 2 kg dumbbells', () => {
+    for (const day of Object.values(HOME_DAYS)) for (const e of day!.exercises) {
+      expect(e.start == null || e.start <= 2, e.id).toBe(true);
+      expect(detailsOf(e)?.equipment, e.id).toBeTruthy();
+    }
+  });
+
+  it('home days train the same muscles as the gym day they replace', () => {
+    const has = (d: 'mon' | 'tue' | 'wed' | 'thu' | 'fri', re: RegExp) => toDay(BUILTIN, d, 'home').exercises.some(e => re.test(detailsOf(e)?.targets ?? ''));
+    expect(has('mon', /Chest/) && has('mon', /delts/) && has('mon', /Triceps/)).toBe(true);
+    expect(has('tue', /Lats|back/) && has('tue', /Hamstrings/) && has('tue', /traps/)).toBe(true);
+    expect(has('wed', /Quads/) && has('wed', /Hamstrings/) && has('wed', /Calves/)).toBe(true);
+    expect(has('thu', /Chest/) && has('thu', /Biceps/) && has('thu', /Triceps/)).toBe(true);
+    expect(has('fri', /Lats/) && has('fri', /Biceps/) && has('fri', /abs|Core/i)).toBe(true);
+  });
+
+  it('a routine copied before home days existed still gets them; a blank routine has none', () => {
+    const old: Routine = { ...BUILTIN, id: 'old-copy', builtin: false, homeDays: undefined };
+    expect(homeDayOf(old, 'mon')?.title).toBe('Home Push');
+    const blank: Routine = { ...BUILTIN, id: 'blank', builtin: false, homeDays: {} };
+    expect(homeDayOf(blank, 'mon')).toBeNull();
   });
 });

@@ -112,11 +112,13 @@ export default function Tutorials() {
   const search = q.trim().length >= 3 ? q.trim().toLowerCase() : null;
   const results = useDemos(search, 12);
 
-  const { plan, byId } = useActivePlan();
+  const { plan, byId, homeById } = useActivePlan();
   if (view?.exercise && demoGif(view.exercise)) return <PinnedDemoView {...view} exercise={view.exercise} onBack={() => setView(null)} />;
   if (view) return <DemoView {...view} onBack={() => setView(null)} />;
 
-  const planList = (day === 'all' ? [...new Map(plan.flatMap(d => d.exercises).map(e => [e.id, e])).values()] : byId[day].exercises).filter(e => !q || e.name.toLowerCase().includes(q.toLowerCase()));
+  // Gym and home versions of each day, deduped by exercise.
+  const exOf = (id: DayId) => [...byId[id].exercises, ...(homeById[id]?.exercises ?? [])];
+  const planList = [...new Map((day === 'all' ? plan.flatMap(d => exOf(d.id)) : exOf(day)).map(e => [e.id, e])).values()].filter(e => !q || e.name.toLowerCase().includes(q.toLowerCase()));
   const dayFilters: (DayId | 'all')[] = ['all', ...plan.filter(p => p.exercises.length).map(p => p.id)];
 
   return (

@@ -57,7 +57,7 @@ VERSIONS['lying-leg-raise'] = VERSIONS['leg-raise'];
  */
 export const WARMUP_DEMOS: { match: RegExp; id: string; note?: string }[] = [
   { match: /inch ?worm/i, id: 'TV87DNB' },
-  { match: /cobra/i, id: '01qpYSe', note: 'Shows the cobra part. Then push your hips up and back into a downward dog (the "mountain").' },
+  { match: /cobra to mountain/i, id: '01qpYSe', note: 'Shows the cobra part. Then push your hips up and back into a downward dog (the "mountain").' },
   { match: /world.?s greatest/i, id: 'DFGXwZr' },
   { match: /child.?s pose/i, id: 'f38OEuO', note: 'Kneel, sit your hips back to your heels and reach your arms forward.' },
   { match: /chest (&|and) triceps/i, id: '3uj0Ozg', note: 'Chest part shown. For triceps, reach one hand down your back and gently pull the elbow.' },
@@ -67,6 +67,8 @@ export const WARMUP_DEMOS: { match: RegExp; id: string; note?: string }[] = [
   { match: /quad stretch/i, id: 'BWnJR72', note: 'Shown on your side. Lying face down works the same.' },
   { match: /figure.?4/i, id: 'QY39eBr', note: 'Seated version shown. Lying on your back works the same.' },
   { match: /butterfly/i, id: 'bWlZvXh' },
+  { match: /^bodyweight squats/i, id: '75Bgtjy' },
+  { match: /^push-ups × \d+ easy/i, id: 'I4hDWkc' },
   { match: /calf (&|and) ankle stretch|calf stretch/i, id: '17bqEXD' },
 ];
 

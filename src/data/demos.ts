@@ -62,6 +62,29 @@ export const DEMO_ID: Record<string, string> = {
   'band-row': 'Nu7jqFE',             // band seated straight back row
   'band-face-pull': 'tc5dYrf',       // band standing rear delt row = face pull with a band
   'band-lateral-raise': 'DsgkuIt',   // dumbbell lateral raise, same movement: see note
+  // home versions of the gym days
+  'stand-push-up': 'I4hDWkc',        // push-up: see note
+  'band-chest-press': '4x5Okof',     // band seated chest press (band behind the back)
+  'decline-push-up': 'i5cEhka',      // decline push-up
+  'band-overhead-press': 'peAeMR3',  // band shoulder press (standing on the band)
+  'band-pushdown': '3ZflifB',        // cable pushdown: see note
+  'band-rdl': 'kuMiR2T',             // band stiff leg deadlift
+  'band-pulldown': 'DptumMx',        // band close-grip pulldown (anchored overhead)
+  'single-arm-band-row': 'km0sQC0',  // band single-arm standing low row
+  'band-shrug': 'trmte8s',           // band shrug
+  'band-squat': 'TUZLh71',           // band squat
+  'bulgarian-split-squat': 'y8bYM8w',// band single leg split squat (rear foot raised)
+  'single-leg-rdl': 'gKozT8X',       // dumbbell single leg deadlift
+  'band-wall-sit': 'sVQCCeG',        // march sit (wall): see note
+  'single-leg-bridge': 'rmEukuS',    // single leg bridge with outstretched leg
+  'banded-push-up': 'I4hDWkc',       // push-up: see note
+  'band-fly': '0CXGHya',             // cable crossover: see note
+  'band-curl': '3omWx6P',            // band alternating biceps curl
+  'band-overhead-triceps': 'obe5LMq',// band side (overhead, one arm) triceps extension
+  'band-hammer-curl': 'HPlPoQA',     // cable hammer curl with rope: see note
+  'band-y-raise': 'aHDy5O5',         // band y-raise
+  'reverse-crunch': 'nCU1Ekp',       // reverse crunch
+  'mountain-climber': 'RJgzwny',     // mountain climber
   // swap-ins
   'cable-lateral-raise': 'goJ6ezq',  // cable lateral raise
   'machine-shoulder-press': 'dNFYIU1', // Machine Shoulder Press (seated)
@@ -82,6 +105,16 @@ export const DEMO_NOTE: Record<string, string> = {
   'band-glute-bridge': 'Same movement with a loop band just above your knees. Push the knees out against it.',
   'band-lateral-raise': 'The demo uses dumbbells. Stand on the middle of the tube band and hold a handle in each hand.',
   'band-row': 'The demo sits on a bench. Sitting on the floor with legs straight works the same.',
+  'stand-push-up': 'Shown on the floor. Hold your push-up stands: deeper stretch, easier on the wrists.',
+  'banded-push-up': 'Same push-up, with the red loop across your upper back and the ends under your palms.',
+  'band-pushdown': 'The demo uses a cable. Hang the band from the door anchor at the top of the door; same movement.',
+  'band-fly': 'The demo uses cables. Door anchor at chest height, face away, a handle in each hand; same hugging motion.',
+  'band-hammer-curl': 'The demo uses a cable rope. Stand on the band, palms facing each other; same movement.',
+  'band-overhead-triceps': 'Shown one arm at a time. Both arms together with the band under your back foot works too.',
+  'band-wall-sit': 'The demo lifts one knee at a time. Keep both feet down, red loop above the knees, push the knees out.',
+  'band-pulldown': 'Shown seated on a box. Kneeling under the door anchor works the same.',
+  'band-chest-press': 'Shown seated. Standing works too; keep the band across your upper back.',
+  'single-leg-rdl': 'Shown with dumbbells; yours are 2 kg, or do it with bodyweight.',
 };
 
 export const gifUrl = (id: string) => `https://static.exercisedb.dev/media/${id}.gif`;

@@ -5,10 +5,10 @@ import AiChat from './AiChat';
 
 /** AI look at the last 7 days, then a conversation about it (follow-ups keep the context). */
 export default function WeekReview() {
-  const { plan } = useActivePlan();
+  const { plan, homeById } = useActivePlan();
   const context = () => {
     const s = useWorkout.getState();
-    return weekContext(s.aiProfile, plan, s.sessions, s.weights);
+    return weekContext(s.aiProfile, plan, s.sessions, s.weights, Date.now(), homeById);
   };
   return (
     <section className="grid gap-2 rounded-2xl border border-line bg-surface px-4 py-3">
