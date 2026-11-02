@@ -129,6 +129,22 @@ test.describe('@env', () => {
     await lap.context().close();
   });
 
+  test('AI answers a question for a signed-in account (Gemini key is set up)', async ({ page }) => {
+    await signIn(page);
+    await tab(page, 'today');
+    await page.locator('#day-wed').click();
+    await page.locator('article', { hasText: 'Leg Press' }).first().getByRole('button', { name: 'Show how to do Leg Press' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Leg Press' });
+    await sheet.getByRole('button', { name: '✨ Ask AI about this exercise' }).click();
+    await sheet.getByRole('button', { name: 'What should I feel, and where?' }).click();
+    const result = sheet.locator('.ai-answer, .ai-error');
+    await expect(result).toBeVisible({ timeout: 60_000 });
+    const text = await result.innerText();
+    // The free tier can be briefly busy; anything else (no key, sign-in, failure) is a real problem.
+    if (await sheet.locator('.ai-error').count()) expect(text).toContain('busy');
+    else expect(text.length).toBeGreaterThan(40);
+  });
+
   test.afterAll(async () => {
     if (email && password) await resetTestAccount(email, password);
   });
