@@ -49,14 +49,22 @@ async function gemini(key: string, body: Json): Promise<{ ok: true; text: string
       headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify(body),
     });
-    if (res.status === 404) continue; // model name retired: try the next one
+    if (res.status === 404) { console.warn(`[ai] model ${model} not found, trying the next one`); continue; }
     if (res.status === 429) return { ok: false, status: 429, error: 'busy' };
-    if (!res.ok) return { ok: false, status: 502, error: `gemini ${res.status}` };
-    const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+    if (!res.ok) {
+      const detail = (await res.text().catch(() => '')).slice(0, 300);
+      console.error(`[ai] gemini ${model} ${res.status}: ${detail}`);
+      return { ok: false, status: 502, error: `gemini ${res.status}: ${detail.replace(/\s+/g, ' ').slice(0, 160)}` };
+    }
+    const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[] };
     const text = (data.candidates?.[0]?.content?.parts ?? []).map(p => p.text ?? '').join('').trim();
-    if (!text) return { ok: false, status: 502, error: 'empty' };
+    if (!text) {
+      console.error(`[ai] gemini ${model} empty answer, finishReason=${data.candidates?.[0]?.finishReason}`);
+      return { ok: false, status: 502, error: `empty (${data.candidates?.[0]?.finishReason ?? 'no candidates'})` };
+    }
     return { ok: true, text };
   }
+  console.error('[ai] no Gemini model name worked');
   return { ok: false, status: 502, error: 'no-model' };
 }
 

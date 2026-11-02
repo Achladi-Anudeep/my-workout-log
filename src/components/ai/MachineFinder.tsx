@@ -20,6 +20,7 @@ export default function MachineFinder({ onClose }: { onClose: () => void }) {
   const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AiError | null>(null);
+  const [detail, setDetail] = useState('');
   const [match, setMatch] = useState<MachineMatch | null>(null);
   const [shown, setShown] = useState<'best' | 'second'>('best');
   const [howTo, setHowTo] = useState<Exercise | null>(null);
@@ -36,7 +37,7 @@ export default function MachineFinder({ onClose }: { onClose: () => void }) {
       setPhoto(small);
       setMatch(await identifyMachine(small, candidates));
     } catch (err) {
-      setError(err instanceof AiFailure ? err.code : 'failed');
+      setError(err instanceof AiFailure ? err.code : 'failed'); setDetail(err instanceof AiFailure ? err.detail : String(err));
     } finally {
       setBusy(false);
       if (input.current) input.current.value = '';
@@ -56,7 +57,7 @@ export default function MachineFinder({ onClose }: { onClose: () => void }) {
         className="h-12 rounded-xl bg-accent text-[15px] font-bold text-accentInk disabled:opacity-50">
         {busy ? 'Looking…' : photo ? '📷 Try another photo' : '📷 Take or choose a photo'}
       </button>
-      {error && <AiErrorNote code={error} />}
+      {error && <AiErrorNote code={error} detail={detail} />}
 
       {match && !busy && (ex ? (
         <div id="machine-match" className="grid gap-2 rounded-xl border border-line bg-surface p-3">

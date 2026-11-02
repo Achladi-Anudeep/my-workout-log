@@ -21,6 +21,7 @@ export default function AskAI({ e }: { e: Exercise }) {
   const [busy, setBusy] = useState(false);
   const [answer, setAnswer] = useState<{ q: string; text: string } | null>(null);
   const [error, setError] = useState<AiError | null>(null);
+  const [detail, setDetail] = useState('');
 
   async function ask(question: string) {
     if (!question.trim() || busy) return;
@@ -30,7 +31,7 @@ export default function AskAI({ e }: { e: Exercise }) {
       setAnswer({ q: question.trim(), text });
       setQ('');
     } catch (err) {
-      setError(err instanceof AiFailure ? err.code : 'failed');
+      setError(err instanceof AiFailure ? err.code : 'failed'); setDetail(err instanceof AiFailure ? err.detail : String(err));
     } finally {
       setBusy(false);
     }
@@ -54,7 +55,7 @@ export default function AskAI({ e }: { e: Exercise }) {
         <button type="submit" disabled={busy || !q.trim()} className="h-10 rounded-lg bg-accent px-3 text-[13px] font-bold text-accentInk disabled:opacity-40">{busy ? '…' : 'Ask'}</button>
       </form>
       {busy && <p className="text-[13px] text-muted">Thinking…</p>}
-      {error && <AiErrorNote code={error} />}
+      {error && <AiErrorNote code={error} detail={detail} />}
       {answer && !busy && (
         <>
           <p className="text-[13px] text-muted">You asked: {answer.q}</p>

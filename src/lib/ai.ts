@@ -13,7 +13,7 @@ export const DEFAULT_PROFILE = [
 ].join('\n');
 
 export type AiError = 'sign-in' | 'not-configured' | 'busy' | 'offline' | 'failed';
-export class AiFailure extends Error { constructor(public code: AiError) { super(code); } }
+export class AiFailure extends Error { constructor(public code: AiError, public detail = '') { super(code); } }
 
 export const AI_ERROR_TEXT: Record<AiError, string> = {
   'sign-in': 'Sign in (Plan → Account) to use AI.',
@@ -46,7 +46,7 @@ async function call<T>(payload: Record<string, unknown>): Promise<T> {
   if (res.status === 401) throw new AiFailure('sign-in');
   if (res.status === 503) throw new AiFailure('not-configured');
   if (res.status === 429) throw new AiFailure('busy');
-  if (!res.ok) throw new AiFailure('failed');
+  if (!res.ok) throw new AiFailure('failed', typeof body?.error === 'string' ? body.error : `HTTP ${res.status}`);
   return body as T;
 }
 

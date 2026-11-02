@@ -12,6 +12,10 @@ export function AiAnswer({ text }: { text: string }) {
   );
 }
 
-export function AiErrorNote({ code }: { code: AiError }) {
-  return <p className="ai-error rounded-lg bg-warnSoft px-3 py-2 text-[13px] text-warn">{AI_ERROR_TEXT[code]}</p>;
+export function AiErrorNote({ code, detail }: { code: AiError; detail?: string }) {
+  return (
+    <p className="ai-error rounded-lg bg-warnSoft px-3 py-2 text-[13px] text-warn">
+      {AI_ERROR_TEXT[code]}{code === 'failed' && detail ? <span className="mt-0.5 block text-[11px] opacity-80">({detail})</span> : null}
+    </p>
+  );
 }

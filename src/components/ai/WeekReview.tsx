@@ -13,11 +13,12 @@ export default function WeekReview() {
   const [busy, setBusy] = useState(false);
   const [text, setText] = useState<string | null>(null);
   const [error, setError] = useState<AiError | null>(null);
+  const [detail, setDetail] = useState('');
 
   async function run() {
     setBusy(true); setError(null);
     try { setText(await reviewWeek(weekContext(profile, plan, sessions, weights))); }
-    catch (err) { setError(err instanceof AiFailure ? err.code : 'failed'); }
+    catch (err) { setError(err instanceof AiFailure ? err.code : 'failed'); setDetail(err instanceof AiFailure ? err.detail : String(err)); }
     finally { setBusy(false); }
   }
 
@@ -32,7 +33,7 @@ export default function WeekReview() {
           {busy ? 'Reviewing…' : text ? 'Again' : 'Review my week'}
         </button>
       </div>
-      {error && <AiErrorNote code={error} />}
+      {error && <AiErrorNote code={error} detail={detail} />}
       {text && !busy && <AiAnswer text={text} />}
     </section>
   );
