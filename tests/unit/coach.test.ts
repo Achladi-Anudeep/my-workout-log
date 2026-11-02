@@ -52,24 +52,24 @@ describe('weight coach', () => {
 
   it('assisted machines progress by taking help away', () => {
     const pull = ex({ id: 'assisted-pull-up', start: 35, min: 8, max: 12, assisted: true });
-    expect(a([s(2, [[35, 12], [35, 12], [35, 12]])], pull)).toMatchObject({ kind: 'up', weight: 30, title: 'Less help · 30 kg' });
-    const bad = s(2, [[30, 6], [30, 6], [30, 7]]);
-    expect(a([bad, s(5, [[30, 7], [30, 6], [30, 6]])], pull)).toMatchObject({ kind: 'down', weight: 35 });
-    expect(a([s(2, [[5, 12], [5, 12], [5, 12]])], pull).title).toBe('Try it without help');
+    expect(a([s(2, [[35, 12], [35, 12], [35, 12]], 'assisted-pull-up')], pull)).toMatchObject({ kind: 'up', weight: 30, title: 'Less help · 30 kg' });
+    const bad = s(2, [[30, 6], [30, 6], [30, 7]], 'assisted-pull-up');
+    expect(a([bad, s(5, [[30, 7], [30, 6], [30, 6]], 'assisted-pull-up')], pull)).toMatchObject({ kind: 'down', weight: 35 });
+    expect(a([s(2, [[5, 12], [5, 12], [5, 12]], 'assisted-pull-up')], pull).title).toBe('Try it without help');
     // an older copy of dips without the flag is still treated as assisted
     const dips = ex({ id: 'dips', start: null, min: 10, max: 12 });
-    expect(a([s(2, [[20, 12], [20, 12], [20, 12]])], dips)).toMatchObject({ kind: 'up', weight: 15 });
+    expect(a([s(2, [[20, 12], [20, 12], [20, 12]], 'dips')], dips)).toMatchObject({ kind: 'up', weight: 15 });
   });
 
   it('a barbell exercise done with bodyweight that day is coached as bodyweight, not "0 kg"', () => {
     const squat = ex({ id: 'squat', start: 20 });
-    const r = a([s(2, [[null, 12], [null, 12], [null, 12]])], squat);
+    const r = a([s(2, [[null, 12], [null, 12], [null, 12]], 'squat')], squat);
     expect(r.kind).toBe('harder');
     expect(r.title).not.toContain('kg');
   });
 
   it('band exercises suggest more band tension', () => {
     const row = ex({ id: 'band-row', start: null, wNote: 'Tube band around your feet' });
-    expect(a([s(2, [[null, 12], [null, 12], [null, 12]])], row).title).toBe('More band tension');
+    expect(a([s(2, [[null, 12], [null, 12], [null, 12]], 'band-row')], row).title).toBe('More band tension');
   });
 });
