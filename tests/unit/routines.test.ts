@@ -98,7 +98,7 @@ describe('every built-in routine', () => {
   }
 
   it('has no orphaned detail entries', () => {
-    const used = new Set([...BUILTINS.flatMap(r => DAY_IDS.flatMap(d => r.days[d].exercises.map(e => e.id))), ...ALT_EXERCISES.map(e => e.id)]);
+    const used = new Set([...BUILTINS.flatMap(r => DAY_IDS.flatMap(d => [...r.days[d].exercises, ...(homeDayOf(r, d)?.exercises ?? [])].map(e => e.id))), ...ALT_EXERCISES.map(e => e.id)]);
     for (const id of Object.keys(DETAILS)) expect(used.has(id), id).toBe(true);
   });
 });
