@@ -221,7 +221,9 @@ export const useWorkout = create<WorkoutState>()(
         const from = day.exercises[i];
         const original = from.swappedFor ?? { id: from.id, name: from.name };
         const back = to.id === original.id;
-        const next: Exercise = { ...clone(to), sets: from.sets, superset: from.superset, swappedFor: back ? undefined : original };
+        // Inside a superset the rest belongs to the slot (A1 = straight to A2), not to the exercise.
+        const next: Exercise = { ...clone(to), sets: from.sets, superset: from.superset, swappedFor: back ? undefined : original,
+          ...(from.superset ? { rest: from.rest } : {}) };
         if (back) delete next.swappedFor;
         day.exercises[i] = next;
         const last = lastFor(s.sessions, next.id);

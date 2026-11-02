@@ -217,6 +217,18 @@ test.describe('@local', () => {
     await expect(page.locator('article', { hasText: 'Leg Press' }).first()).toContainText('My setup: Seat 3');
   });
 
+  test('wall sit, plank and back extension have demos too, with a note where the demo differs', async ({ page }) => {
+    await page.locator('#day-wed').click();
+    const card = page.locator('article', { hasText: 'Wall Sit' }).first();
+    await expect(card.locator('img[alt="Demo of Wall Sit"]')).toBeVisible();
+    await card.getByRole('button', { name: 'Show how to do Wall Sit' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Wall Sit' });
+    await expect(sheet).toContainText('Keep both feet on the floor');
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await page.locator('#day-fri').click();
+    await expect(page.locator('article', { hasText: 'Plank' }).last().locator('img[alt="Demo of Plank"]')).toBeVisible();
+  });
+
   test('swap a busy machine during a workout, and swap back', async ({ page }) => {
     await page.locator('#day-tue').click();
     await expect(page.getByRole('button', { name: 'Swap Lat Pulldown' })).toHaveCount(0); // only during a workout

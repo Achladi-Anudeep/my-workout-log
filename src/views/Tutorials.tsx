@@ -3,7 +3,7 @@ import { cleanStep, useDemos, ytUrl } from '../lib/exercisedb';
 import ExerciseHowTo from '../components/ExerciseHowTo';
 import DemoGif from '../components/exercise/DemoGif';
 import MachineNote from '../components/exercise/MachineNote';
-import { demoGif } from '../data/demos';
+import { DEMO_NOTE, demoGif } from '../data/demos';
 import { detailsOf } from '../data/details';
 import type { Exercise } from '../types';
 import { DEMO_Q } from '../data/plan';
@@ -34,6 +34,7 @@ function PinnedDemoView({ title, query, exercise, onBack }: DemoTarget & { exerc
       <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>‹ All tutorials</button>
       <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{title}</h2>
       <DemoGif e={exercise} className="mx-auto aspect-square w-full max-w-sm" />
+      {!exercise.demo && DEMO_NOTE[exercise.id] && <p className="demo-note rounded-lg bg-sunk px-3 py-2 text-[13px]">{DEMO_NOTE[exercise.id]}</p>}
       <MachineNote exId={exercise.id} />
       <div className="rounded-xl border border-line bg-surface px-4 py-3"><ExerciseHowTo e={exercise} /></div>
       <div className="flex flex-wrap gap-x-4 gap-y-2">

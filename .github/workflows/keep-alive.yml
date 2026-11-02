@@ -1,6 +1,6 @@
 # Keeps both Supabase projects (test and production) from being paused for inactivity.
 # Fails loudly if a database is already paused, so it gets noticed and resumed.
-name: Keep databases awake
+name: Keep databases awake + check demos
 
 on:
   schedule:
@@ -21,3 +21,14 @@ jobs:
         with:
           node-version: 20
       - run: node scripts/keep-alive.mjs https://my-own-workout-log.netlify.app https://develop--my-own-workout-log.netlify.app
+
+  demos:
+    name: Check demo animations still load
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/check-demos.mjs

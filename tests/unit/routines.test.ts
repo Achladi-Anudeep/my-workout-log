@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BUILTIN, BUILTIN_ID, BUILTIN_V2, BUILTINS, DAY_IDS, findRoutine, isBuiltin, planOf, routineName, toDay } from '../../src/lib/routines';
 import { DETAILS, detailsOf } from '../../src/data/details';
 import { ALT_EXERCISES, ALTERNATIVES, EXERCISE_LIBRARY, swapOptions } from '../../src/data/alternatives';
-import { DEMO_ID, demoGif } from '../../src/data/demos';
+import { DEMO_ID, DEMO_NOTE, demoGif } from '../../src/data/demos';
 import type { Routine } from '../../src/types';
 
 const names = (r: Routine, d: keyof Routine['days']) => r.days[d].exercises.map(e => e.name);
@@ -148,9 +148,10 @@ describe('finding the machine and doing it right', () => {
     expect(swapOptions(swapped, ['db-bench-press']).map(e => e.id)).toEqual(['chest-press', 'push-up']);
   });
 
-  it('nearly every exercise has a pinned demo; the rest show an icon', () => {
+  it('every exercise has a pinned demo, and every demo note belongs to a real exercise', () => {
     const missing = all.filter(e => !demoGif(e)).map(e => e.id).sort();
-    expect(missing).toEqual(['back-extension', 'plank', 'wall-sit']);
+    expect(missing).toEqual([]);
+    for (const k of Object.keys(DEMO_NOTE)) expect(EXERCISE_LIBRARY.has(k), k).toBe(true);
     for (const id of Object.values(DEMO_ID)) expect(id).toMatch(/^[A-Za-z0-9]{7}$/);
     for (const k of Object.keys(DEMO_ID)) expect(EXERCISE_LIBRARY.has(k), k).toBe(true);
   });

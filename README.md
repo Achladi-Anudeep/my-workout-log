@@ -52,7 +52,7 @@ If you set the project up before these features existed, run these once in the S
 
 - The test site shows a **TEST** badge in the header and installs as "Workout TEST", so it can't be confused with the real app.
 - `scripts/check-env.mjs` fails any Netlify build that would connect the wrong database: production must use the production project, and every other build must not.
-- Supabase pauses free projects after about a week of no activity. `.github/workflows/keep-alive.yml` makes a tiny read against both databases every second day so that never happens, and fails loudly if one is already paused.
+- Supabase pauses free projects after about a week of no activity. `.github/workflows/keep-alive.yml` makes a tiny read against both databases every second day so that never happens, and fails loudly if one is already paused. The same workflow runs `scripts/check-demos.mjs`, which checks that every pinned demo animation still loads from ExerciseDB (it sometimes drops a media file) and lists any that need a new pick in `src/data/demos.ts`.
 - Every deploy publishes `/version.json` (commit, environment, database host), which the pipeline uses to confirm exactly what is live.
 
 ## Release process (CI/CD)

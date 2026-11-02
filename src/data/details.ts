@@ -505,7 +505,7 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ['Arching past straight at the top', 'Rounding the back', 'Swinging fast'],
   },
   'assisted-pull-up': {
-    equipment: 'Assisted pull-up machine (kneel on the pad; more weight = more help)',
+    equipment: 'Assisted pull-up machine (kneel or stand on the pad; more weight = more help)',
     targets: 'Lats · upper back · biceps',
     steps: [
       'Pick an assistance weight, kneel on the pad and grip the handles a little wider than your shoulders.',

@@ -144,6 +144,17 @@ describe('swapping an exercise when the machine is busy', () => {
     expect(d.state().active!.day!.exercises[0].id).toBe('chest-press');
   });
 
+  it('a swap inside a superset keeps the slot\'s rest, so A1 still goes straight into A2', async () => {
+    const d = await device(null);
+    d.act().setActiveRoutine('builtin-ppl-v2');
+    d.act().start('thu');
+    const pushdown = (await import('../../src/data/alternatives')).EXERCISE_LIBRARY.get('triceps-pushdown')!;
+    expect(pushdown.rest).toBe(60);
+    d.act().swapExercise('ss-triceps-ext', pushdown);
+    const swapped = d.state().active!.day!.exercises.find(e => e.id === 'triceps-pushdown')!;
+    expect(swapped).toMatchObject({ superset: 'A1', rest: 0 });
+  });
+
   it('refuses a swap into an exercise already in the workout', async () => {
     const d = await device(null);
     d.act().start('mon');
