@@ -4,6 +4,8 @@ import ExerciseHowTo from '../components/ExerciseHowTo';
 import DemoGif from '../components/exercise/DemoGif';
 import MachinePhoto from '../components/exercise/MachinePhoto';
 import MachineNote from '../components/exercise/MachineNote';
+import Versions from '../components/exercise/Versions';
+import AskAI from '../components/ai/AskAI';
 import { DEMO_NOTE, demoGif } from '../data/demos';
 import { detailsOf } from '../data/details';
 import type { Exercise } from '../types';
@@ -39,8 +41,10 @@ function PinnedDemoView({ title, query, exercise, onBack }: DemoTarget & { exerc
       <MachinePhoto exId={exercise.id} />
       <MachineNote exId={exercise.id} />
       <div className="rounded-xl border border-line bg-surface px-4 py-3"><ExerciseHowTo e={exercise} /></div>
+      <Versions e={exercise} />
+      <AskAI e={exercise} />
       <div className="flex flex-wrap gap-x-4 gap-y-2">
-        <button className="text-[14px] font-semibold text-accent" onClick={() => setMore(true)}>See other versions in the library</button>
+        <button className="text-[14px] font-semibold text-accent" onClick={() => setMore(true)}>Search the whole library</button>
         <a href={ytUrl(title)} target="_blank" rel="noopener noreferrer" className="text-[14px] font-semibold text-accent">Watch a video on YouTube ↗</a>
       </div>
     </div>
@@ -80,7 +84,7 @@ function DemoView({ title, query, exercise, onBack, backLabel = '‹ All tutoria
           </div>
           {data.length > 1 && (
             <div>
-              <div className="label">Other versions</div>
+              <div className="label">Similar names in the library (not checked)</div>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {data.map((d, i) => (
                   <button key={d.exerciseId} onClick={() => { setPick(i); setImgFailed(false); }}

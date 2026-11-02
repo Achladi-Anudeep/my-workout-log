@@ -5,6 +5,7 @@ import MachineNote from './MachineNote';
 import MachinePhoto from './MachinePhoto';
 import ExerciseHowTo from '../ExerciseHowTo';
 import AskAI from '../ai/AskAI';
+import Versions from './Versions';
 import { ytUrl } from '../../lib/exercisedb';
 import { range } from '../../lib/utils';
 import type { Exercise } from '../../types';
@@ -19,6 +20,7 @@ export default function DemoSheet({ e, onClose }: { e: Exercise; onClose: () => 
       <MachinePhoto exId={e.id} />
       <MachineNote exId={e.id} />
       <ExerciseHowTo e={e} />
+      <Versions e={e} />
       <AskAI e={e} />
       <a href={ytUrl(e.name)} target="_blank" rel="noopener noreferrer" className="text-[14px] font-semibold text-accent">Watch a video on YouTube ↗</a>
     </Sheet>

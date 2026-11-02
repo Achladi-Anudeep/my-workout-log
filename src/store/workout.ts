@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { DAY } from '../data/plan';
 import { isoDay, lastFor, programWeek, uid } from '../lib/utils';
 import { advise } from '../lib/coach';
-import { DEFAULT_PROFILE } from '../lib/ai';
+import { DEFAULT_PROFILE, type ChatTurn } from '../lib/ai';
 import { BUILTIN, BUILTIN_ID, DAY_IDS, clone, emptyDay, findRoutine, isBuiltin, toDay } from '../lib/routines';
 import type { Active, Day, DayId, Exercise, Routine, RoutineDay, Session, SetLog, WeightEntry } from '../types';
 
@@ -83,6 +83,10 @@ export interface WorkoutState {
   /** What the AI knows about you (Plan → About me). */
   aiProfile: string;
   setAiProfile: (text: string) => void;
+  /** AI conversations by topic (an exercise id, or "week"), saved on this device. */
+  aiChats: Record<string, ChatTurn[]>;
+  addAiTurn: (thread: string, turn: ChatTurn) => void;
+  clearAiChat: (thread: string) => void;
   /** Show one exercise at a time (index), or null for the list. */
   setGuided: (idx: number | null) => void;
 
@@ -277,6 +281,15 @@ export const useWorkout = create<WorkoutState>()(
 
       aiProfile: DEFAULT_PROFILE,
       setAiProfile: text => set({ aiProfile: text.trim().slice(0, 1200) || DEFAULT_PROFILE }),
+      aiChats: {},
+      addAiTurn: (thread, turn) => set(s => {
+        const chats = { ...s.aiChats, [thread]: [...(s.aiChats[thread] ?? []), { ...turn, text: turn.text.slice(0, 4000) }].slice(-20) };
+        // Keep the 30 most recently used conversations.
+        const lastAt = (t: ChatTurn[]) => t[t.length - 1]?.at ?? 0;
+        const keep = Object.entries(chats).sort((a, b) => lastAt(b[1]) - lastAt(a[1])).slice(0, 30);
+        return { aiChats: Object.fromEntries(keep) };
+      }),
+      clearAiChat: thread => set(s => { const c = { ...s.aiChats }; delete c[thread]; return { aiChats: c }; }),
 
       setGuided: idx => set(s => {
         if (!s.active) return {};
@@ -370,7 +383,7 @@ export const useWorkout = create<WorkoutState>()(
         routines: s.routines, activeRoutineId: s.activeRoutineId, pendingRUp: s.pendingRUp, pendingRDel: s.pendingRDel,
         activeRoutineDirty: s.activeRoutineDirty,
         machineNotes: s.machineNotes, notesVersion: s.notesVersion, notesSyncedVersion: s.notesSyncedVersion,
-        photos: s.photos, pendingPUp: s.pendingPUp, pendingPDel: s.pendingPDel, aiProfile: s.aiProfile,
+        photos: s.photos, pendingPUp: s.pendingPUp, pendingPDel: s.pendingPDel, aiProfile: s.aiProfile, aiChats: s.aiChats,
       }),
     },
   ),

@@ -3,6 +3,7 @@ import { BUILTIN, BUILTIN_ID, BUILTIN_V2, BUILTINS, DAY_IDS, findRoutine, isBuil
 import { DETAILS, detailsOf } from '../../src/data/details';
 import { ALT_EXERCISES, ALTERNATIVES, EXERCISE_LIBRARY, swapOptions } from '../../src/data/alternatives';
 import { DEMO_ID, DEMO_NOTE, demoGif } from '../../src/data/demos';
+import { VERSIONS, WARMUP_DEMOS, warmupDemo } from '../../src/data/versions';
 import type { Routine } from '../../src/types';
 
 const names = (r: Routine, d: keyof Routine['days']) => r.days[d].exercises.map(e => e.name);
@@ -165,5 +166,25 @@ describe('finding the machine and doing it right', () => {
     for (const k of Object.keys(DEMO_NOTE)) expect(EXERCISE_LIBRARY.has(k), k).toBe(true);
     for (const id of Object.values(DEMO_ID)) expect(id).toMatch(/^[A-Za-z0-9]{7}$/);
     for (const k of Object.keys(DEMO_ID)) expect(EXERCISE_LIBRARY.has(k), k).toBe(true);
+  });
+
+  it('hand-picked versions belong to real exercises, never repeat the pinned demo, and fit the grid', () => {
+    for (const [k, list] of Object.entries(VERSIONS)) {
+      expect(EXERCISE_LIBRARY.has(k), k).toBe(true);
+      expect(list.length, k).toBeGreaterThan(0);
+      expect(list.length, k).toBeLessThanOrEqual(6);
+      for (const x of list) {
+        expect(x.id).toMatch(/^[A-Za-z0-9]{7}$/);
+        expect(x.id, `${k} repeats its own demo`).not.toBe(DEMO_ID[k]);
+        expect(x.label.length).toBeGreaterThan(3);
+      }
+    }
+  });
+
+  it('warm-up and cool-down demos each match a move in the built-in routines', () => {
+    const moves = BUILTINS.flatMap(r => DAY_IDS.flatMap(d => [...r.days[d].warmup, ...r.days[d].cooldown]));
+    for (const d of WARMUP_DEMOS) expect(moves.some(m => d.match.test(m)), String(d.match)).toBe(true);
+    expect(warmupDemo('Deep Squat Hamstring Stretch · 30s (pain-free)')).toBeNull(); // no clean demo: stays text-only
+    expect(warmupDemo('Hamstring Stretch · 30s')?.id).toBe('99rWm7w');
   });
 });

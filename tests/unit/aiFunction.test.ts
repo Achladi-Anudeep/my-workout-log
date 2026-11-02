@@ -13,7 +13,7 @@ function req(body: unknown, headers: Record<string, string> = {}) {
 }
 
 /** Fake Supabase (token "good" is signed in) and fake Gemini (returns `answer`). */
-function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: boolean; overloadFirst?: boolean; rejectBudget?: boolean } = {}) {
+function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: boolean; overloadFirst?: boolean; rejectBudget?: boolean; pro?: 'ok' | 403 | 429 } = {}) {
   const calls: { url: string; body?: any }[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, body: init?.body ? JSON.parse(init.body as string) : undefined });
@@ -21,8 +21,14 @@ function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: bo
       const ok = (init?.headers as Record<string, string>).authorization === 'Bearer good';
       return new Response(JSON.stringify(ok ? { id: 'u1' } : { msg: 'bad' }), { status: ok ? 200 : 401 });
     }
+    if (opts.pro && url.includes('-pro')) {
+      const key = (init?.headers as Record<string, string>)['x-goog-api-key'];
+      if (key !== 'pro-key') throw new Error('pro model called with the free key');
+      if (opts.pro !== 'ok') return new Response('{"error":{"message":"Billing is not enabled"}}', { status: opts.pro });
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'thinking…', thought: true }, { text: 'Pro answer' }] } }] }), { status: 200 });
+    }
     if (opts.missingFirstModel && url.includes('gemini-flash-latest')) return new Response('{}', { status: 404 });
-    if (opts.rejectBudget && (init?.body as string).includes('thinkingBudget')) return new Response('{"error":{"code":400,"message":"Request contains an invalid argument."}}', { status: 400 });
+    if (opts.rejectBudget && (init?.body as string).includes('thinkingLevel')) return new Response('{"error":{"code":400,"message":"Request contains an invalid argument."}}', { status: 400 });
     if (opts.overloadFirst && url.includes('gemini-flash-latest')) return new Response('{"error":{"code":503}}', { status: 503 });
     if (opts.status) return new Response('{}', { status: opts.status });
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: answer }] } }] }), { status: 200 });
@@ -30,7 +36,7 @@ function fakeNet(answer: string, opts: { status?: number; missingFirstModel?: bo
   return calls;
 }
 
-afterEach(() => { vi.unstubAllGlobals(); delete env.GEMINI_API_KEY; });
+afterEach(() => { vi.unstubAllGlobals(); delete env.GEMINI_API_KEY; delete env.GEMINI_PRO_KEY; });
 
 describe('AI function', () => {
   it('refuses anyone not signed in to one of the app\'s own projects', async () => {
@@ -49,11 +55,11 @@ describe('AI function', () => {
     env.GEMINI_API_KEY = 'secret-key';
     const calls = fakeNet('Keep your knees over your toes.');
     const res = await handler(req({ task: 'ask', question: 'Is this safe?', context: 'Exercise: Leg Press' }));
-    expect(await res.json()).toEqual({ text: 'Keep your knees over your toes.' });
+    expect(await res.json()).toMatchObject({ text: 'Keep your knees over your toes.', tier: 'free' });
     const g = calls.find(c => c.url.includes('generativelanguage'))!;
     expect(g.url).not.toContain('secret-key');
-    expect(g.body.contents[0].parts[0].text).toContain('Exercise: Leg Press');
-    expect(g.body.generationConfig.thinkingConfig).toEqual({ thinkingBudget: 0 });
+    expect(g.body.systemInstruction.parts[0].text).toContain('Exercise: Leg Press');
+    expect(g.body.generationConfig.thinkingConfig).toEqual({ thinkingLevel: 'low' });
   });
 
   it('falls back to another model if one is retired or overloaded, and reports a busy free tier', async () => {
@@ -68,7 +74,7 @@ describe('AI function', () => {
     env.GEMINI_API_KEY = 'k';
     const calls = fakeNet('Lite answer', { overloadFirst: true });
     const res = await handler(req({ task: 'ask', question: 'q', context: 'c' }));
-    expect(await res.json()).toEqual({ text: 'Lite answer' });
+    expect(await res.json()).toMatchObject({ text: 'Lite answer', model: 'gemini-flash-lite-latest' });
     expect(calls.filter(c => c.url.includes('generativelanguage')).map(c => c.url.split('/models/')[1].split(':')[0]))
       .toEqual(['gemini-flash-latest', 'gemini-flash-lite-latest']);
   });
@@ -76,9 +82,36 @@ describe('AI function', () => {
   it('a model that rejects one "thinking" setting is retried with the other style', async () => {
     env.GEMINI_API_KEY = 'k';
     const calls = fakeNet('ok', { rejectBudget: true });
-    expect(await (await handler(req({ task: 'ask', question: 'q' }))).json()).toEqual({ text: 'ok' });
+    expect(await (await handler(req({ task: 'ask', question: 'q' }))).json()).toMatchObject({ text: 'ok' });
     const sent = calls.filter(c => c.url.includes('generativelanguage')).map(c => c.body.generationConfig.thinkingConfig);
-    expect(sent).toEqual([{ thinkingBudget: 0 }, { thinkingLevel: 'low' }]);
+    expect(sent).toEqual([{ thinkingLevel: 'low' }, { thinkingBudget: 0 }]);
+  });
+
+  it('uses Gemini Pro first when its key is set, with the Pro key only', async () => {
+    env.GEMINI_API_KEY = 'free-key'; env.GEMINI_PRO_KEY = 'pro-key';
+    const calls = fakeNet('free answer', { pro: 'ok' });
+    expect(await (await handler(req({ task: 'ask', question: 'q' }))).json()).toEqual({ text: 'Pro answer', model: 'gemini-pro-latest', tier: 'pro' });
+    expect(calls.filter(c => c.url.includes('generativelanguage'))).toHaveLength(1);
+  });
+
+  it('falls back to the free models when Pro has no billing or hits its daily cap', async () => {
+    env.GEMINI_API_KEY = 'free-key'; env.GEMINI_PRO_KEY = 'pro-key';
+    for (const pro of [403, 429] as const) {
+      fakeNet('free answer', { pro });
+      expect(await (await handler(req({ task: 'ask', question: 'q' }))).json()).toMatchObject({ text: 'free answer', tier: 'free' });
+    }
+  });
+
+  it('sends the conversation so far, so follow-up questions make sense', async () => {
+    env.GEMINI_API_KEY = 'k';
+    const calls = fakeNet('Yes, 3 sets.');
+    await handler(req({ task: 'ask', question: 'And how many sets?', context: 'Exercise: Leg Press',
+      history: [{ role: 'user', text: 'Is leg press ok for my knee?' }, { role: 'model', text: 'Yes, to 90°.' }, { role: 'hacker', text: 'x' }] }));
+    const g = calls.find(c => c.url.includes('generativelanguage'))!;
+    expect(g.body.contents.map((c: any) => [c.role, c.parts[0].text])).toEqual([
+      ['user', 'Is leg press ok for my knee?'], ['model', 'Yes, to 90°.'], ['user', 'And how many sets?'],
+    ]);
+    expect(g.body.systemInstruction.parts[0].text).toContain('Exercise: Leg Press');
   });
 
   it('identifies a machine only from your own exercise list', async () => {

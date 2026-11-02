@@ -8,6 +8,11 @@ const block = src.slice(src.indexOf('DEMO_ID'), src.indexOf('};', src.indexOf('D
 const pins = [...block.matchAll(/^\s*'?([a-z0-9-]+)'?:\s*'([A-Za-z0-9]{7})'/gm)].map(m => ({ ex: m[1], id: m[2] }));
 if (pins.length < 40) { console.error(`Only found ${pins.length} pins; the parser needs updating.`); process.exit(1); }
 
+// Hand-picked "other versions" and warm-up/cool-down demos are checked too.
+const extra = readFileSync(new URL('../src/data/versions.ts', import.meta.url), 'utf8');
+for (const m of extra.matchAll(/v\('([A-Za-z0-9]{7})', '([^']+)'/g)) pins.push({ ex: `version: ${m[2]}`, id: m[1] });
+for (const m of extra.matchAll(/match: \/([^/]+)\/i, id: '([A-Za-z0-9]{7})'/g)) pins.push({ ex: `warm-up: ${m[1]}`, id: m[2] });
+
 const broken = [];
 for (const { ex, id } of pins) {
   const url = `https://static.exercisedb.dev/media/${id}.gif`;
@@ -25,7 +30,7 @@ for (const { ex, id } of pins) {
   if (!ok) broken.push(ex);
 }
 if (broken.length) {
-  console.error(`\n${broken.length} demo(s) no longer load: ${broken.join(', ')}. Pick new ids in src/data/demos.ts.`);
+  console.error(`\n${broken.length} demo(s) no longer load: ${broken.join(', ')}. Pick new ids in src/data/demos.ts or src/data/versions.ts.`);
   process.exit(1);
 }
 console.log(`\nAll ${pins.length} demos load.`);

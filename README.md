@@ -5,7 +5,7 @@ A phone-first workout logger for the 6-day Push / Pull / Legs / Arms plan. It's 
 - **Today:** the day's workout, as a list or in **guided mode** (one exercise at a time, supersets alternate automatically, the rest timer names the next exercise and its equipment). Each exercise shows its demo animation, the equipment to look for, a photo of your own gym's machine and your machine settings (both synced), full how-to details, a coach suggestion (add weight / stay / go lighter, with the reason), and **Swap** for when a machine is busy. The screen stays on during a workout and the rest timer beeps. Set logging (kg × reps), a rest timer, and Finish with cardio minutes and a note.
 - **Calendar:** a month view of logged and missed days, with adherence, cardio and volume, and per-day session details.
 - **Progress:** body-weight log (date and time, 7-day average, trend chart) plus per-exercise trend lines and "ready to add weight" cues.
-- **Tutorials:** animated GIF demos and steps, fetched live from the free [ExerciseDB](https://oss.exercisedb.dev/) API. Nothing is stored.
+- **Tutorials:** animated GIF demos and steps, fetched live from the free [ExerciseDB](https://oss.exercisedb.dev/) API. Nothing is stored. Each exercise has hand-picked, visually checked "other versions" (`src/data/versions.ts`); warm-up and cool-down moves have demos where the library has a clean match.
 - **Plan:** your routines (two built-in, locked routines: Gym PPL and Gym PPL v2; duplicate it or start blank to build your own), a day-by-day editor with an exercise picker (your exercises, the ExerciseDB library, or custom), plus rules, start date and the sync account.
 
 Appearance follows the phone's light/dark setting, or pick Day or Night under **Plan → Appearance**.
@@ -39,6 +39,13 @@ If you set the project up before these features existed, run these once in the S
 - `supabase/002_weights.sql` (body weight)
 - `supabase/003_routines.sql` (custom routines)
 - `supabase/004_photos.sql` (machine photos)
+
+## AI (Google Gemini)
+The app's AI features (ask about an exercise, weekly review, "What's this machine?") run through `netlify/functions/ai.ts`. Keys stay on Netlify, never in the app.
+- `GEMINI_API_KEY`: a free-tier key from Google AI Studio (Flash models). Required.
+- `GEMINI_PRO_KEY`: optional. A key from a Google Cloud project with billing linked and the Google AI Pro monthly credit applied. Pro models are tried first; if Pro is unavailable, capped or slow, the free models answer.
+- Cap Pro spend in Google Cloud → APIs & Services → Generative Language API → Quotas (requests per day), and add a budget alert.
+- Conversations are kept on the device (last 20 messages per topic) and sent with each question, so follow-ups have context.
 
 ## How sync works
 - Every workout is saved on the device first, so logging works with no signal at the gym.

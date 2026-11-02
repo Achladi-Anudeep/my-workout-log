@@ -18,7 +18,7 @@ export class AiFailure extends Error { constructor(public code: AiError, public 
 export const AI_ERROR_TEXT: Record<AiError, string> = {
   'sign-in': 'Sign in (Plan → Account) to use AI.',
   'not-configured': 'AI isn’t switched on for this site yet (the Gemini key is missing).',
-  busy: 'The free AI limit is busy right now. Try again in a minute.',
+  busy: 'Gemini is busy or at today’s limit. Try again in a minute.',
   offline: 'You’re offline. AI needs a connection.',
   failed: 'The AI didn’t answer. Try again.',
 };
@@ -50,8 +50,19 @@ async function call<T>(payload: Record<string, unknown>): Promise<T> {
   return body as T;
 }
 
-export const askAI = (question: string, context: string) => call<{ text: string }>({ task: 'ask', question, context }).then(r => r.text);
-export const reviewWeek = (context: string) => call<{ text: string }>({ task: 'review', context }).then(r => r.text);
+/** One message in an AI conversation. Kept on the device so follow-up questions have context. */
+export interface ChatTurn { role: 'user' | 'model'; text: string; at: number; model?: string; tier?: 'pro' | 'free'; }
+export interface AiReply { text: string; model?: string; tier?: 'pro' | 'free'; }
+const turns = (history: ChatTurn[]) => history.map(t => ({ role: t.role, text: t.text }));
+
+export const askAI = (question: string, context: string, history: ChatTurn[] = []) =>
+  call<AiReply>({ task: 'ask', question, context, history: turns(history) });
+export const reviewWeek = (context: string, history: ChatTurn[] = []) =>
+  call<AiReply>({ task: 'review', context, history: turns(history) });
+
+/** "Gemini Pro" or "Gemini Flash (free)", for the small label under each answer. */
+export const modelLabel = (t: { model?: string; tier?: 'pro' | 'free' }) =>
+  t.tier === 'pro' ? 'Gemini Pro (your AI Pro credit)' : t.model?.includes('lite') ? 'Gemini Flash-Lite (free)' : 'Gemini Flash (free)';
 
 export interface MachineMatch { best: string | null; second: string | null; confidence: 'high' | 'medium' | 'low'; machine: string; reason: string; }
 export const identifyMachine = (image: string, candidates: Exercise[]) =>
@@ -62,13 +73,20 @@ export const identifyMachine = (image: string, candidates: Exercise[]) =>
 
 // ---------- context builders: plain text the model can read ----------
 
+/** The whole week in a few lines, so every answer knows the full program. */
+export function planSummary(plan: Day[]) {
+  return 'My weekly plan:\n' + plan.map(d => d.exercises.length
+    ? `${d.short} ${d.title}${d.home ? ' (home)' : ''}: ${d.exercises.map(e => `${e.name} ${e.sets}×${range(e)}${e.superset ? ` [${e.superset}]` : ''}`).join(', ')}`
+    : `${d.short}: rest`).join('\n');
+}
+
 const setsText = (s: Session, id: string) => {
   const x = s.ex.find(e => e.id === id);
   return x ? `${s.date}: ${x.sets.map(v => `${fmtW(v.w)}×${v.r}`).join(', ')}` : '';
 };
 
 /** One exercise: the plan, how to do it, your recent sets and the coach's call. */
-export function exerciseContext(profile: string, e: Exercise, sessions: Session[], machineNote?: string) {
+export function exerciseContext(profile: string, e: Exercise, sessions: Session[], machineNote?: string, plan?: Day[]) {
   const d = detailsOf(e);
   const recent = sessions.filter(s => s.ex.some(x => x.id === e.id)).slice(0, 4).map(s => setsText(s, e.id));
   const adv = advise(sessions, e);
@@ -82,6 +100,7 @@ export function exerciseContext(profile: string, e: Exercise, sessions: Session[
     machineNote && `My machine settings: ${machineNote}`,
     `Recent sets (kg×reps, BW = bodyweight): ${recent.length ? recent.join(' | ') : 'none yet'}`,
     `App coach says: ${adv.title}. ${adv.detail}`,
+    plan ? `\n${planSummary(plan)}` : '',
   ].filter(Boolean).join('\n');
 }
 
@@ -89,7 +108,6 @@ export function exerciseContext(profile: string, e: Exercise, sessions: Session[
 export function weekContext(profile: string, plan: Day[], sessions: Session[], weights: WeightEntry[], now = Date.now()) {
   const since = now - 7 * 86400000;
   const week = sessions.filter(s => s.startedAt >= since).slice().reverse();
-  const planned = plan.filter(d => d.exercises.length).map(d => `${d.short} ${d.title}`).join(', ');
   const done = week.map(s => `${s.date} ${s.title ?? s.dayId} (${s.mins} min${s.cardio ? `, ${s.cardio} min cardio` : ''}${s.note ? `, note: ${s.note}` : ''})\n`
     + s.ex.map(e => `  ${e.name}${e.swappedFor ? ` (swapped for ${e.swappedFor})` : ''}: ${e.sets.map(v => `${fmtW(v.w)}×${v.r}`).join(', ')}`).join('\n')).join('\n');
   const w = weights.filter(x => x.at >= now - 21 * 86400000).map(x => `${isoDay(new Date(x.at))} ${x.kg} kg`).join(', ');
@@ -98,7 +116,7 @@ export function weekContext(profile: string, plan: Day[], sessions: Session[], w
     .map(x => `${x.e.name}: ${x.a.title}`).join('; ');
   return [
     `About me:\n${profile}`,
-    `Planned training days each week: ${planned}`,
+    planSummary(plan),
     `Workouts in the last 7 days (${week.length}):\n${done || 'none'}`,
     `Body weight, last 3 weeks: ${w || 'not logged'}`,
     `App coach calls: ${calls || 'nothing to change'}`,

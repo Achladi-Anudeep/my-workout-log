@@ -16,6 +16,8 @@ import MachineNote from '../components/exercise/MachineNote';
 import SetRows from '../components/exercise/SetRows';
 import { PhotoThumb } from '../components/exercise/MachinePhoto';
 import Guided from './Guided';
+import { warmupDemo } from '../data/versions';
+import { gifUrl } from '../data/demos';
 import MachineFinder from '../components/ai/MachineFinder';
 import { swapOptions } from '../data/alternatives';
 import { useWakeLock } from '../lib/wakeLock';
@@ -40,6 +42,27 @@ function DayStrip({ sel, onSel, today, plan }: { sel: DayId; onSel: (d: DayId) =
   );
 }
 
+function RoutineItem({ item }: { item: string }) {
+  const demo = warmupDemo(item);
+  const [open, setOpen] = useState(false);
+  if (!demo) return <li className="py-0.5 pl-[52px]">{item}</li>;
+  return (
+    <li className="grid gap-2">
+      <button className="flex items-center gap-3 text-left" aria-expanded={open} onClick={() => setOpen(!open)} aria-label={`Show demo of ${item}`}>
+        <img src={gifUrl(demo.id)} alt="" loading="lazy" className="h-10 w-10 shrink-0 rounded-md border border-line bg-white object-contain" />
+        <span className="min-w-0 flex-1">{item}</span>
+        <span className="text-[12px] font-semibold text-accent">{open ? 'Hide' : 'Demo'}</span>
+      </button>
+      {open && (
+        <div className="grid gap-1.5 pl-[52px]">
+          <img src={gifUrl(demo.id)} alt={`Demo of ${item}`} className="aspect-square w-full max-w-[260px] rounded-lg border border-line bg-white object-contain" />
+          {demo.note && <p className="text-[13px] text-muted">{demo.note}</p>}
+        </div>
+      )}
+    </li>
+  );
+}
+
 function RoutineList({ title, items }: { title: string; items: string[] }) {
   const [open, setOpen] = useState(false);
   if (!items.length) return null;
@@ -49,7 +72,7 @@ function RoutineList({ title, items }: { title: string; items: string[] }) {
         <span className="label">{title}</span>
         <span className="text-[13px] text-muted">{items.length} moves {open ? '▴' : '▾'}</span>
       </button>
-      {open && <ul className="grid gap-1.5 border-t border-line px-4 py-3 text-[14px]">{items.map(i => <li key={i}>{i}</li>)}</ul>}
+      {open && <ul className="grid gap-2 border-t border-line px-4 py-3 text-[14px]">{items.map(i => <RoutineItem key={i} item={i} />)}</ul>}
     </div>
   );
 }

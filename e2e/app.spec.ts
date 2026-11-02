@@ -212,6 +212,10 @@ test.describe('@local', () => {
     await expect(sheet.locator('img[alt="Demo of Leg Press"]')).toBeVisible();
     await expect(sheet).toContainText('Seat 3, feet mid-platform');
     await expect(sheet).toContainText('Release the safety');
+    // hand-picked other versions, tap one to see it big
+    await expect(sheet.locator('.versions button')).toHaveCount(3);
+    await sheet.getByRole('button', { name: /Single-leg 45° leg press/ }).click();
+    await expect(sheet.locator('img[alt="Demo of Single-leg 45° leg press"]')).toBeVisible();
     await sheet.getByRole('button', { name: 'Close' }).click();
 
     // the note survives a restart and also shows on other days with the same exercise
@@ -330,6 +334,15 @@ test.describe('@local', () => {
     await tab(page, 'plan');
     await expect(page.locator('main')).toContainText('About me (for AI)');
     expect(called).toBe(false);
+  });
+
+  test('warm-up and cool-down moves show a demo where the library has one', async ({ page }) => {
+    await page.locator('#day-mon').click();
+    await page.getByRole('button', { name: /Warm-up/ }).click();
+    await page.getByRole('button', { name: 'Show demo of Inch worm × 5' }).click();
+    await expect(page.locator('img[alt="Demo of Inch worm × 5"]')).toBeVisible();
+    await expect(page.locator('main')).toContainText('Cat-Camel × 10 slow'); // no clean demo: text only
+    await expect(page.getByRole('button', { name: /Show demo of Cat-Camel/ })).toHaveCount(0);
   });
 
   test('swap a busy machine during a workout, and swap back', async ({ page }) => {
