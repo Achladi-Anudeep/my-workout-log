@@ -7,7 +7,7 @@ export function AiAnswer({ text, turn }: { text: string; turn?: Pick<ChatTurn, '
     <div className="ai-answer grid gap-1 rounded-xl border border-line bg-accentSoft px-3 py-2.5 text-[14px]">
       <div className="label">✨ AI answer</div>
       <div className="whitespace-pre-wrap leading-relaxed">{text.replace(/\*\*/g, '')}</div>
-      <p className="text-[11px] text-muted">{modelLabel(turn ?? {})}. Can be wrong; for pain or injury, see a physio.</p>
+      <p className="ai-model text-[11px] text-muted">{modelLabel(turn ?? {})}. Can be wrong; for pain or injury, see a physio.</p>
     </div>
   );
 }

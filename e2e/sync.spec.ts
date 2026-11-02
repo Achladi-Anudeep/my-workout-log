@@ -162,7 +162,10 @@ test.describe('@env', () => {
       const sheet = page.getByRole('dialog', { name: "What's this machine?" });
       await sheet.locator('#machine-finder-input').setInputFiles({ name: 'machine.gif', mimeType: 'image/gif', buffer: await img.body() });
       await expect(sheet.locator('#machine-match, #machine-nomatch, .ai-error')).toBeVisible({ timeout: 60_000 });
-      if (!(await busy(sheet))) await expect(sheet.locator('#machine-match')).toContainText(expected);
+      if (!(await busy(sheet))) {
+        await expect(sheet.locator('#machine-match')).toContainText(expected);
+        console.log(`machine photo ${gif} → ${expected} ✓ by ${await sheet.locator('.ai-model').innerText()}`);
+      } else console.log(`machine photo ${gif}: AI busy`);
       await sheet.getByRole('button', { name: 'Close' }).click();
     }
 
@@ -182,6 +185,7 @@ test.describe('@env', () => {
       await demo.locator('#ai-q-leg-press').press('Enter');
       await expect(demo.locator('.ai-answer')).toHaveCount(2, { timeout: 60_000 });
       await expect(demo.locator('.ai-answer').last()).toContainText('47');
+      console.log(`follow-up memory ✓ by ${await demo.locator('.ai-model').last().innerText()}`);
     }
     await demo.getByRole('button', { name: 'Start a new conversation' }).click();
     await demo.getByRole('button', { name: 'Close', exact: true }).first().click();

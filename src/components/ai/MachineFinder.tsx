@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import Sheet from '../exercise/Sheet';
 import DemoGif from '../exercise/DemoGif';
 import DemoSheet from '../exercise/DemoSheet';
-import { AiFailure, identifyMachine, type AiError, type MachineMatch } from '../../lib/ai';
+import { AiFailure, identifyMachine, modelLabel, type AiError, type MachineMatch } from '../../lib/ai';
 import { compressPhoto, PhotoStore } from '../../lib/photoStore';
 import { useAllExercises } from '../../lib/useRoutine';
 import { EXERCISE_LIBRARY } from '../../data/alternatives';
@@ -70,6 +70,7 @@ export default function MachineFinder({ onClose }: { onClose: () => void }) {
             </div>
           </div>
           {match.reason && <p className="text-[13px] text-muted">{match.reason}</p>}
+          <p className="ai-model text-[11px] text-muted">{modelLabel(match)}. Can be wrong: check it against the demo.</p>
           <p className="text-[13px]">Does the demo match your machine?</p>
           <div className="flex flex-wrap gap-2">
             <button className="h-10 rounded-lg bg-good px-3 text-[13px] font-bold text-surface" onClick={() => setHowTo(ex)}>✓ Yes, show how to do it</button>

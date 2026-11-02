@@ -61,15 +61,17 @@ export const reviewWeek = (context: string, history: ChatTurn[] = []) =>
   call<AiReply>({ task: 'review', context, history: turns(history) });
 
 /** "Gemini Pro" or "Gemini Flash (free)", for the small label under each answer. */
-export const modelLabel = (t: { model?: string; tier?: 'pro' | 'free' }) =>
-  t.tier === 'pro' ? 'Gemini Pro (your AI Pro credit)' : t.model?.includes('lite') ? 'Gemini Flash-Lite (free)' : 'Gemini Flash (free)';
+export const modelLabel = (t: { model?: string; tier?: 'pro' | 'free' }) => {
+  const name = t.model ? t.model.replace(/^gemini-/, 'Gemini ').replace(/-latest$/, '').replace(/-/g, ' ') : 'Gemini';
+  return t.tier === 'pro' ? `${name} (Pro credit)` : `${name} (free)`;
+};
 
-export interface MachineMatch { best: string | null; second: string | null; confidence: 'high' | 'medium' | 'low'; machine: string; reason: string; }
+export interface MachineMatch { best: string | null; second: string | null; confidence: 'high' | 'medium' | 'low'; machine: string; reason: string; model?: string; tier?: 'pro' | 'free'; }
 export const identifyMachine = (image: string, candidates: Exercise[]) =>
-  call<{ match: MachineMatch }>({
+  call<{ match: MachineMatch; model?: string; tier?: 'pro' | 'free' }>({
     task: 'identify', image,
     candidates: candidates.map(e => ({ id: e.id, name: e.name, equipment: detailsOf(e)?.equipment ?? e.wNote })),
-  }).then(r => r.match);
+  }).then(r => ({ ...r.match, model: r.model, tier: r.tier }));
 
 // ---------- context builders: plain text the model can read ----------
 
