@@ -152,7 +152,7 @@ test.describe('@env', () => {
       && (await loc.locator('.ai-error').innerText()).includes('busy');
 
     // 1) "What's this machine?" with library images it has never seen as your pinned demo
-    for (const [gif, expected] of [['2Qh2J1e', 'Leg Press'], ['rkg41Fb', 'Lat Pulldown']] as const) {
+    for (const [gif, expected] of [['2Qh2J1e', 'Leg Press'], ['qdRxqCj', 'Lat Pulldown'], ['dU605di', 'Triceps Pushdown']] as const) {
       const img = await request.get(`https://static.exercisedb.dev/media/${gif}.gif`);
       expect(img.ok()).toBe(true);
       await tab(page, 'today');

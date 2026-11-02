@@ -27,6 +27,19 @@ Rules:
 - Be concise: at most about 150 words. Plain text only. You may use short lines starting with "- ". No headings, no bold, no tables.
 - If you are not sure, say so plainly.`;
 
+const IDENTIFY = `You identify gym equipment in photos for a workout app. Answer only with the JSON requested.
+First, in "machine" and "reason", describe the equipment and, if a person is shown, their position (seated, standing, lying)
+and the direction they move the handle or weight. Then pick the best exercise id from the list, and a second guess.
+Commonly confused, decide by body position and direction:
+- seated, pulling a bar or handles DOWN from overhead = a pulldown (even on a cable tower)
+- seated, pulling handles TOWARD the torso = a seated row
+- standing between two high pulleys, sweeping the hands together in front = a cable crossover / fly
+- standing, pulling a rope toward the face with elbows high = a face pull
+- standing, pushing a bar or rope DOWN with elbows at the sides = a triceps pushdown
+- angled sled with a big foot platform = a leg press
+- lying face down with a pad behind the ankles = a leg curl; seated with a pad on the thighs and toes on a block = a seated calf raise
+Pick ids only from the list. If the photo does not clearly show one of them, set best to "none" and confidence to "low".`;
+
 type Json = Record<string, unknown>;
 type Tier = { name: 'pro' | 'free'; key: string; models: string[]; perTry: number };
 type Result = { ok: true; text: string; model: string; tier: Tier['name'] } | { ok: false; status: number; error: string };
@@ -164,7 +177,7 @@ export default async (req: Request): Promise<Response> => {
     const ids = new Set(candidates.map(c => c.id));
     const list = candidates.map(c => `${c.id} | ${c.name} | ${c.equipment}`).join('\n');
     const r = await gemini({
-      systemInstruction: { parts: [{ text: 'You identify gym equipment in photos. Answer only with the JSON requested. Pick ids only from the list. If the photo does not clearly show one of them, set best to "none" and confidence to "low".' }] },
+      systemInstruction: { parts: [{ text: IDENTIFY }] },
       contents: [{ role: 'user', parts: [
         { text: `Which exercise from this list is done on the equipment in the photo?\nid | name | equipment\n${list}` },
         { inline_data: { mime_type: m[1], data: m[2] } },
@@ -178,7 +191,9 @@ export default async (req: Request): Promise<Response> => {
             confidence: { type: 'STRING', enum: ['high', 'medium', 'low'] },
             machine: { type: 'STRING' }, reason: { type: 'STRING' },
           },
-          required: ['best', 'confidence', 'machine', 'reason'],
+          required: ['machine', 'reason', 'best', 'confidence'],
+          // Describe first, then decide: answering in this order makes the pick more accurate.
+          propertyOrdering: ['machine', 'reason', 'best', 'second', 'confidence'],
         },
       },
     });
