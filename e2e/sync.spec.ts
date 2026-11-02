@@ -145,6 +145,52 @@ test.describe('@env', () => {
     else expect(text.length).toBeGreaterThan(40);
   });
 
+  test('AI identifies real machine photos, remembers the conversation and reviews the week', async ({ page, request }) => {
+    test.setTimeout(240_000);
+    await signIn(page);
+    const busy = async (loc: import('@playwright/test').Locator) => (await loc.locator('.ai-error').count()) > 0
+      && (await loc.locator('.ai-error').innerText()).includes('busy');
+
+    // 1) "What's this machine?" with library images it has never seen as your pinned demo
+    for (const [gif, expected] of [['2Qh2J1e', 'Leg Press'], ['rkg41Fb', 'Lat Pulldown']] as const) {
+      const img = await request.get(`https://static.exercisedb.dev/media/${gif}.gif`);
+      expect(img.ok()).toBe(true);
+      await tab(page, 'today');
+      await page.locator('#machine-finder').click();
+      const sheet = page.getByRole('dialog', { name: "What's this machine?" });
+      await sheet.locator('#machine-finder-input').setInputFiles({ name: 'machine.gif', mimeType: 'image/gif', buffer: await img.body() });
+      await expect(sheet.locator('#machine-match, #machine-nomatch, .ai-error')).toBeVisible({ timeout: 60_000 });
+      if (!(await busy(sheet))) await expect(sheet.locator('#machine-match')).toContainText(expected);
+      await sheet.getByRole('button', { name: 'Close' }).click();
+    }
+
+    // 2) follow-up questions keep the conversation
+    await tab(page, 'today');
+    await page.locator('#day-wed').click();
+    await page.locator('article', { hasText: 'Leg Press' }).first().getByRole('button', { name: 'Show how to do Leg Press' }).click();
+    const demo = page.getByRole('dialog', { name: 'Leg Press' });
+    await demo.getByRole('button', { name: /Ask AI about this exercise/ }).click();
+    const startNew = demo.getByRole('button', { name: 'Start a new conversation' });
+    if (await startNew.count()) await startNew.click();
+    await demo.locator('#ai-q-leg-press').fill('For a quick test, remember the number 47. Reply only: OK');
+    await demo.locator('#ai-q-leg-press').press('Enter');
+    await expect(demo.locator('.ai-answer, .ai-error').last()).toBeVisible({ timeout: 60_000 });
+    if (!(await busy(demo))) {
+      await demo.locator('#ai-q-leg-press').fill('What number did I ask you to remember? Reply with just the number.');
+      await demo.locator('#ai-q-leg-press').press('Enter');
+      await expect(demo.locator('.ai-answer')).toHaveCount(2, { timeout: 60_000 });
+      await expect(demo.locator('.ai-answer').last()).toContainText('47');
+    }
+    await demo.getByRole('button', { name: 'Start a new conversation' }).click();
+    await demo.getByRole('button', { name: 'Close', exact: true }).first().click();
+
+    // 3) weekly review
+    await tab(page, 'progress');
+    await page.locator('#ai-review').click();
+    await expect(page.locator('.ai-answer, .ai-error').first()).toBeVisible({ timeout: 60_000 });
+    if (!(await busy(page.locator('main')))) await expect(page.locator('.ai-answer').first()).not.toBeEmpty();
+  });
+
   test.afterAll(async () => {
     if (email && password) await resetTestAccount(email, password);
   });

@@ -11,7 +11,7 @@ export const PLAN: Day[] = [
     warmup: [...PUSH_WU, 'Band pull-aparts × 10'], cooldown: UPPER_CD, exercises: [
     E('chest-press', 'Chest Press', 3, 12, 15, 'reps', 10, '10–15 kg', 90, 'Shoulder blades pinched back, feet flat, elbows ~45° from the body.'),
     E('incline-press', 'Incline Press', 3, 12, 15, 'reps', 4, '4–6 kg per hand', 90, 'Bench at 30–45°. Press up and slightly together, control the lowering.'),
-    E('dips', 'Dips', 3, 10, 12, 'reps', null, 'Assisted or bodyweight', 90, 'Lean slightly forward. Stop at ~90° at the elbow for shoulder safety.'),
+    { ...E('dips', 'Dips', 3, 10, 12, 'reps', null, 'Assisted machine (log the help) or bodyweight', 90, 'Lean slightly forward. Stop at ~90° at the elbow for shoulder safety.'), assisted: true },
     E('lateral-raise', 'Lateral Raises', 3, 15, 15, 'reps', 2, '2–3 kg', 60, 'Slight elbow bend, lift to shoulder height, lead with the elbows.'),
     E('triceps-pushdown', 'Triceps Pushdown', 3, 12, 15, 'reps', 8, '8–10 kg', 60, 'Elbows pinned to your sides, squeeze at the bottom.'),
   ] },

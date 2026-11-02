@@ -22,6 +22,8 @@ export interface Exercise {
   steps?: string[];
   /** What to avoid. */
   mistakes?: string[];
+  /** The logged kg is machine assistance (assisted pull-up / dip machine): less is harder. */
+  assisted?: boolean;
   /** Exercises sharing a superset label are done back to back (e.g. "A1", "A2"). */
   superset?: string;
   /** Set on an exercise swapped in during a workout: the planned exercise it replaces. */

@@ -11,7 +11,7 @@ export const ALT_EXERCISES: Exercise[] = [
   E('cable-lateral-raise', 'Cable Lateral Raise', 3, 12, 15, 'reps', 2.5, '2.5–5 kg', 60, 'Lead with the elbow, stop at shoulder height.', true),
   E('machine-shoulder-press', 'Machine Shoulder Press', 3, 10, 12, 'reps', 10, '10–15 kg', 90, 'Handles start level with your shoulders.'),
   E('back-extension', 'Back Extension', 3, 12, 15, 'reps', null, 'Bodyweight', 60, 'Squeeze your glutes; stop at a straight line.'),
-  E('assisted-pull-up', 'Assisted Pull-up', 3, 8, 12, 'reps', 35, 'Log the assistance (lower = harder)', 90, 'Chest to the bar, elbows drive down.'),
+  { ...E('assisted-pull-up', 'Assisted Pull-up', 3, 8, 12, 'reps', 35, '~35 kg of help (less help = harder)', 90, 'Chest to the bar, elbows drive down.'), assisted: true },
   E('single-arm-db-row', 'Single-arm Dumbbell Row', 3, 10, 12, 'reps', 8, '8–10 kg', 60, 'Pull to your hip, no twisting.', true),
   E('band-pull-apart', 'Band Pull-apart', 3, 15, 15, 'reps', null, 'Light band', 45, 'Straight arms, squeeze the shoulder blades.'),
   E('goblet-squat', 'Goblet Squat', 3, 10, 12, 'reps', 8, '8–12 kg', 90, 'Pain-free depth, chest up.'),
