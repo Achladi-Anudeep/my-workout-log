@@ -54,7 +54,7 @@ export default function MachinePhoto({ exId }: { exId: string }) {
       <div>
         {picker}
         <button className="text-left text-[14px] font-semibold text-accent" disabled={busy} onClick={() => input.current?.click()}>
-          {busy ? 'Saving photo…' : '📷 Add a photo of your gym’s machine'}
+          {busy ? 'Saving photo…' : '📷 Add your own photo (machine or setup)'}
         </button>
         {error && <p className="text-[13px] text-danger">{error}</p>}
       </div>
@@ -63,7 +63,7 @@ export default function MachinePhoto({ exId }: { exId: string }) {
   return (
     <figure className="grid gap-1.5">
       {picker}
-      <div className="label">My machine</div>
+      <div className="label">My photo</div>
       <img src={src} alt="My photo of the machine" className="max-h-72 w-full rounded-xl border border-line object-cover" />
       <figcaption className="flex gap-4 text-[13px] font-semibold">
         <button className="text-accent" disabled={busy} onClick={() => input.current?.click()}>{busy ? 'Saving…' : 'Replace photo'}</button>
