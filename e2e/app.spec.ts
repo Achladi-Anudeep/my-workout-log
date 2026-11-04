@@ -299,6 +299,34 @@ test.describe('@local', () => {
     await expect(page.locator('article', { hasText: 'Leg Press' }).first().locator('img[alt="My photo of the machine"]')).toBeVisible();
   });
 
+  test('warm-up sets, plate helper, how a set felt, and progress photos', async ({ page }) => {
+    // the first weighted lift shows ramp-up sets
+    await page.locator('#day-tue').click();
+    await page.locator('#venue-home').click();
+    await expect(page.locator('article', { hasText: 'Dumbbell RDL' }).first().locator('.warmup-sets')).toContainText('Warm up first: 5×8');
+    // home kit: what goes on each end of the dumbbell
+    await page.locator('#start-workout').click();
+    const rdl = page.locator('article', { hasText: 'Dumbbell RDL' }).first();
+    await rdl.locator('#rdl-w-0').fill('15');
+    await expect(rdl.locator('.plates')).toContainText('15 kg = 5 + 2.5 kg on each end');
+    // after a tick: easy / OK / hard
+    await rdl.getByRole('button', { name: 'Mark set 1 done' }).click();
+    await page.getByRole('button', { name: 'Skip' }).click();
+    await rdl.getByRole('group', { name: 'How did set 1 feel?' }).getByRole('button', { name: 'Hard' }).click();
+    await expect(rdl.getByRole('button', { name: /Set 1 felt hard/ })).toBeVisible();
+
+    // progress photos stay on the phone; two of the same pose can be compared
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==', 'base64');
+    await tab(page, 'progress');
+    const box = page.locator('#progress-photos');
+    await expect(page.locator('#body-review')).toBeDisabled();
+    await box.locator('#body-photo-input').setInputFiles({ name: 'a.png', mimeType: 'image/png', buffer: png });
+    await expect(box.locator('img[alt^="front photo"]')).toHaveCount(1);
+    await box.locator('#body-photo-input').setInputFiles({ name: 'b.png', mimeType: 'image/png', buffer: png });
+    await expect(box.locator('img[alt^="front photo"]')).toHaveCount(2);
+    await expect(page.locator('#body-review')).toBeEnabled();
+  });
+
   test('day and night mode can be picked and are remembered', async ({ page }) => {
     await tab(page, 'plan');
     await page.locator('#theme-dark').click();

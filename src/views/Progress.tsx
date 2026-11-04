@@ -8,6 +8,7 @@ import type { Session } from '../types';
 import { advise, type AdviceKind } from '../lib/coach';
 import Advice from '../components/Advice';
 import WeekReview from '../components/ai/WeekReview';
+import ProgressPhotos from '../components/ProgressPhotos';
 
 function Spark({ pts }: { pts: number[] }) {
   if (pts.length < 2) return <div className="h-8 w-24" />;
@@ -115,6 +116,7 @@ export default function Progress() {
         <MonthGrid sessions={sessions} />
       </section>
       <BodyWeight />
+      <ProgressPhotos />
       <WeekReview />
       <div className="label mt-2">Lifts</div>
       <p className="-mt-2 text-[14px] text-muted">The coach checks your last workouts: add weight when every set hits the top of the range, stay and add reps while building, go lighter after two tough workouts in a row. Tap a suggestion to see why.</p>

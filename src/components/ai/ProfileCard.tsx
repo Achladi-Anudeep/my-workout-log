@@ -8,7 +8,7 @@ export default function ProfileCard() {
   const [draft, setDraft] = useState<string | null>(null);
   return (
     <section className="card px-4 py-3">
-      <div className="label">✨ About me (for AI)</div>
+      <div className="label">About me (for AI)</div>
       {draft == null ? (
         <>
           <p className="mt-1 whitespace-pre-wrap text-[14px]">{profile}</p>

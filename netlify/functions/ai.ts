@@ -6,7 +6,8 @@
  *     GEMINI_API_KEY  the free-tier key → Flash models, used when Pro isn't set up, is capped, busy or slow
  * - Only someone signed in to one of this app's own Supabase projects can use it, so nobody else can spend the quota.
  * - Tasks: "ask" (a question, with the conversation so far), "review" (last week's training) and
- *   "identify" (which of your exercises a machine photo shows, picked only from your own list).
+ *   "identify" (which of your exercises a machine photo shows, picked only from your own list) and
+ *   "body" (compares your neck-down progress photos, first vs latest).
  */
 
 /** This app's two databases (production and test). Their URLs are public; anything else is refused. */
@@ -40,6 +41,15 @@ Commonly confused, decide by body position and direction:
 - angled sled with a big foot platform = a leg press
 - lying face down with a pad behind the ankles = a leg curl; seated with a pad on the thighs and toes on a block = a seated calf raise
 Pick ids only from the list. If the photo does not clearly show one of them, set best to "none" and confidence to "low".`;
+
+const BODY = `You review progress photos for someone on a gentle fat-loss cut who is building muscle. The photos are cropped below the face.
+You get the earliest and the latest photo of each pose (front and/or side), with dates, plus their profile and weight trend.
+Rules:
+- Compare only what is visible: belly and waist shape, love handles, chest, shoulders, arms, posture. Be specific and honest, kind and encouraging.
+- If lighting, distance, angle or clothing differ a lot, say so first, because it limits the comparison.
+- If the photos look nearly the same, say that plainly; early changes are often small. Never invent changes.
+- Do not guess a body-fat percentage or weight. No medical claims. Do not comment on attractiveness. If a face is visible, ignore it.
+- Plain text, at most about 150 words: 2–4 short "- " points on visible changes, then one line on what to focus on next month, then one tip for taking consistent photos.`;
 
 type Json = Record<string, unknown>;
 type Tier = { name: 'pro' | 'free'; key: string; models: string[]; perTry: number };
@@ -245,6 +255,23 @@ export default async (req: Request): Promise<Response> => {
     } catch {
       return reply(502, { error: 'bad-answer' });
     }
+  }
+
+  if (body.task === 'body') {
+    const photos = (Array.isArray(body.photos) ? body.photos : []).slice(0, 4).map(p => p as Json);
+    const parts: Json[] = [];
+    for (const p of photos) {
+      const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(str(p.image, LIMITS.image));
+      if (!m) return reply(400, { error: 'bad-image' });
+      parts.push({ text: str(p.label, 80) }, { inline_data: { mime_type: m[1], data: m[2] } });
+    }
+    if (photos.length < 2) return reply(400, { error: 'need-two-photos' });
+    const r = await gemini({
+      systemInstruction: { parts: [{ text: `${BODY}\n\nAbout them (from the app):\n${context}` }] },
+      contents: [{ role: 'user', parts: [...parts, { text: 'Compare these progress photos: what has visibly changed from the earliest to the latest?' }] }],
+      generationConfig: config,
+    });
+    return r.ok ? reply(200, { text: r.text, model: r.model, tier: r.tier }) : reply(r.status, { error: r.error });
   }
 
   return reply(400, { error: 'unknown-task' });

@@ -13,7 +13,7 @@ export default function WeekReview() {
   return (
     <section className="grid gap-2 card px-4 py-3">
       <div>
-        <div className="label">✨ AI weekly review</div>
+        <div className="label">AI weekly review</div>
         <p className="text-[13px] text-muted">Your last 7 days of workouts and body weight. Ask follow-ups below the answer.</p>
       </div>
       <AiChat thread="week" context={context} review inputId="ai-week-q" />

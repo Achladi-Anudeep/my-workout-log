@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { mmss } from '../lib/utils';
 import { beep } from '../lib/beep';
+import { haptic } from '../lib/lift';
 
 export interface Timer { end: number; total: number; label: string; }
 
@@ -12,7 +13,7 @@ export default function RestTimer({ t, onClose, onAdd }: { t: Timer; onClose: ()
   const left = Math.ceil((t.end - now) / 1000);
   const over = left <= 0;
   useEffect(() => {
-    if (over && !buzzed.current) { buzzed.current = true; beep(); navigator.vibrate?.(200); }
+    if (over && !buzzed.current) { buzzed.current = true; beep(); if (typeof navigator.vibrate === 'function') navigator.vibrate(200); else haptic(); }
   }, [over]);
   const pct = Math.min(100, Math.max(0, ((t.total - left) / t.total) * 100));
   return (

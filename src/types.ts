@@ -75,7 +75,9 @@ export interface Day {
 /** One weigh-in: body weight in kg at a moment in time (ms since epoch). */
 export interface WeightEntry { id: string; at: number; kg: number; }
 
-export interface SetLog { w: string; r: string; done: boolean; }
+/** How a set felt. Unset = OK. The coach uses it: hard sets hold the weight, easy ones can move up sooner. */
+export type Feel = 'easy' | 'hard';
+export interface SetLog { w: string; r: string; done: boolean; feel?: Feel; }
 /** A workout in progress. `day` is a snapshot taken at start, so editing the routine mid-workout can't break it. */
 export interface Active {
   dayId: DayId; startedAt: number; logs: Record<string, SetLog[]>; routineId?: string; day?: Day;
@@ -85,7 +87,7 @@ export interface Active {
   venue?: Venue;
 }
 
-export interface LoggedSet { w: number | null; r: number; }
+export interface LoggedSet { w: number | null; r: number; feel?: Feel; }
 export interface SessionExercise { id: string; name: string; unit: Unit; sets: LoggedSet[]; /** Name of the planned exercise this replaced, when swapped. */ swappedFor?: string; }
 export interface Session {
   id: string;
@@ -102,3 +104,6 @@ export interface Session {
   /** "home" when the home version of the day was done. */
   venue?: Venue;
 }
+
+/** A progress photo (neck down). The image stays on this device in IndexedDB under `body:<id>`. */
+export interface BodyPhoto { id: string; at: number; pose: 'front' | 'side'; }

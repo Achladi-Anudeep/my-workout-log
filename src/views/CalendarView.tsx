@@ -5,9 +5,11 @@ import { Plate } from '../components/ui';
 import { act, useWorkout } from '../store/workout';
 import { fmtDate, fmtW, isoDay, pad, volumeOf, weekdayId } from '../lib/utils';
 import type { Session } from '../types';
+import { drawShareCard, shareImage } from '../lib/shareCard';
 
 function SessionCard({ s, open, onToggle }: { s: Session; open: boolean; onToggle: () => void }) {
   const [del, setDel] = useState(false);
+  const [sharing, setSharing] = useState(false);
   return (
     <article className="card">
       <button className="flex w-full items-center gap-3 px-4 py-3 text-left" onClick={onToggle} aria-expanded={open}>
@@ -29,7 +31,12 @@ function SessionCard({ s, open, onToggle }: { s: Session; open: boolean; onToggl
             ))}
           </div>
           {s.note && <p className="mt-3 rounded-lg bg-sunk px-3 py-2 text-[14px]">{s.note}</p>}
-          <div className="mt-2 text-right">
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <button className="share-card h-10 rounded-lg bg-ink px-3 text-[13px] font-semibold text-bg disabled:opacity-50" disabled={sharing}
+              onClick={async () => {
+                setSharing(true);
+                try { await shareImage(await drawShareCard(s, sessionTitle(s), PLATE[s.dayId] ?? '#2350D8'), `workout-${s.date}.png`); } finally { setSharing(false); }
+              }}>{sharing ? 'Making card…' : 'Share card'}</button>
             {del
               ? <button className="h-10 px-2 text-[13px] font-bold text-danger" onClick={() => act().deleteSession(s.id)}>Tap again to delete</button>
               : <button className="h-10 px-2 text-[13px] font-semibold text-muted" onClick={() => setDel(true)}>Delete session</button>}

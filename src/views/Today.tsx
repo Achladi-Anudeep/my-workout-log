@@ -7,7 +7,7 @@ import { isoDay, lastFor, mmss, pad, programWeek, range, fmtW, weekdayId } from 
 
 /** Monday of this week, as YYYY-MM-DD. */
 const mondayIso = () => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return isoDay(d); };
-import { advise } from '../lib/coach';
+import { advise, isAssisted } from '../lib/coach';
 import Advice from '../components/Advice';
 import type { Active, Day, DayId, Exercise, Session, Venue } from '../types';
 import WeightSheet from '../components/WeightSheet';
@@ -26,6 +26,7 @@ import { swapOptions } from '../data/alternatives';
 import { useWakeLock } from '../lib/wakeLock';
 import { detailsOf } from '../data/details';
 import { fmtKg, fmtWhen } from '../lib/weight';
+import { warmupSets, warmupText } from '../lib/lift';
 
 export type OnRest = (secs: number, label: string) => void;
 
@@ -120,8 +121,10 @@ const Chevron = ({ open }: { open: boolean }) => (
  * Everything else (equipment, what it works, your setup, the coach's call, how-to, swap) is one tap away.
  * During a workout the exercise you're on gets the bold "now" card.
  */
-function ExerciseCard({ e, idx, total, active, sessions, onRest, now }: {
+function ExerciseCard({ e, idx, total, active, sessions, onRest, now, warmFirst }: {
   e: Exercise; idx: number; total: number; active: Active | null; sessions: Session[]; onRest: OnRest; now: boolean;
+  /** The first weighted lift of the day: show ramp-up sets. */
+  warmFirst?: boolean;
 }) {
   const [more, setMore] = useState(false);
   const [howTo, setHowTo] = useState(false);
@@ -138,6 +141,7 @@ function ExerciseCard({ e, idx, total, active, sessions, onRest, now }: {
   const finished = !!rows && rows.length > 0 && doneCount >= rows.length;
   const showSets = !!rows && (!finished || more);
   const detailsId = `more-${e.id}`;
+  const ramp = warmFirst ? warmupSets(e, adv.weight ?? (last ? Math.max(...last.e.sets.map(x => x.w ?? 0)) : e.start)) : [];
   return (
     <article className={`${now ? 'card-now' : 'card'} anim-rise transition-shadow duration-200 ${finished && !more ? 'opacity-80' : ''}`}>
       <header className="flex items-center gap-3 p-3">
@@ -154,6 +158,7 @@ function ExerciseCard({ e, idx, total, active, sessions, onRest, now }: {
           </h3>
           <p className="num mt-0.5 text-[14px] font-semibold">{e.sets}×{range(e)} <span className="font-normal text-muted">·</span> {e.wNote}</p>
           {last && <p className="num mt-0.5 truncate text-[12px] text-muted">Last: {last.e.sets.map(x => `${fmtW(x.w)}×${x.r}`).join('  ')}</p>}
+          {ramp.length > 0 && !finished && <p className="warmup-sets num mt-1 inline-block rounded-md bg-sunk px-2 py-0.5 text-[12px]"><span className="font-body font-semibold">Warm up first:</span> {warmupText(ramp)}</p>}
         </div>
         {rows && <span className={`num shrink-0 rounded-md px-2 py-1 text-[12px] font-bold transition-colors ${finished ? 'bg-goodSoft text-good' : 'bg-sunk text-muted'}`}>{doneCount}/{rows.length}</span>}
         <button className="grid h-11 w-9 shrink-0 place-items-center rounded-lg text-muted" aria-expanded={more} aria-controls={detailsId}
@@ -282,6 +287,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
     );
   }
 
+  const firstHeavy = day.exercises.findIndex(x => x.start != null && x.start > 0 && x.unit === 'reps' && !isAssisted(x));
   const curIdx = isActiveHere && active ? day.exercises.findIndex(x => !(active.logs[x.id] ?? []).every(r => r.done)) : -1;
 
   return (
@@ -334,7 +340,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
           )}
           <RoutineList title="Warm-up · 5–7 min" items={day.warmup} />
           <div className="grid gap-2.5">
-            {day.exercises.map((e, i) => <ExerciseCard key={e.id} e={e} idx={i} total={day.exercises.length} now={i === curIdx} active={isActiveHere ? active : null} sessions={sessions} onRest={onRest} />)}
+            {day.exercises.map((e, i) => <ExerciseCard key={e.id} e={e} idx={i} total={day.exercises.length} now={i === curIdx} warmFirst={i === firstHeavy} active={isActiveHere ? active : null} sessions={sessions} onRest={onRest} />)}
           </div>
           <RoutineList title="Cool-down · hold 30s each" items={day.cooldown} />
           <div className="fixed inset-x-0 z-20 px-4" style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>

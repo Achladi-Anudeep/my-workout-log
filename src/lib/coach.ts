@@ -24,6 +24,10 @@ const unitWord = (e: Exercise) => (e.unit === 'sec' ? 's' : ' reps');
 const working = (e: Exercise, sets: LoggedSet[]) => sets.slice(0, e.sets);
 /** Weight counts only if it was actually logged: a barbell exercise done with bodyweight on the day is treated as bodyweight. */
 const isWeighted = (_e: Exercise, sets: LoggedSet[]) => sets.some(s => s.w != null && s.w > 0);
+/** Felt hard on the last set or most sets: repeat the weight before adding more. */
+const feltHard = (sets: LoggedSet[]) => sets.length > 0 && (sets[sets.length - 1].feel === 'hard' || sets.filter(x => x.feel === 'hard').length * 2 > sets.length);
+/** Every set marked easy and within a rep of the top: ready to move up a session early. */
+const feltEasy = (e: Exercise, sets: LoggedSet[]) => sets.length >= e.sets && sets.every(x => x.feel === 'easy' && x.r >= e.max - 1);
 const isBand = (e: Exercise) => /\bband\b/i.test(`${e.wNote} ${e.equipment ?? ''} ${e.name}`);
 /** Assisted machines: the logged kg is help, so less is harder. One plate is usually about 5 kg. */
 const ASSIST_STEP = 5;
@@ -89,9 +93,12 @@ export function advise(sessions: Session[], e: Exercise, opts: { deload?: boolea
   }
 
   const kg = w ?? 0;
-  if (allTop) {
+  if (allTop && feltHard(sets)) {
+    return { kind: 'hold', title: `Stay at ${fmtW(kg)} kg`, detail: `You hit ${tgt(e.max)} but it felt hard. Repeat ${fmtW(kg)} kg until it feels OK, then add weight.`, weight: kg };
+  }
+  if (allTop || feltEasy(e, sets)) {
     const up = nextWeight(kg);
-    return { kind: 'up', title: `Add weight · ${fmtW(up)} kg`, detail: `All sets hit ${tgt(e.max)} at ${fmtW(kg)} kg. Go up and start again at ${tgt(e.min)}.`, weight: up };
+    return { kind: 'up', title: `Add weight · ${fmtW(up)} kg`, detail: `${allTop ? `All sets hit ${tgt(e.max)}` : 'Every set felt easy'} at ${fmtW(kg)} kg. Go up and start again at ${tgt(e.min)}.`, weight: up };
   }
 
   if (mostlyMissed) {
@@ -155,7 +162,10 @@ function kitAdvice(e: Exercise, sets: LoggedSet[], prevSets: LoggedSet[], logged
     return { kind: 'comeback', title: `Welcome back · ${fmtW(down ?? kg)} kg`, detail: `It's been ${Math.round(daysOff)} days. Start one step lighter${down == null ? ' (or with fewer reps)' : ''} and build back up over 1–2 weeks.`, weight: down ?? kg };
   }
   const allTop = sets.length >= e.sets && sets.every(s => s.r >= e.max);
-  if (allTop) {
+  if (allTop && feltHard(sets)) {
+    return { kind: 'hold', title: `Stay at ${fmtW(kg)} kg`, detail: `You hit ${tgt(e.max)} but it felt hard. Repeat ${fmtW(kg)} kg until it feels OK, then move up.`, weight: kg };
+  }
+  if (allTop || feltEasy(e, sets)) {
     if (up == null) {
       return { kind: 'harder', title: 'Top of your kit: make it harder', detail: `All sets hit ${tgt(e.max)} with ${fmtW(kg)} kg, your heaviest option. Lower over 4 s, pause 2 s at the hardest point, or add reps.`, weight: kg };
     }
@@ -164,7 +174,7 @@ function kitAdvice(e: Exercise, sets: LoggedSet[], prevSets: LoggedSet[], logged
     if (bigJump && !earned) {
       return { kind: 'harder', title: `Build reps, then ${fmtW(up)} kg`, detail: `Next step in your kit is ${fmtW(up)} kg, a big jump. Stay at ${fmtW(kg)} kg and add reps up to ${tgt(e.max + EXTRA_REPS)} with a slow 3 s lowering, then move up.`, weight: kg };
     }
-    return { kind: 'up', title: `Add weight · ${fmtW(up)} kg`, detail: `${bigJump ? `You've earned the jump to ${fmtW(up)} kg.` : `All sets hit ${tgt(e.max)}.`} Expect fewer reps at first: aim for ${tgt(e.min)} and build up. Your kit: ${kit} kg.`, weight: up };
+    return { kind: 'up', title: `Add weight · ${fmtW(up)} kg`, detail: `${bigJump ? `You've earned the jump to ${fmtW(up)} kg.` : allTop ? `All sets hit ${tgt(e.max)}.` : 'Every set felt easy.'} Expect fewer reps at first: aim for ${tgt(e.min)} and build up. Your kit: ${kit} kg.`, weight: up };
   }
   const missed = (xs: LoggedSet[]) => { const m = xs.filter(s => s.r < e.min).length; return m > 0 && m * 2 >= xs.length; };
   if (missed(sets)) {

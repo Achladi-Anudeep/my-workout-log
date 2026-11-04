@@ -88,6 +88,10 @@ export const identifyMachine = (image: string, candidates: Exercise[]) =>
     candidates: candidates.map(e => ({ id: e.id, name: e.name, equipment: detailsOf(e)?.equipment ?? e.wNote })),
   }).then(r => ({ ...r.match, model: r.model, tier: r.tier }));
 
+/** Compare progress photos (earliest vs latest per pose). Each photo has a label like "Front · 3 Oct 2026 (earliest)". */
+export const reviewBody = (photos: { label: string; image: string }[], context: string) =>
+  call<AiReply>({ task: 'body', photos, context });
+
 // ---------- context builders: plain text the model can read ----------
 
 /** The whole week in a few lines, so every answer knows the full program. */

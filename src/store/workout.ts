@@ -6,7 +6,7 @@ import { advise } from '../lib/coach';
 import { DEFAULT_PROFILE, LEGACY_PROFILES, type ChatTurn } from '../lib/ai';
 import { BUILTIN, BUILTIN_ID, DAY_IDS, clone, emptyDay, findRoutine, isBuiltin, toDay } from '../lib/routines';
 import { HOME_DAYS } from '../data/home';
-import type { Active, Day, DayId, Exercise, Routine, RoutineDay, Session, SetLog, Venue, WeightEntry } from '../types';
+import type { Active, BodyPhoto, Day, DayId, Exercise, Routine, RoutineDay, Session, SetLog, Venue, WeightEntry } from '../types';
 
 /** The day an in-progress workout runs on: its snapshot, or the built-in day for workouts started before routines existed. */
 export const activeDay = (a: Active): Day => a.day ?? DAY[a.dayId];
@@ -81,6 +81,10 @@ export interface WorkoutState {
 
   /** Replace an exercise in the running workout (machine busy). Swapping back restores the planned one. */
   swapExercise: (fromId: string, to: Exercise) => void;
+  /** Progress photos, newest first. Images stay on this device only (never synced). */
+  bodyPhotos: BodyPhoto[];
+  addBodyPhoto: (p: BodyPhoto) => void;
+  removeBodyPhoto: (id: string) => void;
   /** What the AI knows about you (Plan → About me). */
   aiProfile: string;
   setAiProfile: (text: string) => void;
@@ -224,6 +228,9 @@ export const useWorkout = create<WorkoutState>()(
       machineNotes: {},
       notesVersion: 0,
 
+      bodyPhotos: [],
+      addBodyPhoto: p => set(s => ({ bodyPhotos: [p, ...s.bodyPhotos].sort((a, b) => b.at - a.at) })),
+      removeBodyPhoto: id => set(s => ({ bodyPhotos: s.bodyPhotos.filter(x => x.id !== id) })),
       photos: {},
       pendingPUp: [],
       pendingPDel: [],
@@ -346,7 +353,7 @@ export const useWorkout = create<WorkoutState>()(
         const ex = day.exercises
           .map(e => ({
             id: e.id, name: e.name, unit: e.unit, ...(e.swappedFor ? { swappedFor: e.swappedFor.name } : {}),
-            sets: (a.logs[e.id] ?? []).filter(r => r.done && r.r !== '').map(r => ({ w: r.w === '' ? null : Number(r.w), r: Number(r.r) })),
+            sets: (a.logs[e.id] ?? []).filter(r => r.done && r.r !== '').map(r => ({ w: r.w === '' ? null : Number(r.w), r: Number(r.r), ...(r.feel ? { feel: r.feel } : {}) })),
           }))
           .filter(e => e.sets.length);
         const session: Session = {
@@ -399,6 +406,7 @@ export const useWorkout = create<WorkoutState>()(
         activeRoutineDirty: s.activeRoutineDirty,
         machineNotes: s.machineNotes, notesVersion: s.notesVersion, notesSyncedVersion: s.notesSyncedVersion,
         photos: s.photos, pendingPUp: s.pendingPUp, pendingPDel: s.pendingPDel, aiProfile: s.aiProfile, aiChats: s.aiChats, venuePick: s.venuePick,
+        bodyPhotos: s.bodyPhotos,
       }),
     },
   ),
