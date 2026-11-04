@@ -201,7 +201,7 @@ test.describe('@local', () => {
     await expect(card.locator('img[alt="Demo of Leg Press"]')).toBeVisible();
     await expect(card).toContainText('Equipment: 45° leg press machine');
 
-    await card.getByRole('button', { name: '+ Add my machine settings' }).click();
+    await card.getByRole('button', { name: '+ Add my setup notes' }).click();
     await card.locator('#note-leg-press').fill('Seat 3, feet mid-platform');
     await card.getByRole('button', { name: 'Save' }).click();
     await expect(card).toContainText('My setup: Seat 3, feet mid-platform');
