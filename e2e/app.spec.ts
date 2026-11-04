@@ -304,7 +304,7 @@ test.describe('@local', () => {
     await page.locator('#theme-dark').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(bg).toBe('rgb(13, 15, 19)');
+    expect(bg).toBe('rgb(18, 17, 16)');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await tab(page, 'plan');
@@ -378,6 +378,7 @@ test.describe('@local', () => {
     await page.locator('#day-tue').click();
     await expect(page.getByRole('button', { name: 'Swap Lat Pulldown' })).toHaveCount(0); // only during a workout
     await page.locator('#start-workout').click();
+    await page.getByRole('button', { name: 'More about Lat Pulldown' }).click(); // swap sits with the details (or on the 'now' card)
     await page.getByRole('button', { name: 'Swap Lat Pulldown' }).click();
     const sheet = page.getByRole('dialog', { name: 'Swap Lat Pulldown' });
     await expect(sheet).toContainText('Assisted pull-up machine');

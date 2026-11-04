@@ -292,7 +292,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
           <span className="disp text-[13px] font-bold uppercase tracking-[0.12em] text-muted">{day.short}{sel === today ? ' · today' : ''}{day.home ? ' · home' : ''}</span>
           <span className={`disp rounded-full border px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider ${pw.tone === 'warn' ? 'border-warn text-warn' : 'border-ink'}`}>Week {pw.week} · {pw.name}</span>
         </div>
-        <h2 key={day.title} className="poster anim-rise relative mt-2 max-w-[78%] text-[52px] leading-[0.92] sm:text-[60px]">{day.title}</h2>
+        <h2 className="poster relative mt-2 max-w-[78%] text-[52px] leading-[0.92] sm:text-[60px]">{day.title}</h2>
         <p className="disp relative mt-2 text-[15px] font-semibold uppercase tracking-wide">
           {day.exercises.length > 0 && <>{day.exercises.length} moves · ~<span className="num">{day.mins}</span> min · </>}{day.focus}
         </p>

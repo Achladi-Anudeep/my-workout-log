@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { act, activeDay } from '../store/workout';
 import { DEMO_NOTE } from '../data/demos';
 import { detailsOf } from '../data/details';
@@ -53,7 +53,14 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
   const [swap, setSwap] = useState(false);
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
-  useEffect(() => { window.scrollTo({ top: 0 }); setHowTo(false); }, [idx, e.id]);
+  const headRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    window.scrollTo({ top: 0 }); setHowTo(false);
+    // A short slide-in when moving to another exercise (skipped when reduced motion is on).
+    if (typeof matchMedia === 'function' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      headRef.current?.animate?.([{ opacity: 0, transform: 'translateX(12px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    }
+  }, [idx, e.id]);
 
   const d = detailsOf(e);
   const adv = advise(sessions, e, { deload: programWeek(startDate).deload });
@@ -81,14 +88,14 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
         })}
       </div>
 
-      <div key={e.id} className="anim-rise">
+      <div ref={headRef}>
         <div className="label">{day.title}{e.superset ? ` · superset ${e.superset}` : ''}</div>
         <h2 className="poster mt-1 text-[38px] leading-[0.95]">{e.name}</h2>
         <p className="mt-1 text-[14px] text-muted"><span className="num font-semibold text-ink">{e.sets}×{range(e)}</span> · {e.wNote} · {e.rest > 0 ? `rest ${e.rest}s` : 'no rest, go to next'}</p>
         {e.swappedFor && <p className="mt-0.5 text-[13px] font-semibold text-warn">Swapped in for {e.swappedFor.name}</p>}
       </div>
 
-      <DemoGif key={`demo-${e.id}`} e={e} className="anim-fade mx-auto aspect-square w-full max-w-sm rounded-2xl" />
+      <DemoGif e={e} className="mx-auto aspect-square w-full max-w-sm rounded-2xl" />
       {!e.demo && DEMO_NOTE[e.id] && <p className="demo-note -mt-2 rounded-lg bg-sunk px-3 py-2 text-[13px]">{DEMO_NOTE[e.id]}</p>}
 
       {d?.equipment && (
