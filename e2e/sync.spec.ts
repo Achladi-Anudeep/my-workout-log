@@ -188,7 +188,7 @@ test.describe('@env', () => {
       await expect(demo.locator('.ai-answer').last()).toContainText('47');
       console.log(`follow-up memory ✓ by ${await demo.locator('.ai-model').last().innerText()}`);
     }
-    await demo.getByRole('button', { name: 'Start a new conversation' }).click();
+    if (await startNew.count()) await startNew.click(); // absent when Gemini was busy and nothing was kept
     await demo.getByRole('button', { name: 'Close', exact: true }).first().click();
 
     // 3) weekly review
