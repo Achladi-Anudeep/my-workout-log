@@ -49,6 +49,8 @@ export default function ProgressPhotos() {
   const [busy, setBusy] = useState(false);
   const [ai, setAi] = useState<{ reply?: AiReply; error?: AiError; detail?: string; busy?: boolean }>({});
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  // Hidden until you tap: the photos are private and only load when opened.
+  const [open, setOpen] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
   const list = all.filter(p => p.pose === pose); // newest first
@@ -101,17 +103,25 @@ export default function ProgressPhotos() {
 
   return (
     <section id="progress-photos" className="card grid gap-3 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="label">Progress photos</div>
-          <p className="mt-0.5 text-[13px] text-muted">{due ? 'Due: take this month’s front and side photos.' : `Last taken ${fmtDay(lastAt!)}. Next one in about a month.`}</p>
-        </div>
-        <div role="radiogroup" aria-label="Pose" className="grid h-10 shrink-0 grid-cols-2 overflow-hidden rounded-lg border-[1.5px] border-ink">
-          {(['front', 'side'] as Pose[]).map(ps => (
-            <button key={ps} role="radio" aria-checked={pose === ps} onClick={() => setPose(ps)}
-              className={`disp px-3 text-[13px] font-bold uppercase tracking-wider transition-colors ${pose === ps ? 'bg-ink text-bg' : ''}`}>{ps}</button>
-          ))}
-        </div>
+      <button id="progress-photos-toggle" className="flex w-full items-center justify-between gap-3 text-left" style={{ alignItems: 'center' }}
+        aria-expanded={open} aria-controls="progress-photos-body" onClick={() => setOpen(!open)}>
+        <span className="min-w-0">
+          <span className="label block">Progress photos{all.length ? ` · ${all.length}` : ''}</span>
+          <span className="mt-0.5 block text-[13px] text-muted">{due ? 'Due: take this month’s front and side photos.' : `Last taken ${fmtDay(lastAt!)}. Next one in about a month.`}</span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1 text-[13px] font-semibold">{open ? 'Hide' : 'Show'}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden
+            className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
+        </span>
+      </button>
+
+      {open && (
+      <div id="progress-photos-body" className="anim-fade grid gap-3">
+      <div role="radiogroup" aria-label="Pose" className="grid h-10 grid-cols-2 overflow-hidden rounded-lg border-[1.5px] border-ink">
+        {(['front', 'side'] as Pose[]).map(ps => (
+          <button key={ps} role="radio" aria-checked={pose === ps} onClick={() => setPose(ps)}
+            className={`disp text-[13px] font-bold uppercase tracking-wider transition-colors ${pose === ps ? 'bg-ink text-bg' : ''}`}>{ps}</button>
+        ))}
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
@@ -152,6 +162,8 @@ export default function ProgressPhotos() {
             ))}
           </ul>
         </details>
+      )}
+      </div>
       )}
     </section>
   );

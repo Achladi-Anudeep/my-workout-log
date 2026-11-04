@@ -319,6 +319,8 @@ test.describe('@local', () => {
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==', 'base64');
     await tab(page, 'progress');
     const box = page.locator('#progress-photos');
+    await expect(box.locator('#body-photo-input')).toHaveCount(0); // hidden until you tap
+    await page.locator('#progress-photos-toggle').click();
     await expect(page.locator('#body-review')).toBeDisabled();
     await box.locator('#body-photo-input').setInputFiles({ name: 'a.png', mimeType: 'image/png', buffer: png });
     await expect(box.locator('img[alt^="front photo"]')).toHaveCount(1);
