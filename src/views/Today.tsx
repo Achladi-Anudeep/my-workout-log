@@ -245,7 +245,7 @@ function WeightQuickRow() {
           ? <><span className="num text-[17px] font-bold">{fmtKg(latest.kg)}</span> <span className="text-muted">kg · {loggedToday ? 'today' : fmtWhen(latest.at)}</span></>
           : <span className="text-muted">Not logged yet</span>}
       </div>
-      <button className="h-9 justify-self-start rounded-lg bg-sunk px-3 text-left text-[13px] font-semibold" onClick={() => setOpen(true)}>{loggedToday ? '+ Log again' : '+ Log weight'}</button>
+      <button className="h-10 self-start rounded-lg bg-sunk px-3 text-[13px] font-semibold" onClick={() => setOpen(true)}>{loggedToday ? '+ Log again' : '+ Log weight'}</button>
       {open && <WeightSheet onClose={() => setOpen(false)} />}
     </div>
   );
@@ -337,7 +337,6 @@ export default function Today({ onRest }: { onRest: OnRest }) {
             {day.exercises.map((e, i) => <ExerciseCard key={e.id} e={e} idx={i} total={day.exercises.length} now={i === curIdx} active={isActiveHere ? active : null} sessions={sessions} onRest={onRest} />)}
           </div>
           <RoutineList title="Cool-down · hold 30s each" items={day.cooldown} />
-          <div className="h-16" />
           <div className="fixed inset-x-0 z-20 px-4" style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
             <div className="mx-auto max-w-xl">
               {isActiveHere ? (
@@ -366,7 +365,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
       )}
       <div className="grid grid-cols-2 gap-2.5">
         <WeightQuickRow />
-        <button id="machine-finder" onClick={() => setFinder(true)} className="card flex flex-col justify-between gap-1 p-3 text-left">
+        <button id="machine-finder" onClick={() => setFinder(true)} className="card flex min-h-[112px] flex-col justify-between gap-1 p-3 text-left" style={{ alignItems: 'flex-start' }}>
           <span className="label">Gym helper</span>
           <span className="text-[14px] font-semibold leading-snug">What's this machine?</span>
           <span className="flex items-center gap-1.5 text-[12px] text-muted">
@@ -376,6 +375,8 @@ export default function Today({ onRest }: { onRest: OnRest }) {
         </button>
       </div>
       {finder && <MachineFinder onClose={() => setFinder(false)} />}
+      {/* room for the fixed Start / Finish bar */}
+      {day.exercises.length > 0 && <div aria-hidden className="h-20" />}
       {finishing && isActiveHere && <FinishPanel day={day} onClose={() => setFinishing(false)} />}
     </div>
   );
