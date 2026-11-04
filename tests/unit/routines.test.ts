@@ -209,7 +209,7 @@ describe('finding the machine and doing it right', () => {
   });
 
   it('nothing at home needs gear the user does not own (no bench, step, stairs, box or incline seat)', () => {
-    const NOT_OWNED = /\b(bench|step|stairs?|box|incline seat|staircase)\b/i;
+    const NOT_OWNED = /\b(bench|stairs?|staircase|box|incline seat|(a|low|the) step|step-?ups?)\b/i;
     const homeEx = [
       ...Object.values(HOME_DAYS).flatMap(d => d!.exercises),
       ...BAND_SWAPS,

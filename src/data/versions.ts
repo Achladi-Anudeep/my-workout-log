@@ -28,7 +28,7 @@ export const VERSIONS: Record<string, Version[]> = {
   'leg-curl': [v('Zg3XY7P', 'Seated leg curl machine'), v('FkBIE6a', 'Lying dumbbell leg curl'), v('C5jncD2', 'Standing single-leg curl (bodyweight)')],
   'seated-calf': [v('r29jP7S', 'Seated calf raise with dumbbells on the knees'), v('Ia7tumC', 'Seated single-leg calf raise'), v('ipvgBnC', 'Seated calf raise with a barbell')],
   'standing-calf': [v('bJYHBIN', 'Bodyweight standing calf raise'), v('8ozhUIZ', 'Barbell standing calf raise'), v('6MaEjVA', 'Smith machine standing calf raise')],
-  'single-leg-calf': [v('fKZgDEO', 'Single-leg calf raise holding a dumbbell'), v('0jp9Rlz', 'Single-leg calf raise on the floor'), v('1kB3Wmk', 'Dumbbell single-leg calf raise')],
+  'single-leg-calf': [v('bJYHBIN', 'Both feet at once', 'Easier'), v('1kB3Wmk', 'Dumbbell single-leg calf raise')],
   'side-plank': [v('5VXmnV5', 'Side plank with hands on a bench', 'Easier'), v('VO2qeJg', 'Side plank with leg lift', 'Harder')],
   'bicep-curl': [v('BU15nH4', 'Alternating dumbbell curl'), v('F3xgbjF', 'Incline dumbbell curl'), v('BCGQ6J5', 'Cable curl')],
   'hammer-curl': [v('HPlPoQA', 'Cable hammer curl with rope'), v('HDYiZcY', 'Cross-body hammer curl'), v('6em2Dxj', 'Seated alternating hammer curl')],
