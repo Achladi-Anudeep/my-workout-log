@@ -35,12 +35,12 @@ function PinnedDemoView({ title, query, exercise, onBack }: DemoTarget & { exerc
   return (
     <div className="grid gap-4">
       <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>‹ All tutorials</button>
-      <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{title}</h2>
+      <h2 className="poster text-[38px] leading-none">{title}</h2>
       <DemoGif e={exercise} className="mx-auto aspect-square w-full max-w-sm" />
       {!exercise.demo && DEMO_NOTE[exercise.id] && <p className="demo-note rounded-lg bg-sunk px-3 py-2 text-[13px]">{DEMO_NOTE[exercise.id]}</p>}
       <MachinePhoto exId={exercise.id} />
       <MachineNote exId={exercise.id} />
-      <div className="rounded-xl border border-line bg-surface px-4 py-3"><ExerciseHowTo e={exercise} /></div>
+      <div className="card px-4 py-3"><ExerciseHowTo e={exercise} /></div>
       <Versions e={exercise} />
       <AskAI e={exercise} />
       <div className="flex flex-wrap gap-x-4 gap-y-2">
@@ -61,8 +61,8 @@ function DemoView({ title, query, exercise, onBack, backLabel = '‹ All tutoria
   return (
     <div className="grid gap-4">
       <button className="justify-self-start text-[14px] font-semibold text-accent" onClick={onBack}>{backLabel}</button>
-      <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{title}</h2>
-      {exercise && <div className="rounded-xl border border-line bg-surface px-4 py-3"><ExerciseHowTo e={exercise} /></div>}
+      <h2 className="poster text-[38px] leading-none">{title}</h2>
+      {exercise && <div className="card px-4 py-3"><ExerciseHowTo e={exercise} /></div>}
       {error && <DemoError name={title} />}
       {!error && !data && <div className="grid aspect-square w-full max-w-sm place-items-center rounded-2xl bg-sunk text-muted">Loading demo…</div>}
       {data && !data.length && (
@@ -94,7 +94,7 @@ function DemoView({ title, query, exercise, onBack, backLabel = '‹ All tutoria
             </div>
           )}
           {demo.instructions.length > 0 && (
-            <ol className="grid list-decimal gap-1.5 rounded-xl border border-line bg-surface py-3 pl-9 pr-4 text-[14px]">
+            <ol className="grid list-decimal gap-1.5 card py-3 pl-9 pr-4 text-[14px]">
               {demo.instructions.map((t, i) => <li key={i}>{cleanStep(t)}</li>)}
             </ol>
           )}
@@ -123,10 +123,10 @@ export default function Tutorials() {
 
   return (
     <div className="grid gap-4">
-      <h2 className="disp text-[36px] font-extrabold uppercase leading-none">Tutorials</h2>
+      <h2 className="poster text-[38px] leading-none">Tutorials</h2>
       <p className="-mt-2 text-[14px] text-muted">Animated demos and steps for any exercise, loaded live.</p>
       <input id="tutorial-search" type="search" placeholder="Search any exercise, e.g. hip thrust" value={q} onChange={e => setQ(e.target.value)}
-        className="h-12 w-full rounded-xl border border-line bg-surface px-4 text-ink placeholder:text-muted" />
+        className="h-12 w-full card px-4 text-ink placeholder:text-muted" />
 
       {search && (
         <section className="grid gap-2">
@@ -137,7 +137,7 @@ export default function Tutorials() {
           {results.data && results.data.length > 0 && (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {results.data.map(d => (
-                <button key={d.exerciseId} onClick={() => setView({ title: d.name, query: d.name })} className="overflow-hidden rounded-xl border border-line bg-surface text-left">
+                <button key={d.exerciseId} onClick={() => setView({ title: d.name, query: d.name })} className="overflow-hidden card text-left">
                   <img src={d.gifUrl} alt="" loading="lazy" className="aspect-square w-full bg-white object-contain" />
                   <div className="px-2.5 py-2 text-[13px] font-semibold capitalize leading-snug">{d.name}</div>
                 </button>
@@ -159,7 +159,7 @@ export default function Tutorials() {
             ))}
           </div>
         </div>
-        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <div className="overflow-hidden card">
           {planList.map((e, i) => (
             <button key={e.id} onClick={() => setView({ title: e.name, query: e.demo?.name ?? DEMO_Q[e.id] ?? e.name, exercise: e })}
               className={`flex w-full items-center gap-3 px-4 py-3 text-left ${i ? 'border-t border-line' : ''}`}>

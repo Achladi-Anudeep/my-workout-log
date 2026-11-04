@@ -22,7 +22,7 @@ export default function Versions({ e }: { e: Exercise }) {
         ))}
       </div>
       {sel && (
-        <div className="grid gap-1.5 rounded-xl border border-line bg-surface p-2">
+        <div className="grid gap-1.5 card p-2">
           <img src={gifUrl(sel.id)} alt={`Demo of ${sel.label}`} className="mx-auto aspect-square w-full max-w-sm rounded-lg bg-white object-contain" />
           <p className="text-[14px] font-semibold">{sel.label}</p>
           {sel.note && <p className="-mt-1 text-[13px] text-muted">{sel.note}</p>}

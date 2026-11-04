@@ -45,7 +45,7 @@ function UpdateBar() {
   if (!ready) return null;
   return (
     <div className="fixed inset-x-0 z-30 px-4" style={{ bottom: 'calc(140px + env(safe-area-inset-bottom, 0px))' }}>
-      <div className="mx-auto flex max-w-xl items-center gap-3 rounded-xl border border-line bg-surface px-4 py-2.5 shadow-lg">
+      <div className="mx-auto flex max-w-xl items-center gap-3 card px-4 py-2.5 shadow-lg">
         <span className="min-w-0 flex-1 text-[14px]">A new version of the app is ready.</span>
         <button className="h-9 rounded-lg bg-accent px-3 text-[13px] font-bold text-accentInk" onClick={reloadNow}>Reload</button>
       </div>
@@ -69,7 +69,7 @@ export default function App() {
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <PlateLogo />
-            <span className="disp truncate text-[21px] font-extrabold uppercase tracking-wide">My Workout Log</span>
+            <span className="poster truncate text-[20px] tracking-wide">My Workout Log</span>
             {APP_ENV !== 'prod' && (
               <span id="env-badge" className="shrink-0 rounded-md bg-warnSoft px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-warn">{APP_ENV}</span>
             )}
@@ -79,11 +79,13 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-xl px-4 pb-28 pt-4">
-        {tab === 'today' && <Today onRest={onRest} />}
-        {tab === 'calendar' && <CalendarView />}
-        {tab === 'progress' && <Progress />}
-        {tab === 'tutorials' && <Tutorials key={resets} />}
-        {tab === 'plan' && <Plan key={resets} />}
+        <div key={`${tab}-${resets}`} className="anim-rise">
+          {tab === 'today' && <Today onRest={onRest} />}
+          {tab === 'calendar' && <CalendarView />}
+          {tab === 'progress' && <Progress />}
+          {tab === 'tutorials' && <Tutorials key={resets} />}
+          {tab === 'plan' && <Plan key={resets} />}
+        </div>
       </main>
 
       <UpdateBar />
@@ -93,9 +95,10 @@ export default function App() {
         <div className="mx-auto grid max-w-xl grid-cols-5">
           {TABS.map(t => (
             <button key={t.id} id={`tab-${t.id}`} onClick={() => { if (t.id === tab) setResets(n => n + 1); else act().setTab(t.id); }} aria-current={tab === t.id ? 'page' : undefined}
-              className={`flex h-16 flex-col items-center justify-center gap-1 ${tab === t.id ? 'text-accent' : 'text-muted'}`}>
+              className={`relative flex h-16 flex-col items-center justify-center gap-1 ${tab === t.id ? 'text-ink' : 'text-muted'}`}>
+              <span aria-hidden className={`absolute inset-x-5 top-0 h-[3px] rounded-b-full bg-hot transition-transform duration-200 ${tab === t.id ? 'scale-x-100' : 'scale-x-0'}`} />
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>
-              <span className="text-[12px] font-semibold">{t.label}</span>
+              <span className="disp text-[12px] font-bold uppercase tracking-wider">{t.label}</span>
             </button>
           ))}
         </div>

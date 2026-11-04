@@ -22,7 +22,7 @@ export default function SetRows({ e, rows, onRest, afterTick }: {
       {e.loads?.length ? <p className="kit-loads px-1 pb-1 text-[12px] text-muted">Your kit: {e.loads.map(l => `${l}`).join(' · ')} kg</p> : null}
       <div className="grid gap-1.5">
         {rows.map((r, i) => (
-          <div key={i} className={`grid grid-cols-[28px_1fr_1fr_48px] items-center gap-2 rounded-xl px-1 py-1 ${r.done ? 'bg-goodSoft' : ''}`}>
+          <div key={i} className={`grid grid-cols-[28px_1fr_1fr_48px] items-center gap-2 rounded-xl px-1 py-1 transition-colors duration-200 ${r.done ? 'bg-goodSoft' : ''}`}>
             <span className="num text-center text-[14px] font-bold text-muted">{i + 1}</span>
             <input id={`${e.id}-w-${i}`} inputMode="decimal" type="number" step="0.5" placeholder={isAssisted(e) ? 'none' : bw ? 'BW' : '—'} value={r.w}
               onChange={ev => act().edit(e.id, i, { w: ev.target.value })}
@@ -36,7 +36,7 @@ export default function SetRows({ e, rows, onRest, afterTick }: {
               if (!done) return;
               const next = afterTick?.(i);
               if (e.rest > 0) onRest(e.rest, (next && next.label) || `${e.name} · set ${i + 1}`);
-            }} className={`grid h-11 w-12 place-items-center rounded-lg border transition ${r.done ? 'border-good bg-good text-surface' : 'border-line bg-surface text-muted'}`}>
+            }} className={`grid h-11 w-12 place-items-center rounded-lg border transition ${r.done ? 'border-good bg-good text-surface anim-pop' : 'border-line bg-surface text-muted'}`}>
               <Check />
             </button>
           </div>

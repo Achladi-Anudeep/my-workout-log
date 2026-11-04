@@ -6,9 +6,10 @@ export default {
       colors: {
         bg: 'var(--bg)', surface: 'var(--surface)', sunk: 'var(--sunk)', ink: 'var(--ink)', muted: 'var(--muted)', line: 'var(--line)',
         accent: 'var(--accent)', accentInk: 'var(--accent-ink)', accentSoft: 'var(--accent-soft)',
-        good: 'var(--good)', goodSoft: 'var(--good-soft)', warn: 'var(--warn)', warnSoft: 'var(--warn-soft)', danger: 'var(--danger)',
+        good: 'var(--good)', goodSoft: 'var(--good-soft)', warn: 'var(--warn)', warnSoft: 'var(--warn-soft)', danger: 'var(--danger)', hot: 'var(--hot)', hotInk: 'var(--hot-ink)',
       },
       fontFamily: {
+        poster: ['Anton', '"Barlow Condensed"', 'sans-serif'],
         display: ['"Barlow Condensed"', '"Arial Narrow"', 'sans-serif'],
         body: ['Barlow', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],

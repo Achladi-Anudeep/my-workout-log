@@ -39,7 +39,7 @@ export default function ExercisePicker({ excludeIds, onPick, onClose }: {
       <div className="sticky top-0 z-10 border-b border-line bg-bg px-4 py-3">
         <div className="mx-auto flex max-w-xl items-center gap-2">
           <input id="picker-search" type="search" autoFocus placeholder="Search exercises, e.g. hip thrust" value={q} onChange={e => setQ(e.target.value)}
-            className="h-11 min-w-0 flex-1 rounded-xl border border-line bg-surface px-4" />
+            className="h-11 min-w-0 flex-1 card px-4" />
           <button className="h-11 px-2 text-[14px] font-semibold text-muted" onClick={onClose}>Cancel</button>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function ExercisePicker({ excludeIds, onPick, onClose }: {
         {mine.length > 0 && (
           <section className="grid gap-2">
             <div className="label">Your exercises · keeps their progress history</div>
-            <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+            <div className="overflow-hidden card">
               {mine.slice(0, q ? 20 : 40).map((e, i) => (
                 <button key={e.id} onClick={() => onPick({ ...e })} className={`flex w-full items-center gap-3 px-4 py-3 text-left ${i ? 'border-t border-line' : ''}`}>
                   <span className="min-w-0 flex-1"><span className="block font-semibold">{e.name}</span>
@@ -74,7 +74,7 @@ export default function ExercisePicker({ excludeIds, onPick, onClose }: {
           {lib.data && lib.data.length > 0 && (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {lib.data.filter(d => !excludeIds.includes(`exdb-${d.exerciseId}`)).map(d => (
-                <button key={d.exerciseId} onClick={() => onPick(fromLibrary(d))} className="overflow-hidden rounded-xl border border-line bg-surface text-left">
+                <button key={d.exerciseId} onClick={() => onPick(fromLibrary(d))} className="overflow-hidden card text-left">
                   <img src={d.gifUrl} alt="" loading="lazy" className="aspect-square w-full bg-white object-contain" />
                   <div className="px-2.5 py-2 text-[13px] font-semibold capitalize leading-snug">{d.name}</div>
                   <div className="px-2.5 pb-2 text-[11px] capitalize text-muted">{d.targetMuscles.join(', ')}</div>

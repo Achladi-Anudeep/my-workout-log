@@ -18,7 +18,7 @@ export default function AccountCard() {
 
   if (mode === 'unconfigured') {
     return (
-      <section className="rounded-2xl border border-line bg-surface px-4 py-3">
+      <section className="card px-4 py-3">
         <div className="label">Sync</div>
         <p className="mt-2 text-[14px] text-muted">Sync isn't set up for this site yet, so workouts are saved on this device only. Add the Supabase environment variables on Netlify and redeploy to turn it on.</p>
       </section>
@@ -27,7 +27,7 @@ export default function AccountCard() {
 
   if (email) {
     return (
-      <section className="rounded-2xl border border-line bg-surface px-4 py-3">
+      <section className="card px-4 py-3">
         <div className="label">Sync</div>
         <p className="mt-2 text-[15px]">Signed in as <span className="font-semibold">{email}</span></p>
         <p className="text-[13px] text-muted">
@@ -62,7 +62,7 @@ export default function AccountCard() {
   };
 
   return (
-    <section className="rounded-2xl border border-line bg-surface px-4 py-3">
+    <section className="card px-4 py-3">
       <div className="label">Sync across devices</div>
       <p className="mt-2 text-[14px] text-muted">Sign in with the same account on your phone and laptop. Workouts logged before signing in upload automatically.</p>
       <form className="mt-3 grid gap-2" onSubmit={e => void submit('in', e)}>

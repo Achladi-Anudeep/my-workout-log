@@ -16,7 +16,7 @@ export function applyTheme(pref: ThemePref) {
   if (pref === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', pref);
   const dark = pref === 'dark' || (pref === 'auto' && !!darkQuery()?.matches);
   for (const m of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
-    m.setAttribute('content', dark ? '#0D0F13' : '#F1F3F6');
+    m.setAttribute('content', dark ? '#121110' : '#F3EFE6');
     m.removeAttribute('media');
   }
 }

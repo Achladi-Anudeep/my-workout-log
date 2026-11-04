@@ -60,7 +60,7 @@ export default function DayEditor({ routineId, dayId, onBack }: { routineId: str
           {!day.exercises.length && <span className="text-[13px] text-muted">No exercises = rest day</span>}
         </div>
         {day.exercises.map((e, i) => (
-          <article key={e.id} className="flex items-center gap-2 rounded-2xl border border-line bg-surface py-2 pl-4 pr-2">
+          <article key={e.id} className="flex items-center gap-2 card py-2 pl-4 pr-2">
             <button className="min-w-0 flex-1 py-1 text-left" onClick={() => setForm({ draft: { ...e }, mode: 'edit', replaceId: e.id })}>
               <span className="block font-semibold">{e.superset && <span className="mr-1.5 text-accent">{e.superset}</span>}{e.name}</span>
               <span className="block text-[13px] text-muted"><span className="num">{e.sets}×{range(e)}</span> · {e.wNote} · {e.rest > 0 ? `rest ${e.rest}s` : 'no rest'}</span>

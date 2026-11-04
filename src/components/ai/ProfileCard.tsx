@@ -7,7 +7,7 @@ export default function ProfileCard() {
   const profile = useWorkout(s => s.aiProfile);
   const [draft, setDraft] = useState<string | null>(null);
   return (
-    <section className="rounded-2xl border border-line bg-surface px-4 py-3">
+    <section className="card px-4 py-3">
       <div className="label">✨ About me (for AI)</div>
       {draft == null ? (
         <>

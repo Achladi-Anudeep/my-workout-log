@@ -61,6 +61,7 @@ test.describe('@env', () => {
     await page.getByRole('button', { name: 'Save weight' }).click();
 
     await page.locator('#day-wed').click();
+    await page.getByRole('button', { name: 'More about Leg Press' }).click();
     await page.locator('article', { hasText: 'Leg Press' }).first().getByRole('button', { name: '+ Add my setup notes' }).click();
     await page.locator('#note-leg-press').fill(`Seat 3 ${tag}`);
     await page.getByRole('button', { name: 'Save', exact: true }).click();

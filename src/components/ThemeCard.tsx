@@ -11,7 +11,7 @@ export default function ThemeCard() {
   const pref = useTheme(s => s.pref);
   const set = useTheme(s => s.set);
   return (
-    <section className="rounded-2xl border border-line bg-surface px-4 py-3">
+    <section className="card px-4 py-3">
       <div className="label">Appearance</div>
       <div role="radiogroup" aria-label="Appearance" className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-sunk p-1">
         {OPTIONS.map(o => (

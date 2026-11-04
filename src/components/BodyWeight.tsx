@@ -39,29 +39,29 @@ export default function BodyWeight() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="rounded-xl border border-line bg-surface px-3 py-2.5">
+            <div className="card px-3 py-2.5">
               <div className="label">Latest</div>
               <div className="num mt-0.5 text-[20px] font-bold">{fmtKg(latest.kg)}<span className="text-[13px] font-medium text-muted"> kg</span></div>
               <div className="text-[11px] text-muted">{fmtWhen(latest.at)}</div>
             </div>
-            <div className="rounded-xl border border-line bg-surface px-3 py-2.5">
+            <div className="card px-3 py-2.5">
               <div className="label">7-day avg</div>
               <div className="num mt-0.5 text-[20px] font-bold">{thisWeek != null ? fmtKg(thisWeek) : '—'}</div>
               <div className="text-[11px] text-muted">smooths daily swings</div>
             </div>
-            <div className="rounded-xl border border-line bg-surface px-3 py-2.5">
+            <div className="card px-3 py-2.5">
               <div className="label">vs last week</div>
               <div className="num mt-0.5 text-[20px] font-bold">{thisWeek != null && lastWeek != null ? fmtDelta(thisWeek - lastWeek) : '—'}</div>
               <div className="text-[11px] text-muted">{lastWeek != null ? 'avg vs avg, kg' : 'needs 2 weeks of data'}</div>
             </div>
-            <div className="rounded-xl border border-line bg-surface px-3 py-2.5">
+            <div className="card px-3 py-2.5">
               <div className="label">Since first</div>
               <div className="num mt-0.5 text-[20px] font-bold">{sinceStart != null ? fmtDelta(sinceStart) : '—'}</div>
               <div className="text-[11px] text-muted">from {fmtKg(all[0].kg)} kg</div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-line bg-surface px-3 pb-2 pt-3">
+          <div className="card px-3 pb-2 pt-3">
             <div className="flex flex-wrap items-center justify-between gap-2 px-1 pb-2">
               <div className="flex items-center gap-3 text-[12px] text-muted">
                 <span className="flex items-center gap-1.5"><span className="block h-2.5 w-2.5 rounded-full" style={{ background: 'var(--muted)' }} />Weigh-ins</span>
@@ -77,7 +77,7 @@ export default function BodyWeight() {
             {shown.length ? <WeightChart pts={shown} /> : <p className="px-1 py-8 text-center text-[14px] text-muted">No weigh-ins in this range. Try "All".</p>}
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+          <div className="overflow-hidden card">
             {recent.map((e, i) => (
               <div key={e.id} className={`flex items-center gap-3 px-4 py-2.5 ${i ? 'border-t border-line' : ''}`}>
                 <span className="min-w-0 flex-1 text-[14px] text-muted">{fmtWhen(e.at)}</span>

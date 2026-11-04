@@ -68,8 +68,8 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
   return (
     <div id="guided" className="grid gap-4 pb-24">
       <div className="flex items-center gap-3">
-        <button id="guided-exit" className="h-9 rounded-lg bg-sunk px-3 text-[13px] font-semibold" onClick={() => act().setGuided(null)}>☰ List view</button>
-        <span className="num flex-1 text-center text-[14px] font-semibold"><span id="guided-pos">{idx + 1} / {list.length}</span></span>
+        <button id="guided-exit" className="disp h-10 rounded-lg bg-sunk px-3 text-[14px] font-bold uppercase tracking-wider" onClick={() => act().setGuided(null)}>☰ List</button>
+        <span className="poster flex-1 text-center text-[20px]"><span id="guided-pos">{idx + 1} / {list.length}</span></span>
         <span className="num text-[14px] text-muted">{mmss(Math.floor((now - active.startedAt) / 1000))}</span>
       </div>
       <div className="flex gap-1" aria-hidden>
@@ -77,18 +77,18 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
           const full = allDone(active, x);
           const some = doneSets(active, x) > 0;
           return <button key={x.id} tabIndex={-1} onClick={() => go(i)}
-            className={`h-1.5 flex-1 rounded-full ${i === idx ? 'bg-ink' : full ? 'bg-good' : some ? 'bg-accent' : 'bg-line'}`} />;
+            className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i === idx ? 'bg-ink' : full ? 'bg-good' : some ? 'bg-hot' : 'bg-line'}`} />;
         })}
       </div>
 
-      <div>
+      <div key={e.id} className="anim-rise">
         <div className="label">{day.title}{e.superset ? ` · superset ${e.superset}` : ''}</div>
-        <h2 className="disp mt-1 text-[34px] font-extrabold uppercase leading-[0.95]">{e.name}</h2>
+        <h2 className="poster mt-1 text-[38px] leading-[0.95]">{e.name}</h2>
         <p className="mt-1 text-[14px] text-muted"><span className="num font-semibold text-ink">{e.sets}×{range(e)}</span> · {e.wNote} · {e.rest > 0 ? `rest ${e.rest}s` : 'no rest, go to next'}</p>
         {e.swappedFor && <p className="mt-0.5 text-[13px] font-semibold text-warn">Swapped in for {e.swappedFor.name}</p>}
       </div>
 
-      <DemoGif e={e} className="mx-auto aspect-square w-full max-w-sm" />
+      <DemoGif key={`demo-${e.id}`} e={e} className="anim-fade mx-auto aspect-square w-full max-w-sm rounded-2xl" />
       {!e.demo && DEMO_NOTE[e.id] && <p className="demo-note -mt-2 rounded-lg bg-sunk px-3 py-2 text-[13px]">{DEMO_NOTE[e.id]}</p>}
 
       {d?.equipment && (
@@ -106,7 +106,7 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
         {last && <span className="text-muted">Last: <span className="num text-ink">{last.e.sets.map(x => `${fmtW(x.w)}×${x.r}`).join('  ')}</span></span>}
       </div>
 
-      <section className="rounded-2xl border border-line bg-surface">
+      <section className="card-now">
         <SetRows e={e} rows={rows} onRest={onRest} afterTick={i => {
           const step = nextStep(act().active!, idx, i);
           if (step.idx !== idx) go(step.idx);
@@ -118,19 +118,19 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
         <button className="text-[14px] font-semibold text-accent" aria-expanded={howTo} onClick={() => setHowTo(!howTo)}>{howTo ? 'Hide steps' : 'How to do it'}</button>
         {canSwap && <button className="text-[14px] font-semibold text-accent" onClick={() => setSwap(true)} aria-label={`Swap ${e.name}`}>⇄ Machine busy? Swap</button>}
       </div>
-      {howTo && <div className="rounded-xl border border-line bg-surface px-3 py-3"><ExerciseHowTo e={e} hideEquipment /></div>}
+      {howTo && <div className="card px-3 py-3"><ExerciseHowTo e={e} hideEquipment /></div>}
       <AskAI key={e.id} e={e} />
       {swap && <SwapSheet e={e} inWorkout={inWorkout} atHome={!!day.home} onClose={() => setSwap(false)} />}
 
       <div className="fixed inset-x-0 z-20 px-4" style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="mx-auto flex max-w-xl gap-2">
           <button id="guided-prev" disabled={idx === 0} onClick={() => go(idx - 1)}
-            className="h-12 rounded-xl border border-line bg-surface px-4 text-[15px] font-semibold shadow-lg disabled:opacity-40">‹</button>
+            aria-label="Previous exercise" className="h-14 rounded-2xl border-[1.5px] border-ink bg-surface px-5 text-[20px] font-semibold shadow-lg disabled:opacity-40">‹</button>
           {isLast
-            ? <button id="guided-finish" onClick={onFinish} className="disp h-12 flex-1 rounded-xl bg-ink text-[18px] font-bold uppercase text-bg shadow-lg">Finish ›</button>
-            : <button id="guided-next" onClick={() => go(idx + 1)} className="flex h-12 min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-ink px-4 text-bg shadow-lg">
-                <span className="truncate text-[14px]">Next: {next.name}</span>
-                <span className="disp text-[18px] font-bold uppercase">›</span>
+            ? <button id="guided-finish" onClick={onFinish} className="poster h-14 flex-1 rounded-2xl bg-hot text-[20px] text-hotInk shadow-lg">Finish ›</button>
+            : <button id="guided-next" onClick={() => go(idx + 1)} className="flex h-14 min-w-0 flex-1 items-center justify-between gap-2 rounded-2xl bg-ink px-4 text-bg shadow-lg">
+                <span className="min-w-0 text-left"><span className="disp block text-[11px] font-bold uppercase tracking-[0.12em] opacity-70">Next</span><span className="block truncate text-[15px] font-semibold">{next.name}</span></span>
+                <span className="poster text-[22px]">›</span>
               </button>}
         </div>
       </div>

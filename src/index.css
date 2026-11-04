@@ -5,25 +5,28 @@
 /* Layout: one-column phone app — sticky header, scrolling day log, fixed bottom tab bar.
    Plate colours tag each training day. */
 :root {
-  --bg: #F1F3F6; --surface: #FFFFFF; --sunk: #E7EAEF; --ink: #13161B; --muted: #5B6471; --line: #D9DEE6;
-  --accent: #2350D8; --accent-ink: #FFFFFF; --accent-soft: #E3E9FB;
-  --good: #19864A; --good-soft: #DDF2E5; --warn: #A86400; --warn-soft: #FBEBD0; --danger: #C2362B;
-  --p-red: #D8322A; --p-blue: #2350D8; --p-yellow: #E6B400; --p-green: #23955A; --p-white: #8A94A3; --p-black: #2B2F36;
+  --bg: #F3EFE6; --surface: #FFFDF9; --sunk: #EAE5D9; --ink: #17150F; --muted: #5F5B51; --line: #DDD6C8;
+  --accent: #2148C9; --accent-ink: #FFFFFF; --accent-soft: #E4E8F8;
+  --good: #19804A; --good-soft: #DCEFE2; --warn: #9A5C00; --warn-soft: #F7E8CC; --danger: #B8322A;
+  --hot: #D8322A; --hot-ink: #FFFFFF; --shadow: 0 1px 2px rgba(23,21,15,.06), 0 2px 8px rgba(23,21,15,.05);
+  --p-red: #D8322A; --p-blue: #2350D8; --p-yellow: #D9A800; --p-green: #23955A; --p-white: #8A8577; --p-black: #2B2A26;
   color-scheme: light;
 }
 :root[data-theme="dark"] {
-    --bg: #0D0F13; --surface: #171A20; --sunk: #1F232B; --ink: #ECEFF4; --muted: #96A0AD; --line: #2A2F39;
-    --accent: #7C97FF; --accent-ink: #0B0E14; --accent-soft: #1D2647;
+    --bg: #121110; --surface: #1C1B18; --sunk: #262420; --ink: #F2EEE4; --muted: #A39D90; --line: #33302A;
+    --accent: #8EA6FF; --accent-ink: #0E1020; --accent-soft: #1F2540;
     --good: #45D68E; --good-soft: #13301F; --warn: #F2B544; --warn-soft: #33270F; --danger: #FF7A6E;
-    --p-red: #FF5A50; --p-blue: #7C97FF; --p-yellow: #F5CC2E; --p-green: #45D68E; --p-white: #C7CDD6; --p-black: #6B7280;
+    --hot: #FF6B57; --hot-ink: #141310; --shadow: 0 1px 2px rgba(0,0,0,.4);
+    --p-red: #FF5A50; --p-blue: #7C97FF; --p-yellow: #F5CC2E; --p-green: #45D68E; --p-white: #C9C3B6; --p-black: #6E6A62;
     color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0D0F13; --surface: #171A20; --sunk: #1F232B; --ink: #ECEFF4; --muted: #96A0AD; --line: #2A2F39;
-    --accent: #7C97FF; --accent-ink: #0B0E14; --accent-soft: #1D2647;
+    --bg: #121110; --surface: #1C1B18; --sunk: #262420; --ink: #F2EEE4; --muted: #A39D90; --line: #33302A;
+    --accent: #8EA6FF; --accent-ink: #0E1020; --accent-soft: #1F2540;
     --good: #45D68E; --good-soft: #13301F; --warn: #F2B544; --warn-soft: #33270F; --danger: #FF7A6E;
-    --p-red: #FF5A50; --p-blue: #7C97FF; --p-yellow: #F5CC2E; --p-green: #45D68E; --p-white: #C7CDD6; --p-black: #6B7280;
+    --hot: #FF6B57; --hot-ink: #141310; --shadow: 0 1px 2px rgba(0,0,0,.4);
+    --p-red: #FF5A50; --p-blue: #7C97FF; --p-yellow: #F5CC2E; --p-green: #45D68E; --p-white: #C9C3B6; --p-black: #6E6A62;
     color-scheme: dark;
   }
 }
@@ -37,6 +40,9 @@ body {
 }
 .num { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
 .disp { font-family: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif; letter-spacing: .01em; }
+.poster { font-family: Anton, "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 400; letter-spacing: .01em; text-transform: uppercase; }
+.card { background: var(--surface); border-radius: 1.25rem; box-shadow: var(--shadow); }
+.card-now { background: var(--surface); border-radius: 1.25rem; border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
 .label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
 h1, h2, h3 { text-wrap: balance; }
 input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -45,4 +51,25 @@ input { font-size: 16px; } /* stops iOS zooming in on focus */
 /* Text-style buttons (no fixed height) still get a thumb-sized tap area: 40px tall, same look. */
 main button:not([class*="h-"]):not([class*="aspect-"]):not([class*="rounded-full"]):not(.advice):not(:has(img)) { min-height: 40px; }
 main button.text-left:not([class*="h-"]), main button.justify-self-start:not([class*="h-"]) { display: inline-flex; align-items: center; }
+/* Motion: short and soft. Everything here is switched off for people who ask for reduced motion. */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes drop { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { transform: scale(.85); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.anim-rise { animation: rise .24s cubic-bezier(.2,.7,.3,1) both; }
+.anim-fade { animation: fade .2s ease-out both; }
+.anim-sheet { animation: sheet-up .26s cubic-bezier(.2,.8,.3,1) both; }
+.anim-drop { animation: drop .22s cubic-bezier(.2,.7,.3,1) both; }
+.anim-pop { animation: pop .26s ease-out; }
+.stagger > * { animation: rise .26s cubic-bezier(.2,.7,.3,1) both; }
+.stagger > *:nth-child(2) { animation-delay: .03s; } .stagger > *:nth-child(3) { animation-delay: .06s; }
+.stagger > *:nth-child(4) { animation-delay: .09s; } .stagger > *:nth-child(5) { animation-delay: .12s; }
+.stagger > *:nth-child(n+6) { animation-delay: .15s; }
+/* Expandable panels: animate height without measuring. */
+.reveal { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .22s ease, opacity .22s ease; opacity: 0; }
+.reveal > * { overflow: hidden; min-height: 0; }
+.reveal[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
+button { transition: transform .1s ease, background-color .15s ease, color .15s ease, border-color .15s ease; }
+button:active:not(:disabled) { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

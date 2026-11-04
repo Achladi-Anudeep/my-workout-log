@@ -54,7 +54,7 @@ export default function MachinePhoto({ exId }: { exId: string }) {
       <div>
         {picker}
         <button className="text-left text-[14px] font-semibold text-accent" disabled={busy} onClick={() => input.current?.click()}>
-          {busy ? 'Saving photo…' : '📷 Add your own photo (machine or setup)'}
+          {busy ? 'Saving photo…' : '+ Add your own photo (machine or setup)'}
         </button>
         {error && <p className="text-[13px] text-danger">{error}</p>}
       </div>

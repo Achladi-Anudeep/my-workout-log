@@ -9,7 +9,7 @@ import type { Session } from '../types';
 function SessionCard({ s, open, onToggle }: { s: Session; open: boolean; onToggle: () => void }) {
   const [del, setDel] = useState(false);
   return (
-    <article className="rounded-2xl border border-line bg-surface">
+    <article className="card">
       <button className="flex w-full items-center gap-3 px-4 py-3 text-left" onClick={onToggle} aria-expanded={open}>
         <Plate color={PLATE[s.dayId]} size={14} />
         <div className="min-w-0 flex-1">
@@ -78,7 +78,7 @@ export default function CalendarView() {
   return (
     <div className="grid gap-4">
       <div className="flex items-end justify-between gap-3">
-        <h2 className="disp text-[36px] font-extrabold uppercase leading-none">Calendar</h2>
+        <h2 className="poster text-[38px] leading-none">Calendar</h2>
         <div className="flex items-center gap-1">
           <button aria-label="Previous month" className="grid h-10 w-10 place-items-center rounded-lg border border-line bg-surface" onClick={() => { setMonth(new Date(y, mo - 1, 1)); setSel(null); }}>‹</button>
           <button className="h-10 rounded-lg border border-line bg-surface px-3 text-[13px] font-semibold disabled:opacity-40" disabled={isThisMonth} onClick={() => { setMonth(new Date(now.getFullYear(), now.getMonth(), 1)); setSel(null); }}>Today</button>
@@ -93,11 +93,11 @@ export default function CalendarView() {
           ['Cardio', `${monthSessions.reduce((a, s) => a + s.cardio, 0)}m`],
           ['Volume', `${Math.round(monthSessions.reduce((a, s) => a + volumeOf(s), 0) / 100) / 10}t`],
         ].map(([k, v]) => (
-          <div key={k} className="rounded-xl border border-line bg-surface px-3 py-2.5"><div className="label">{k}</div><div className="num mt-0.5 text-[20px] font-bold">{v}</div></div>
+          <div key={k} className="card px-3 py-2.5"><div className="label">{k}</div><div className="num mt-0.5 text-[20px] font-bold">{v}</div></div>
         ))}
       </div>
 
-      <section className="rounded-2xl border border-line bg-surface px-3 pb-3 pt-3">
+      <section className="card px-3 pb-3 pt-3">
         <div className="disp px-1 pb-2 text-[22px] font-bold uppercase">{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</div>
         <div className="grid grid-cols-7 gap-1 pb-1 text-center">
           {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => <span key={i} className="label">{d}</span>)}

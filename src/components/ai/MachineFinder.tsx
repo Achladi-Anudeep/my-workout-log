@@ -55,12 +55,12 @@ export default function MachineFinder({ onClose }: { onClose: () => void }) {
       {photo && <img src={photo} alt="Your photo" className="max-h-56 w-full rounded-xl border border-line object-cover" />}
       <button id="machine-finder-pick" disabled={busy} onClick={() => input.current?.click()}
         className="h-12 rounded-xl bg-accent text-[15px] font-bold text-accentInk disabled:opacity-50">
-        {busy ? 'Looking…' : photo ? '📷 Try another photo' : '📷 Take or choose a photo'}
+        {busy ? 'Looking…' : photo ? 'Try another photo' : 'Take or choose a photo'}
       </button>
       {error && <AiErrorNote code={error} detail={detail} />}
 
       {match && !busy && (ex ? (
-        <div id="machine-match" className="grid gap-2 rounded-xl border border-line bg-surface p-3">
+        <div id="machine-match" className="grid gap-2 card p-3">
           <div className="label">{shown === 'second' ? 'Second guess' : CONFIDENCE[match.confidence]}{match.machine ? ` · looks like a ${match.machine}` : ''}</div>
           <div className="flex items-center gap-3">
             <DemoGif e={ex} size={80} />

@@ -29,7 +29,7 @@ export default function AskAI({ e }: { e: Exercise }) {
     return exerciseContext(s.aiProfile, e, s.sessions, s.machineNotes[e.id]?.text, plan, homeById);
   };
   return (
-    <section className="grid gap-2 rounded-xl border border-line bg-surface p-3">
+    <section className="grid gap-2 card p-3">
       <div className="flex items-center justify-between"><span className="label">✨ Ask AI · {e.name}</span>
         <button className="text-[13px] font-semibold text-muted" onClick={() => setOpen(false)}>Hide</button></div>
       <AiChat thread={`ex:${e.id}`} context={context} suggestions={SUGGESTIONS} inputId={`ai-q-${e.id}`} />

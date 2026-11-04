@@ -19,7 +19,7 @@ export default function SwapSheet({ e, inWorkout, atHome = false, onClose }: { e
           const back = e.swappedFor?.id === o.id;
           return (
             <button key={o.id} id={`swap-to-${o.id}`} onClick={() => { act().swapExercise(e.id, o); onClose(); }}
-              className="flex items-center gap-3 rounded-xl border border-line bg-surface p-2 text-left">
+              className="flex items-center gap-3 card p-2 text-left">
               <DemoGif e={o} size={64} />
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{back ? `Back to ${o.name}` : o.name}</span>

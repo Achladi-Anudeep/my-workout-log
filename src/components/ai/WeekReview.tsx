@@ -11,7 +11,7 @@ export default function WeekReview() {
     return weekContext(s.aiProfile, plan, s.sessions, s.weights, Date.now(), homeById);
   };
   return (
-    <section className="grid gap-2 rounded-2xl border border-line bg-surface px-4 py-3">
+    <section className="grid gap-2 card px-4 py-3">
       <div>
         <div className="label">✨ AI weekly review</div>
         <p className="text-[13px] text-muted">Your last 7 days of workouts and body weight. Ask follow-ups below the answer.</p>

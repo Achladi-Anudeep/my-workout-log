@@ -24,7 +24,7 @@ export default function RoutineEditor({ id, onBack, onOpenDay, onOpenRoutine }: 
 
       {ro ? (
         <div>
-          <h2 className="disp text-[34px] font-extrabold uppercase leading-none">{routine.name}</h2>
+          <h2 className="poster text-[38px] leading-none">{routine.name}</h2>
           <p className="mt-2 rounded-xl bg-sunk px-4 py-3 text-[14px] text-muted">{routine.id === 'builtin-ppl'
             ? "Your original plan. It's locked so it never changes by accident."
             : 'Gym PPL with the review gaps filled: seated shoulder press on Monday, the Thursday superset split into two logged exercises, hammer curls and standing calf raises on Friday, and a pain-free home leg day with calf raises on Saturday. Locked like the original.'}
@@ -51,7 +51,7 @@ export default function RoutineEditor({ id, onBack, onOpenDay, onOpenRoutine }: 
 
       <section className="grid gap-2">
         <div className="label">Week · {trainingDays} training day{trainingDays === 1 ? '' : 's'}</div>
-        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <div className="overflow-hidden card">
           {plan.map((d, i) => (
             <button key={d.id} id={`edit-day-${d.id}`} onClick={() => onOpenDay(d.id)} className={`flex w-full items-center gap-3 px-4 py-3 text-left ${i ? 'border-t border-line' : ''}`}>
               <span className="disp w-10 text-[18px] font-bold uppercase">{d.short}</span>

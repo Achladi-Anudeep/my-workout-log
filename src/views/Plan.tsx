@@ -49,7 +49,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
 
   return (
     <div className="grid gap-4">
-      <h2 className="disp text-[36px] font-extrabold uppercase leading-none">The Plan</h2>
+      <h2 className="poster text-[38px] leading-none">The Plan</h2>
       <p className="text-muted">Running <span className="font-semibold text-ink">{routineName(routine)}</span> · week <span className="num text-ink">{pw.week}</span>.</p>
 
       <section className="grid gap-2">
@@ -58,7 +58,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
           <button id="new-routine" className="h-9 rounded-lg bg-accent px-3 text-[13px] font-bold text-accentInk" onClick={() => setCreating(!creating)}>+ New routine</button>
         </div>
         {creating && (
-          <div className="grid gap-2 rounded-2xl border border-line bg-surface p-3">
+          <div className="grid gap-2 card p-3">
             <p className="text-[14px] text-muted">Start from:</p>
             <button id="new-from-builtin" className="h-11 rounded-lg bg-sunk text-[14px] font-semibold"
               onClick={() => { setCreating(false); open(act().createRoutine('My Gym PPL', BUILTIN_ID)); }}>A copy of Gym PPL (keeps your history)</button>
@@ -68,7 +68,7 @@ function PlanHome({ open }: { open: (id: string) => void }) {
               onClick={() => { setCreating(false); open(act().createRoutine('New routine')); }}>A blank week</button>
           </div>
         )}
-        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <div className="overflow-hidden card">
           {all.map((r, i) => {
             const days = planOf(r).filter(d => d.exercises.length).length;
             return (
@@ -87,14 +87,14 @@ function PlanHome({ open }: { open: (id: string) => void }) {
 
       <section className="grid gap-2">
         <span className="label">This week · {routineName(routine)}</span>
-        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <div className="overflow-hidden card">
           {plan.map((d, i) => (
             <button key={d.id} onClick={() => act().setTab('today')} className={`flex w-full items-center gap-3 px-4 py-3 text-left ${i ? 'border-t border-line' : ''}`}>
               <span className="disp w-10 text-[18px] font-bold uppercase">{d.short}</span>
               <Plate color={d.plate} size={12} />
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{d.title}</span>
-                <span className="block truncate text-[13px] text-muted">{d.exercises.length ? `${d.exercises.length} exercises${d.mins ? ` · ~${d.mins} min` : ''}${homeById[d.id] ? ' · 🏠 home version' : ''}` : d.focus}</span>
+                <span className="block truncate text-[13px] text-muted">{d.exercises.length ? `${d.exercises.length} exercises${d.mins ? ` · ~${d.mins} min` : ''}${homeById[d.id] ? ' · + home version' : ''}` : d.focus}</span>
               </span>
               <span className="text-[12px] text-muted">{d.cardio === 'none' ? (d.exercises.length ? 'no cardio' : '') : '+ cardio'}</span>
             </button>
@@ -109,13 +109,13 @@ function PlanHome({ open }: { open: (id: string) => void }) {
       <ProfileCard />
 
       {RULES.map(([h, items]) => (
-        <section key={h} className="rounded-2xl border border-line bg-surface px-4 py-3">
+        <section key={h} className="card px-4 py-3">
           <div className="label">{h}</div>
           <ul className="mt-2 grid list-disc gap-1 pl-5 text-[14px]">{items.map(t => <li key={t}>{t}</li>)}</ul>
         </section>
       ))}
 
-      <section className="rounded-2xl border border-line bg-surface px-4 py-3">
+      <section className="card px-4 py-3">
         <label htmlFor="start-date" className="label">Program start date</label>
         <input id="start-date" type="date" value={startDate} onChange={e => e.target.value && act().setStartDate(e.target.value)}
           className="num mt-2 h-11 w-full rounded-lg border border-line bg-bg px-3" />

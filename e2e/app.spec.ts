@@ -18,6 +18,8 @@ test.describe('@local', () => {
     await page.locator('#day-mon').click();
     await expect(page.locator('main')).toContainText('Gym PPL');
     await expect(page.locator('main')).toContainText('Works: Chest · front delts · triceps');
+    // the card shows only demo, sets × reps + weight and last time; the rest is one tap away
+    await page.getByRole('button', { name: /^More about / }).first().click();
     await page.getByRole('button', { name: 'How to do it' }).first().click();
     await expect(page.locator('main')).toContainText('Set the seat so the handles line up');
     await expect(page.locator('main')).toContainText('Key cue');
@@ -59,6 +61,7 @@ test.describe('@local', () => {
     await page.locator('#day-mon').click();
     await expect(page.locator('main')).toContainText('Last: 12.5×15');
     // the coach says what to do next time, and why
+    await page.getByRole('button', { name: 'More about Chest Press' }).click();
     await page.locator('article', { hasText: 'Chest Press' }).first().getByRole('button', { name: /Stay at 12.5 kg/ }).click();
     await expect(page.locator('main')).toContainText('Add weight once every set hits 15 reps');
   });
@@ -201,6 +204,7 @@ test.describe('@local', () => {
     await expect(card.locator('img[alt="Demo of Leg Press"]')).toBeVisible();
     await expect(card).toContainText('Equipment: 45° leg press machine');
 
+    await card.getByRole('button', { name: 'More about Leg Press' }).click();
     await card.getByRole('button', { name: '+ Add my setup notes' }).click();
     await card.locator('#note-leg-press').fill('Seat 3, feet mid-platform');
     await card.getByRole('button', { name: 'Save' }).click();
