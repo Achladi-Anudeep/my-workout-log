@@ -237,7 +237,7 @@ export default function Today({ onRest }: { onRest: OnRest }) {
           <div role="radiogroup" aria-label="Where are you training today?" className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-sunk p-1">
             {(['gym', 'home'] as const).map(v => (
               <button key={v} id={`venue-${v}`} role="radio" aria-checked={venue === v} onClick={() => act().setVenuePick(sel, v)}
-                className={`h-10 rounded-lg text-[14px] font-semibold ${venue === v ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>
+                className={`h-10 rounded-lg text-[14px] font-semibold ${venue === v ? 'bg-accent text-accentInk shadow-sm' : 'text-muted'}`}>
                 {v === 'gym' ? '🏋️ Gym' : '🏠 Home'}
               </button>
             ))}

@@ -16,7 +16,7 @@ export default function ThemeCard() {
       <div role="radiogroup" aria-label="Appearance" className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-sunk p-1">
         {OPTIONS.map(o => (
           <button key={o.id} id={`theme-${o.id}`} role="radio" aria-checked={pref === o.id} onClick={() => set(o.id)}
-            className={`h-10 rounded-lg text-[14px] font-semibold ${pref === o.id ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>{o.label}</button>
+            className={`h-10 rounded-lg text-[14px] font-semibold ${pref === o.id ? 'bg-accent text-accentInk shadow-sm' : 'text-muted'}`}>{o.label}</button>
         ))}
       </div>
       <p className="mt-2 text-[13px] text-muted">{pref === 'auto' ? 'Follows your phone’s light or dark setting.' : 'Saved on this device.'}</p>
