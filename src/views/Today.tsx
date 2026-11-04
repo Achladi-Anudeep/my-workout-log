@@ -83,7 +83,8 @@ function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: 
   const det = detailsOf(e);
   const targets = det?.targets;
   const inWorkout = active ? activeDay(active).exercises.map(x => x.id) : [];
-  const canSwap = !!active && swapOptions(e, inWorkout).length > 0;
+  const atHome = !!active && !!activeDay(active).home;
+  const canSwap = !!active && swapOptions(e, inWorkout, atHome).length > 0;
   const startDate = useWorkout(s => s.startDate);
   const adv = advise(sessions, e, { deload: programWeek(startDate).deload });
   const last = lastFor(sessions, e.id);
@@ -121,7 +122,7 @@ function ExerciseCard({ e, idx, active, sessions, onRest }: { e: Exercise; idx: 
       </div>
       {cue && <div className="mx-4 mt-3 rounded-xl border border-line bg-bg px-3 py-3"><ExerciseHowTo e={e} hideEquipment /></div>}
       {sheet === 'demo' && <DemoSheet e={e} onClose={() => setSheet(null)} />}
-      {sheet === 'swap' && <SwapSheet e={e} inWorkout={inWorkout} onClose={() => setSheet(null)} />}
+      {sheet === 'swap' && <SwapSheet e={e} inWorkout={inWorkout} atHome={atHome} onClose={() => setSheet(null)} />}
       {rows ? <SetRows e={e} rows={rows} onRest={onRest} /> : <div className="h-4" />}
     </article>
   );

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUILTIN, BUILTIN_ID, BUILTIN_V2, BUILTINS, DAY_IDS, findRoutine, homeDayOf, isBuiltin, planOf, routineName, toDay } from '../../src/lib/routines';
-import { HOME_DAYS } from '../../src/data/home';
+import { BAND_SWAPS, HOME_DAYS, ONE_DB } from '../../src/data/home';
 import { DETAILS, detailsOf } from '../../src/data/details';
 import { ALT_EXERCISES, ALTERNATIVES, EXERCISE_LIBRARY, swapOptions } from '../../src/data/alternatives';
 import { DEMO_ID, DEMO_NOTE, demoGif } from '../../src/data/demos';
@@ -98,7 +98,7 @@ describe('every built-in routine', () => {
   }
 
   it('has no orphaned detail entries', () => {
-    const used = new Set([...BUILTINS.flatMap(r => DAY_IDS.flatMap(d => [...r.days[d].exercises, ...(homeDayOf(r, d)?.exercises ?? [])].map(e => e.id))), ...ALT_EXERCISES.map(e => e.id)]);
+    const used = new Set([...BUILTINS.flatMap(r => DAY_IDS.flatMap(d => [...r.days[d].exercises, ...(homeDayOf(r, d)?.exercises ?? [])].map(e => e.id))), ...ALT_EXERCISES.map(e => e.id), ...BAND_SWAPS.map(e => e.id)]);
     for (const id of Object.keys(DETAILS)) expect(used.has(id), id).toBe(true);
   });
 });
@@ -200,9 +200,10 @@ describe('finding the machine and doing it right', () => {
     }
   });
 
-  it('home days only use home gear: bands, bodyweight and at most the 2 kg dumbbells', () => {
+  it('home days only use home gear, and start at a weight the dumbbell kit can make', () => {
     for (const day of Object.values(HOME_DAYS)) for (const e of day!.exercises) {
-      expect(e.start == null || e.start <= 2, e.id).toBe(true);
+      expect(e.start == null || (e.loads ?? []).includes(e.start), e.id).toBe(true);
+      for (const l of e.loads ?? []) expect(ONE_DB.includes(l), `${e.id} ${l}`).toBe(true);
       expect(detailsOf(e)?.equipment, e.id).toBeTruthy();
     }
   });

@@ -63,6 +63,7 @@ export const DEMO_ID: Record<string, string> = {
   'band-face-pull': 'tc5dYrf',       // band standing rear delt row = face pull with a band
   'band-lateral-raise': 'DsgkuIt',   // dumbbell lateral raise, same movement: see note
   // home versions of the gym days
+  'db-floor-press': 'SpYC0Kp',       // dumbbell bench press: see note
   'stand-push-up': 'I4hDWkc',        // push-up: see note
   'band-chest-press': '4x5Okof',     // band seated chest press (band behind the back)
   'decline-push-up': 'i5cEhka',      // decline push-up
@@ -105,6 +106,7 @@ export const DEMO_NOTE: Record<string, string> = {
   'band-glute-bridge': 'Same movement with a loop band just above your knees. Push the knees out against it.',
   'band-lateral-raise': 'The demo uses dumbbells. Stand on the middle of the tube band and hold a handle in each hand.',
   'band-row': 'The demo sits on a bench. Sitting on the floor with legs straight works the same.',
+  'db-floor-press': 'Shown on a bench. On the floor it is the same press; your upper arms touch the floor at the bottom.',
   'stand-push-up': 'Shown on the floor. Hold your push-up stands: deeper stretch, easier on the wrists.',
   'banded-push-up': 'Same push-up, with the red loop across your upper back and the ends under your palms.',
   'band-pushdown': 'The demo uses a cable. Hang the band from the door anchor at the top of the door; same movement.',

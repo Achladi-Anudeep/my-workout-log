@@ -72,4 +72,20 @@ describe('weight coach', () => {
     const row = ex({ id: 'band-row', start: null, wNote: 'Tube band around your feet' });
     expect(a([s(2, [[null, 12], [null, 12], [null, 12]], 'band-row')], row).title).toBe('More band tension');
   });
+
+  it('home kit: only suggests weights the kit can make, and earns big jumps with extra reps', () => {
+    const curl = ex({ id: 'bicep-curl', start: 5, min: 10, max: 15, loads: [2, 5, 10, 15] });
+    const at5 = (r: number) => s(2, [[5, r], [5, r], [5, r]], 'bicep-curl');
+    expect(a([at5(12)], curl)).toMatchObject({ kind: 'hold', weight: 5 });
+    expect(a([at5(15)], curl)).toMatchObject({ kind: 'harder', weight: 5, title: 'Build reps, then 10 kg' });
+    expect(a([at5(18)], curl)).toMatchObject({ kind: 'up', weight: 10 });
+    // a gym weight the kit can't make snaps down to one it can
+    expect(a([s(2, [[7, 12], [7, 12], [7, 12]], 'bicep-curl')], curl)).toMatchObject({ weight: 5 });
+    // two bad workouts → one kit step down; easy week → a lighter kit weight
+    const bad = (d: number) => s(d, [[10, 6], [10, 7], [10, 6]], 'bicep-curl');
+    expect(a([bad(2), bad(5)], curl)).toMatchObject({ kind: 'down', weight: 5 });
+    expect(a([s(2, [[10, 12], [10, 12], [10, 12]], 'bicep-curl')], curl, true)).toMatchObject({ kind: 'easy-week', weight: 5 });
+    // the heaviest option: make it harder instead
+    expect(a([s(2, [[15, 15], [15, 15], [15, 15]], 'bicep-curl')], curl)).toMatchObject({ kind: 'harder', weight: 15 });
+  });
 });

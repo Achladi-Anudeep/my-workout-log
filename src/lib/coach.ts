@@ -59,6 +59,8 @@ export function advise(sessions: Session[], e: Exercise, opts: { deload?: boolea
 
   if (isAssisted(e) && w != null && w > 0) return assistedAdvice(e, sets, prev ? working(e, prev.sets) : [], w, tgt, opts.deload, (now - last.s.startedAt) / 86400000);
 
+  if (e.loads?.length && w != null && w > 0) return kitAdvice(e, sets, prev ? working(e, prev.sets) : [], w, tgt, opts.deload, (now - last.s.startedAt) / 86400000);
+
   if (opts.deload && w != null && w > 0) {
     const lw = lighter(w, 0.2);
     return { kind: 'easy-week', title: `Easy week · ${fmtW(lw)} kg`, detail: `About 20% lighter this week so your body recovers. Aim for ${tgt(e.max)}, nothing to failure.`, weight: lw };
@@ -127,4 +129,53 @@ function assistedAdvice(e: Exercise, sets: LoggedSet[], prevSets: LoggedSet[], k
     return { kind: 'hold', title: `Stay at ${fmtW(kg)} kg help`, detail: `Most sets were under ${tgt(e.min)}. Keep the same help and aim for ${tgt(e.min)}.`, weight: kg };
   }
   return { kind: 'hold', title: `Stay at ${fmtW(kg)} kg help`, detail: `Add a rep per set. Take help away once every set hits ${tgt(e.max)}.`, weight: kg };
+}
+
+/** Big jumps (like 5 → 10 kg) are earned with extra reps first: this many past the top of the range. */
+export const EXTRA_REPS = 3;
+const snapDown = (x: number, loads: number[]) => [...loads].sort((a, b) => b - a).find(l => l <= x + 1e-9) ?? Math.min(...loads);
+
+/**
+ * Home kit with fixed plates: only suggest weights it can make. When the next step is a big jump,
+ * build reps at the current weight first (double progression), then move up.
+ */
+function kitAdvice(e: Exercise, sets: LoggedSet[], prevSets: LoggedSet[], logged: number, tgt: (n: number) => string, deload = false, daysOff = 0): Advice {
+  const loads = [...(e.loads ?? [])].sort((a, b) => a - b);
+  const kit = loads.map(l => fmtW(l)).join(' · ');
+  const kg = snapDown(logged, loads);
+  const up = loads.find(l => l > kg + 1e-9) ?? null;
+  const down = [...loads].reverse().find(l => l < kg - 1e-9) ?? null;
+  if (deload) {
+    const lw = snapDown(kg * 0.8, loads);
+    return lw < kg
+      ? { kind: 'easy-week', title: `Easy week · ${fmtW(lw)} kg`, detail: `Use ${fmtW(lw)} kg this week so your body recovers. Aim for ${tgt(e.max)}, nothing to failure.`, weight: lw }
+      : { kind: 'easy-week', title: `Easy week · ${fmtW(kg)} kg`, detail: `Same weight, but stop 3–4 reps before failure and do one set fewer.`, weight: kg };
+  }
+  if (daysOff > 21) {
+    return { kind: 'comeback', title: `Welcome back · ${fmtW(down ?? kg)} kg`, detail: `It's been ${Math.round(daysOff)} days. Start one step lighter${down == null ? ' (or with fewer reps)' : ''} and build back up over 1–2 weeks.`, weight: down ?? kg };
+  }
+  const allTop = sets.length >= e.sets && sets.every(s => s.r >= e.max);
+  if (allTop) {
+    if (up == null) {
+      return { kind: 'harder', title: 'Top of your kit: make it harder', detail: `All sets hit ${tgt(e.max)} with ${fmtW(kg)} kg, your heaviest option. Lower over 4 s, pause 2 s at the hardest point, or add reps.`, weight: kg };
+    }
+    const bigJump = up / kg > 1.3;
+    const earned = sets.every(s => s.r >= e.max + EXTRA_REPS);
+    if (bigJump && !earned) {
+      return { kind: 'harder', title: `Build reps, then ${fmtW(up)} kg`, detail: `Next step in your kit is ${fmtW(up)} kg, a big jump. Stay at ${fmtW(kg)} kg and add reps up to ${tgt(e.max + EXTRA_REPS)} with a slow 3 s lowering, then move up.`, weight: kg };
+    }
+    return { kind: 'up', title: `Add weight · ${fmtW(up)} kg`, detail: `${bigJump ? `You've earned the jump to ${fmtW(up)} kg.` : `All sets hit ${tgt(e.max)}.`} Expect fewer reps at first: aim for ${tgt(e.min)} and build up. Your kit: ${kit} kg.`, weight: up };
+  }
+  const missed = (xs: LoggedSet[]) => { const m = xs.filter(s => s.r < e.min).length; return m > 0 && m * 2 >= xs.length; };
+  if (missed(sets)) {
+    const prevKg = prevSets.length ? Math.max(...prevSets.map(s => s.w ?? 0)) : 0;
+    if (prevSets.length && prevKg >= kg && missed(prevSets)) {
+      return down != null
+        ? { kind: 'down', title: `Go lighter · ${fmtW(down)} kg`, detail: `Two workouts in a row under ${tgt(e.min)} at ${fmtW(kg)} kg. Drop to ${fmtW(down)} kg, own the full range, then build back up.`, weight: down }
+        : { kind: 'hold', title: `Stay at ${fmtW(kg)} kg, rest longer`, detail: `${fmtW(kg)} kg is your lightest option. Rest 30 s longer between sets and aim for ${tgt(e.min)}.`, weight: kg };
+    }
+    return { kind: 'hold', title: `Stay at ${fmtW(kg)} kg`, detail: `Most sets were under ${tgt(e.min)}. Keep the weight and aim for ${tgt(e.min)}.`, weight: kg };
+  }
+  const aim = sets.map(s => Math.min(e.max, s.r + (e.unit === 'sec' ? 5 : 1)));
+  return { kind: 'hold', title: `Stay at ${fmtW(kg)} kg`, detail: `Add a rep per set: aim for ${aim.join(', ')}. ${up != null ? `Move to ${fmtW(up)} kg once every set hits ${tgt(e.max)}${up / kg > 1.3 ? ` (or ${tgt(e.max + EXTRA_REPS)} first, since it's a big jump)` : ''}.` : 'This is your heaviest option.'}`, weight: kg };
 }

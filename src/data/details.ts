@@ -506,6 +506,17 @@ export const DETAILS: Record<string, ExerciseDetails> = {
   },
 
   // ---------- Home versions of the gym days ----------
+  'db-floor-press': {
+    equipment: 'Two dumbbells from your kit + the yoga mat',
+    targets: 'Chest · front delts · triceps',
+    steps: [
+      'Sit on the mat with a dumbbell on each thigh, lie back and bring them to your chest, knees bent, feet flat.',
+      'Press both dumbbells up over your chest until the arms are almost straight.',
+      'Lower slowly until your upper arms touch the floor, elbows about 45° from the body.',
+      'Pause a moment on the floor, then press again.',
+    ],
+    mistakes: ['Bouncing the elbows off the floor', 'Elbows flared straight out', 'Dumbbells drifting over the face'],
+  },
   "stand-push-up": {
     equipment: "Push-up stands + floor or mat",
     targets: "Chest · front delts · triceps · core",

@@ -1,4 +1,5 @@
 import { BUILTINS, DAY_IDS, homeDayOf } from '../lib/routines';
+import { BAND_SWAPS, HOME_DAYS } from './home';
 import type { Exercise, Unit } from '../types';
 
 const E = (id: string, name: string, sets: number, min: number, max: number, unit: Unit, start: number | null,
@@ -27,27 +28,27 @@ export const ALTERNATIVES: Record<string, string[]> = {
   dips: ['bench-dip', 'triceps-pushdown'],
   'lateral-raise': ['cable-lateral-raise', 'machine-shoulder-press'],
   'triceps-pushdown': ['ss-triceps-ext', 'bench-dip'],
-  'shoulder-press': ['machine-shoulder-press', 'lateral-raise'],
+  'shoulder-press': ['machine-shoulder-press', 'lateral-raise', 'band-overhead-press'],
   deadlift: ['rdl', 'back-extension'],
   'lat-pulldown': ['assisted-pull-up', 'single-arm-db-row'],
-  'bent-over-row': ['single-arm-db-row', 'low-row'],
+  'bent-over-row': ['single-arm-db-row', 'low-row', 'single-arm-band-row'],
   'low-row': ['single-arm-db-row', 'bent-over-row'],
   'face-pull': ['band-pull-apart', 'rear-delt-fly'],
-  shrug: ['farmers-carry'],
+  shrug: ['farmers-carry', 'band-shrug'],
   squat: ['goblet-squat', 'leg-press'],
   'leg-press': ['goblet-squat', 'squat'],
-  rdl: ['back-extension', 'glute-bridge'],
+  rdl: ['back-extension', 'glute-bridge', 'band-rdl'],
   'wall-sit': ['goblet-squat', 'leg-press'],
   'leg-curl': ['rdl', 'back-extension'],
   'seated-calf': ['standing-calf', 'single-leg-calf'],
   'standing-calf': ['seated-calf', 'single-leg-calf'],
   'side-plank': ['plank', 'russian-twist'],
   flies: ['cable-crossover', 'db-bench-press'],
-  'bicep-curl': ['cable-curl', 'hammer-curl'],
-  'hammer-curl': ['bicep-curl', 'cable-curl'],
+  'bicep-curl': ['cable-curl', 'hammer-curl', 'band-curl'],
+  'hammer-curl': ['bicep-curl', 'cable-curl', 'band-hammer-curl'],
   'ss-curl': ['cable-curl', 'hammer-curl'],
   'tri-bi-superset': ['triceps-pushdown', 'ss-triceps-ext'],
-  'ss-triceps-ext': ['triceps-pushdown', 'bench-dip'],
+  'ss-triceps-ext': ['triceps-pushdown', 'bench-dip', 'band-overhead-triceps'],
   'front-raise': ['machine-shoulder-press', 'lateral-raise'],
   'rear-delt-fly': ['face-pull', 'band-pull-apart'],
   'farmers-carry': ['shrug', 'plank'],
@@ -66,7 +67,10 @@ export const ALTERNATIVES: Record<string, string[]> = {
   'band-row': ['band-pull-apart', 'band-face-pull'],
   'band-face-pull': ['band-pull-apart', 'band-row'],
   'band-lateral-raise': ['band-pull-apart'],
+  'goblet-squat': ['band-squat'],
+  'single-arm-db-row': ['single-arm-band-row'],
   // home
+  'db-floor-press': ['stand-push-up', 'band-chest-press'],
   'stand-push-up': ['decline-push-up', 'band-chest-press'],
   'band-chest-press': ['stand-push-up', 'banded-push-up'],
   'decline-push-up': ['stand-push-up', 'banded-push-up'],
@@ -76,16 +80,16 @@ export const ALTERNATIVES: Record<string, string[]> = {
   'band-pulldown': ['single-arm-band-row', 'band-row'],
   'single-arm-band-row': ['band-row', 'band-pulldown'],
   'band-shrug': ['band-y-raise'],
-  'band-squat': ['bulgarian-split-squat', 'bw-squat'],
+  'band-squat': ['goblet-squat', 'bulgarian-split-squat'],
   'bulgarian-split-squat': ['band-squat', 'step-up'],
   'single-leg-rdl': ['band-rdl', 'single-leg-bridge'],
   'band-wall-sit': ['band-squat', 'wall-sit'],
   'single-leg-bridge': ['glute-bridge', 'band-rdl'],
   'banded-push-up': ['stand-push-up', 'decline-push-up'],
   'band-fly': ['band-chest-press', 'stand-push-up'],
-  'band-curl': ['band-hammer-curl'],
-  'band-overhead-triceps': ['band-pushdown', 'bench-dip'],
-  'band-hammer-curl': ['band-curl'],
+  'band-curl': ['bicep-curl', 'band-hammer-curl'],
+  'band-overhead-triceps': ['ss-triceps-ext', 'band-pushdown'],
+  'band-hammer-curl': ['hammer-curl', 'band-curl'],
   'band-y-raise': ['band-pull-apart', 'band-face-pull'],
   'reverse-crunch': ['lying-leg-raise', 'dead-bug'],
   'mountain-climber': ['plank', 'dead-bug'],
@@ -95,7 +99,7 @@ export const ALTERNATIVES: Record<string, string[]> = {
 export const EXERCISE_LIBRARY: Map<string, Exercise> = (() => {
   const m = new Map<string, Exercise>();
   for (const r of BUILTINS) for (const d of DAY_IDS) for (const e of [...r.days[d].exercises, ...(homeDayOf(r, d)?.exercises ?? [])]) if (!m.has(e.id)) m.set(e.id, e);
-  for (const e of ALT_EXERCISES) if (!m.has(e.id)) m.set(e.id, e);
+  for (const e of [...ALT_EXERCISES, ...BAND_SWAPS]) if (!m.has(e.id)) m.set(e.id, e);
   return m;
 })();
 
@@ -103,11 +107,19 @@ export const EXERCISE_LIBRARY: Map<string, Exercise> = (() => {
  * Swap options for an exercise in a running workout. A swapped exercise offers its original first,
  * so you can switch back. Exercises already in today's workout are left out.
  */
-export function swapOptions(e: Exercise, inWorkout: string[]): Exercise[] {
+/** Exercises you can do at home with your kit: everything on the home days, band swaps, and the home Saturdays. */
+export const HOME_OK: Set<string> = new Set([
+  ...Object.values(HOME_DAYS).flatMap(d => d!.exercises.map(e => e.id)),
+  ...BAND_SWAPS.map(e => e.id),
+  ...BUILTINS.flatMap(r => r.days.sat.exercises.map(e => e.id)),
+  'push-up', 'bench-dip', 'band-pull-apart', 'glute-bridge', 'dead-bug', 'lying-leg-raise', 'wall-sit', 'single-leg-calf', 'russian-twist',
+]);
+
+export function swapOptions(e: Exercise, inWorkout: string[], atHome = false): Exercise[] {
   const rootId = e.swappedFor?.id ?? e.id;
   const ids = [...(e.swappedFor ? [rootId] : []), ...(ALTERNATIVES[rootId] ?? [])];
   return ids
-    .filter(id => id !== e.id && !inWorkout.includes(id))
+    .filter(id => id !== e.id && !inWorkout.includes(id) && (!atHome || HOME_OK.has(id)))
     .map(id => EXERCISE_LIBRARY.get(id))
     .filter((x): x is Exercise => !!x);
 }

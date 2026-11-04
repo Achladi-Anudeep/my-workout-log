@@ -191,8 +191,9 @@ describe('training at home', () => {
     const a = d.state().active!;
     expect(a.venue).toBe('home');
     expect(a.day!.title).toBe('Home Push');
-    expect(a.day!.exercises[0].id).toBe('stand-push-up');
-    d.act().edit('stand-push-up', 0, { r: '12', done: true });
+    expect(a.day!.exercises[0].id).toBe('db-floor-press');
+    expect(a.logs['db-floor-press'][0].w).toBe('5'); // kit weight prefilled
+    d.act().edit('db-floor-press', 0, { r: '12', done: true });
     d.act().finish(0, '');
     expect(d.state().sessions[0]).toMatchObject({ venue: 'home', title: 'Home Push', dayId: 'mon' });
     expect(d.state().venuePick.mon).toBe('home');

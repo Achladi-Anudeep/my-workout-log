@@ -24,6 +24,8 @@ export interface Exercise {
   steps?: string[];
   /** What to avoid. */
   mistakes?: string[];
+  /** Weights your own kit can make for this exercise (kg per dumbbell). The coach only suggests these. */
+  loads?: number[];
   /** The logged kg is machine assistance (assisted pull-up / dip machine): less is harder. */
   assisted?: boolean;
   /** Exercises sharing a superset label are done back to back (e.g. "A1", "A2"). */

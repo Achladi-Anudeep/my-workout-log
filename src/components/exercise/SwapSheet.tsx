@@ -7,8 +7,8 @@ import { range } from '../../lib/utils';
 import type { Exercise } from '../../types';
 
 /** "Machine busy?" Pick another exercise for the same muscles. It's logged under its own name and history. */
-export default function SwapSheet({ e, inWorkout, onClose }: { e: Exercise; inWorkout: string[]; onClose: () => void }) {
-  const options = swapOptions(e, inWorkout);
+export default function SwapSheet({ e, inWorkout, atHome = false, onClose }: { e: Exercise; inWorkout: string[]; atHome?: boolean; onClose: () => void }) {
+  const options = swapOptions(e, inWorkout, atHome);
   return (
     <Sheet title={`Swap ${e.name}`} onClose={onClose}>
       <p className="text-[14px] text-muted">Machine taken? These work the same muscles. Sets you've already ticked for {e.name} are cleared; your plan stays the same for next time.</p>

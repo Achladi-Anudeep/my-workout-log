@@ -350,8 +350,8 @@ test.describe('@local', () => {
     await expect(page.locator('main h2').first()).toContainText('Pull');
     await page.locator('#venue-home').click();
     await expect(page.locator('main')).toContainText('Home Pull · Hinge');
-    await expect(page.locator('main')).toContainText('Band Romanian Deadlift');
-    await expect(page.locator('article', { hasText: 'Band Romanian Deadlift' }).first()).toContainText('Equipment: Blue tube band');
+    await expect(page.locator('main')).toContainText('Dumbbell RDL');
+    await expect(page.locator('article', { hasText: 'Dumbbell RDL' }).first()).toContainText('Equipment: Your dumbbell kit');
     await page.locator('#start-workout').click();
     await page.getByRole('button', { name: 'Mark set 1 done' }).first().click();
     await page.getByRole('button', { name: 'Skip' }).click();

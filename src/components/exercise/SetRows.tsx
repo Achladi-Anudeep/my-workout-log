@@ -19,6 +19,7 @@ export default function SetRows({ e, rows, onRest, afterTick }: {
       <div className="grid grid-cols-[28px_1fr_1fr_48px] gap-2 px-1 pb-1">
         <span className="label">Set</span><span className="label">{isAssisted(e) ? 'Help kg' : bw ? 'Added kg' : 'kg'}</span><span className="label">{e.unit === 'sec' ? 'Seconds' : 'Reps'}</span><span />
       </div>
+      {e.loads?.length ? <p className="kit-loads px-1 pb-1 text-[12px] text-muted">Your kit: {e.loads.map(l => `${l}`).join(' · ')} kg</p> : null}
       <div className="grid gap-1.5">
         {rows.map((r, i) => (
           <div key={i} className={`grid grid-cols-[28px_1fr_1fr_48px] items-center gap-2 rounded-xl px-1 py-1 ${r.done ? 'bg-goodSoft' : ''}`}>

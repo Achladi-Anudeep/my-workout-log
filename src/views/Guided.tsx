@@ -60,7 +60,7 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
   const last = lastFor(sessions, e.id);
   const rows = active.logs[e.id] ?? [];
   const inWorkout = list.map(x => x.id);
-  const canSwap = swapOptions(e, inWorkout).length > 0;
+  const canSwap = swapOptions(e, inWorkout, !!day.home).length > 0;
   const next = list[idx + 1];
   const isLast = idx === list.length - 1;
   const go = (i: number) => act().setGuided(i);
@@ -120,7 +120,7 @@ export default function Guided({ active, sessions, startDate, onRest, onFinish }
       </div>
       {howTo && <div className="rounded-xl border border-line bg-surface px-3 py-3"><ExerciseHowTo e={e} hideEquipment /></div>}
       <AskAI key={e.id} e={e} />
-      {swap && <SwapSheet e={e} inWorkout={inWorkout} onClose={() => setSwap(false)} />}
+      {swap && <SwapSheet e={e} inWorkout={inWorkout} atHome={!!day.home} onClose={() => setSwap(false)} />}
 
       <div className="fixed inset-x-0 z-20 px-4" style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="mx-auto flex max-w-xl gap-2">
