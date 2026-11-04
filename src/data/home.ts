@@ -4,7 +4,8 @@ import type { DayId, Exercise, RoutineDay, Unit } from '../types';
  * Home versions of the gym days: the same muscles each day, so skipping the gym never unbalances the week.
  * Gear: 30 kg dumbbell kit (two light rods, plates 4 × 5 kg + 4 × 2.5 kg → 5 / 10 / 15 kg per hand, up to 20 kg
  * on one dumbbell), a 2 kg pair, Boldfit 20 kg blue tube band + door anchor, Slovic 7–15 kg red loop band,
- * push-up stands, hand gripper, chair, bed and a yoga mat. No knee limits at home.
+ * push-up stands, hand gripper, chair, bed, yoga mat, a table/counter and wall space. No bench, step, box or
+ * incline seat: every exercise and demo here works without them. No knee limits at home.
  * Exercise ids are shared with the gym plan where it's the same exercise, so history carries over.
  */
 const E = (id: string, name: string, sets: number, min: number, max: number, unit: Unit, start: number | null,
@@ -24,15 +25,19 @@ const KIT = 'Your dumbbell kit: 5 / 10 / 15 kg per hand (plates 2.5 + 2.5, 5 + 5
 // Same exercise as at the gym → same id, so history and the coach carry over.
 const floorPress = E('db-floor-press', 'Dumbbell Floor Press', 3, 8, 15, 'reps', 5, '5 kg per hand to start', 90,
   'Lie on the mat, upper arms touch the floor each rep, press up and slightly together.', { loads: PAIR, equipment: `${KIT}; lie on the yoga mat` });
-const shoulderPress = E('shoulder-press', 'Seated Dumbbell Shoulder Press', 3, 8, 15, 'reps', 5, '5 kg per hand to start', 90,
-  'Sit tall on the chair, press up and slightly in, lower to shoulder height.', { loads: PAIR, equipment: `${KIT}; sit on the chair, back straight` });
+const shoulderPress = E('standing-db-press', 'Standing Dumbbell Shoulder Press', 3, 8, 15, 'reps', 5, '5 kg per hand to start', 90,
+  'Stand tall, squeeze your glutes and abs, press straight up, lower to shoulder height. No leaning back.', { loads: PAIR, equipment: KIT });
 const lateralRaise = E('lateral-raise', 'Lateral Raises', 3, 15, 20, 'reps', 2, 'Your 2 kg pair', 45,
   'Slight elbow bend, lead with the elbows, stop at shoulder height. Slow 3 s down.', { loads: [2, 5], equipment: 'Your 2 kg dumbbell pair (5 kg once you\'ve earned it)' });
-const chairDip = E('bench-dip', 'Chair Dips', 3, 8, 15, 'reps', null, 'Bodyweight, hands on a sturdy chair', 60, 'Shoulders down, elbows point back, stop at about 90°.');
+const closePush = E('close-grip-push-up', 'Close-grip Push-ups', 3, 6, 15, 'reps', null, 'Bodyweight, hands under your shoulders', 60,
+  'Elbows brush your ribs on the way down, body in one line. Too hard? Hands on your table or counter edge.');
+const kickback = E('db-kickback', 'Dumbbell Kickback', 3, 12, 15, 'reps', 2, 'Your 2 kg pair to start', 45,
+  'Hinge forward, upper arms pinned to your sides, straighten the elbows fully, squeeze 1s.', { loads: [2, 5], equipment: 'Your 2 kg dumbbell pair (5 kg from the kit when easy)' });
 const facePull = E('band-face-pull', 'Band Face Pull', 3, 15, 15, 'reps', null, 'Blue tube band on the door anchor, face height', 45, 'Pull toward your face with elbows high, split the handles apart.');
-const calf = E('single-leg-calf', 'Single-leg Calf Raise', 3, 12, 20, 'reps', null, 'Bodyweight on a step; hold one dumbbell when easy', 30,
-  'Full stretch at the bottom, pause 1s at the top.', { perSide: true, loads: ONE_DB, equipment: 'A stair edge + wall to hold; one dumbbell in the free hand when bodyweight gets easy' });
-const pulldown = E('band-pulldown', 'Band Lat Pulldown', 3, 12, 15, 'reps', null, 'Blue tube band on the door anchor, top of the door', 60, 'Kneel, chest up, pull the handles to your upper chest, elbows drive down.');
+const calf = E('single-leg-calf', 'Single-leg Calf Raise', 3, 12, 20, 'reps', null, 'Bodyweight on the floor; hold one dumbbell when easy', 30,
+  'One hand on the wall, rise as high as you can on one foot, pause 1s, lower slowly.', { perSide: true, loads: ONE_DB, equipment: 'Flat floor + a wall to hold; one dumbbell in the free hand when bodyweight gets easy' });
+const pulldown = E('band-pulldown', 'Kneeling Single-arm Band Pulldown', 3, 12, 15, 'reps', null, 'Blue tube band on the door anchor, top of the door', 60,
+  'Kneel on the mat facing the door, chest up, pull the handle down to your side, elbow drives to your hip.', { perSide: true });
 const hammer = E('hammer-curl', 'Hammer Curl', 3, 10, 15, 'reps', 5, '5 kg per hand to start', 60,
   'Palms facing in, elbows pinned, slow 3 s down.', { loads: PAIR, equipment: KIT });
 
@@ -43,10 +48,9 @@ export const HOME_DAYS: Partial<Record<DayId, RoutineDay>> = {
       floorPress,
       E('stand-push-up', 'Push-ups on Stands', 3, 8, 15, 'reps', null, 'Bodyweight, hands on your push-up stands', 60, 'Body in one line, chest drops below the handles, elbows ~45°.'),
       shoulderPress,
-      E('decline-push-up', 'Decline Push-ups', 3, 6, 12, 'reps', null, 'Feet on the bed or chair', 60, 'Hips level with the shoulders, lower until your chest nearly touches the floor.'),
       lateralRaise,
-      chairDip,
-      E('band-pushdown', 'Band Triceps Pushdown', 3, 12, 15, 'reps', null, 'Red loop or blue band on the door anchor, top of the door', 45, 'Elbows pinned to your sides, squeeze at the bottom.'),
+      closePush,
+      kickback,
     ],
   },
   tue: {
@@ -68,8 +72,8 @@ export const HOME_DAYS: Partial<Record<DayId, RoutineDay>> = {
     warmup: LEG_WU, cooldown: LEG_CD, exercises: [
       E('goblet-squat', 'Goblet Squat', 4, 8, 15, 'reps', 10, 'One dumbbell, 10 kg to start', 120,
         'Hold one end at your chest, sit down between your heels, chest up, full depth.', { loads: ONE_DB, equipment: 'One dumbbell from your kit (up to 20 kg: two 5 kg plates each end)' }),
-      E('bulgarian-split-squat', 'Bulgarian Split Squat', 3, 8, 12, 'reps', null, 'Bodyweight first, then dumbbells', 90,
-        'Rear foot on the chair, most of your weight on the front foot, knee tracks over the toes.', { perSide: true, loads: PAIR, equipment: 'Chair or bed for your rear foot; dumbbells from your kit when bodyweight is easy' }),
+      E('db-reverse-lunge', 'Dumbbell Reverse Lunge', 3, 8, 12, 'reps', 5, '5 kg per hand to start', 90,
+        'Step back, drop the back knee toward the floor, push through the front heel to stand.', { perSide: true, loads: PAIR, equipment: KIT }),
       E('single-leg-rdl', 'Single-leg RDL', 3, 8, 12, 'reps', 5, 'One 5 kg dumbbell to start', 60,
         'Hinge on one leg, hips square, back flat, feel the hamstring.', { perSide: true, loads: ONE_DB, equipment: 'One dumbbell from your kit, held in the hand opposite the standing leg' }),
       E('band-wall-sit', 'Banded Wall Sit', 3, 30, 60, 'sec', null, 'Red loop above the knees', 60, 'Thighs parallel, push your knees out against the band.'),
@@ -84,8 +88,8 @@ export const HOME_DAYS: Partial<Record<DayId, RoutineDay>> = {
       E('banded-push-up', 'Banded Push-ups', 3, 6, 12, 'reps', null, 'Red loop across your upper back, ends under your palms', 90, 'Body in one line; the band makes the top harder, so push all the way up.'),
       E('band-fly', 'Band Chest Fly', 3, 12, 15, 'reps', null, 'Blue band on the door anchor, chest height, facing away', 60, 'Fixed slight elbow bend, hug the handles together in front of your chest.'),
       E('bicep-curl', 'Bicep Curl', 3, 10, 15, 'reps', 5, '5 kg per hand to start', 60, 'Elbows fixed at your sides, no swinging, slow 3 s down.', { loads: PAIR, equipment: KIT }),
-      E('ss-triceps-ext', 'Overhead Triceps Extension', 3, 10, 15, 'reps', 5, 'One dumbbell, 5 kg to start', 0,
-        'Superset A1: go straight into A2 with no rest.', { superset: 'A1', loads: ONE_DB, equipment: 'One dumbbell from your kit, held with both hands' }),
+      E('standing-oh-triceps', 'Standing Overhead Triceps Extension', 3, 10, 15, 'reps', 2, 'One 2 kg dumbbell to start, one arm at a time', 0,
+        'Superset A1: stand tall, elbow points up, lower behind your head, straighten. Then straight into A2.', { superset: 'A1', perSide: true, loads: [2, 5, 10], equipment: 'One dumbbell (your 2 kg, then 5 kg from the kit)' }),
       { ...hammer, cue: 'Superset A2: right after A1, then rest 60s.', superset: 'A2', rest: 60 },
       E('band-pull-apart', 'Band Pull-apart', 3, 15, 20, 'reps', null, 'Red loop, arms straight', 45, 'Pull the band to your chest, squeeze the shoulder blades.'),
       { ...lateralRaise },
@@ -95,8 +99,8 @@ export const HOME_DAYS: Partial<Record<DayId, RoutineDay>> = {
     title: 'Home Pull + Abs', focus: 'Back · biceps · rear delts · calves · core', mins: '55', cardio: 'home', home: true,
     warmup: UPPER_WU, cooldown: [...UPPER_CD, 'Cobra stretch · 30s'], exercises: [
       pulldown,
-      E('single-arm-db-row', 'Single-arm Dumbbell Row', 3, 8, 12, 'reps', 10, 'One dumbbell, 10 kg to start', 60,
-        'Knee and hand on the bed, pull to your hip, no twisting.', { perSide: true, loads: ONE_DB, equipment: 'One dumbbell from your kit + the bed or chair for support' }),
+      E('supported-db-row', 'Single-arm Dumbbell Row (hand on table)', 3, 8, 12, 'reps', 10, 'One dumbbell, 10 kg to start', 60,
+        'Free hand on the table or counter, hinge forward, flat back, pull to your hip, no twisting.', { perSide: true, loads: ONE_DB, equipment: 'One dumbbell from your kit + your table or counter to lean on' }),
       E('band-y-raise', 'Band Y-Raise', 3, 12, 15, 'reps', null, 'Red loop under your feet, light', 45, 'Thumbs up, raise your arms into a Y, lower slowly.'),
       hammer,
       calf,
@@ -109,7 +113,6 @@ export const HOME_DAYS: Partial<Record<DayId, RoutineDay>> = {
 
 /** Band-only versions, for weeks away from the dumbbells (travel): offered as swaps. */
 export const BAND_SWAPS: Exercise[] = [
-  E('band-chest-press', 'Band Chest Press', 3, 10, 15, 'reps', null, 'Blue tube band behind your back', 60, 'Band across your upper back, press forward and slightly together, slow back.'),
   E('band-overhead-press', 'Band Overhead Press', 3, 10, 15, 'reps', null, 'Stand on the red loop (blue band when easy)', 60, 'Brace your abs, press straight up, no leaning back.'),
   E('band-rdl', 'Band Romanian Deadlift', 4, 12, 15, 'reps', null, 'Stand on the blue tube band', 90, 'Soft knees, push the hips back, flat back, squeeze the glutes to stand.'),
   E('single-arm-band-row', 'Single-arm Band Row', 3, 10, 12, 'reps', null, 'Blue band on the door anchor, waist height', 60, 'Pull to your hip, no twisting, squeeze 1s.', { perSide: true }),

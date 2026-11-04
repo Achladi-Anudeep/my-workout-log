@@ -20,7 +20,6 @@ export const VERSIONS: Record<string, Version[]> = {
   'lat-pulldown': [v('rkg41Fb', 'Pulldown with parallel (neutral) grip'), v('4c9BhzB', 'Close-grip pulldown with V-handle'), v('ecpY0rH', 'Underhand-grip pulldown machine')],
   'bent-over-row': [v('C0MA9bC', 'Single-arm dumbbell row on a bench', 'Supports your back'), v('eZyBC3j', 'Barbell bent-over row'), v('LuBEORI', 'T-bar row with V-handle')],
   'low-row': [v('7I6LNUG', 'Seated row machine (chest pad)', 'Supports your back'), v('SJqRxOt', 'Seated cable row with rope'), v('fUBheHs', 'Seated cable row (another angle)')],
-  'band-row': [v('km0sQC0', 'Standing single-arm band row (door anchor)'), v('hvV79Si', 'Seated cable row (gym)')],
   'rear-delt-fly': [v('myfUsKf', 'Reverse fly on the pec deck machine', 'Easiest to learn'), v('EAs3xL9', 'Dumbbell reverse fly, chest on an incline bench'), v('aqvSOQE', 'Cable crossover reverse fly')],
   squat: [v('yn8yg1r', 'Goblet squat (one dumbbell)', 'Knee-friendlier, easy to learn'), v('DhMl549', 'Barbell squat, seen from behind'), v('75Bgtjy', 'Bodyweight squat')],
   'bw-squat': [v('b63ZzGe', 'Squat holding a bench for support', 'Easier: good on knee-pain days'), v('yn8yg1r', 'Goblet squat (one dumbbell)', 'Harder'), v('QChZi3x', 'Squat to overhead reach')],
@@ -37,8 +36,7 @@ export const VERSIONS: Record<string, Version[]> = {
   'leg-raise': [v('Hgs6Nl1', 'Seated leg raise on a bench', 'Easier'), v('weoDEpH', "Captain's chair leg raise", 'Harder'), v('I3tsCnC', 'Hanging leg raise', 'Hardest')],
   'glute-bridge': [v('aWedzZX', 'Glute bridge with feet on a bench'), v('GibBPPg', 'Glute bridge march', 'Harder'), v('qKBpF7I', 'Barbell glute bridge', 'Gym version')],
   'band-glute-bridge': [v('aWedzZX', 'Glute bridge with feet on a bench'), v('GibBPPg', 'Glute bridge march', 'Harder')],
-  'step-up': [v('d5bTEPV', 'Band step-up'), v('Kxquu2E', 'Barbell step-up', 'Gym version')],
-  'push-up': [v('B1EVP9F', 'Incline push-up (hands on a bench)', 'Easier'), v('F7vjXqT', 'Incline push-up on a box', 'Easier'), v('JmMVpR3', 'Wide-hand push-up'), v('i5cEhka', 'Decline push-up (feet up)', 'Harder')],
+  'push-up': [v('B1EVP9F', 'Incline push-up, hands raised', 'Easier: at home use your table, counter or the firm edge of the bed'), v('v3vLFW0', 'Push-up from the knees', 'Easier'), v('JmMVpR3', 'Wide-hand push-up'), v('i5cEhka', 'Decline push-up (feet up)', 'Harder')],
   'russian-twist': [v('6sYyrRX', 'Lying knee twist', 'Easier on the lower back'), v('aVs3BR3', 'Standing cable twist')],
   'face-pull': [v('wqNPGCg', 'Face pull from a high pulley'), v('G61cXLk', 'Kneeling face pull'), v('tc5dYrf', 'Face pull with a band (home)')],
   'band-face-pull': [v('wqNPGCg', 'Cable face pull (gym)'), v('G61cXLk', 'Kneeling cable face pull')],
@@ -49,7 +47,6 @@ export const VERSIONS: Record<string, Version[]> = {
 // Same movement, different id in the routines.
 VERSIONS['ss-curl'] = VERSIONS['bicep-curl'];
 VERSIONS['tri-bi-superset'] = VERSIONS['ss-triceps-ext'];
-VERSIONS['lying-leg-raise'] = VERSIONS['leg-raise'];
 
 /**
  * Demos for warm-up and cool-down moves, matched by name. Moves the library has no clean match for

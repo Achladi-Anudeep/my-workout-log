@@ -381,23 +381,12 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     ],
     mistakes: ['Arching the lower back instead of squeezing the glutes', 'Feet too far from the body', 'Rushing the reps'],
   },
-  'step-up': {
-    equipment: 'A low, stable step or stair',
-    targets: 'Quads · glutes',
-    steps: [
-      'Stand facing a low, stable step and place one whole foot on it.',
-      'Push through the heel of that foot to stand up on the step.',
-      'Lower slowly with the same leg in control.',
-      'Finish all reps on one side, then switch.',
-    ],
-    mistakes: ['Pushing off with the back foot', 'Knee caving inward', 'Step too high for a pain-free knee'],
-  },
   'single-leg-calf': {
-    equipment: 'A stair edge + wall or rail to hold',
+    equipment: 'Flat floor + a wall to hold; one dumbbell when bodyweight gets easy',
     targets: 'Calves',
     steps: [
-      'Stand on one foot on a stair edge, heel hanging off, holding the wall or rail.',
-      'Lower your heel for a full stretch.',
+      'Stand on one foot on the flat floor, one hand on the wall for balance.',
+      'Lower your heel all the way to the floor.',
       'Rise onto your toes as high as you can and pause 1 second.',
       'Finish all reps, then switch legs.',
     ],
@@ -436,17 +425,6 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     ],
     mistakes: ['Lower back lifting off the floor', 'Moving too fast', 'Holding your breath'],
   },
-  'lying-leg-raise': {
-    equipment: 'Floor mat',
-    targets: 'Lower abs · hip flexors',
-    steps: [
-      'Lie on your back, hands under your hips.',
-      'Press your lower back into the floor.',
-      'Raise your straight legs until they point at the ceiling.',
-      'Lower slowly, stopping before your back lifts.',
-    ],
-    mistakes: ['Lower back arching', 'Swinging the legs', 'Dropping them fast'],
-  },
 
   // ---------- Home bands (Saturday) ----------
   'band-glute-bridge': {
@@ -470,17 +448,6 @@ export const DETAILS: Record<string, ExerciseDetails> = {
       'Stay low and keep your knees pushed out the whole time.',
     ],
     mistakes: ['Standing up tall between steps', 'Letting the knees collapse inward', 'Big steps that make the band go slack'],
-  },
-  'band-row': {
-    equipment: 'Tube band with handles (Boldfit 20 kg) looped around your feet',
-    targets: 'Mid-back · lats · biceps',
-    steps: [
-      'Sit on the floor with legs straight and loop the middle of the band around the soles of your feet.',
-      'Hold a handle in each hand, arms straight, and sit tall.',
-      'Pull the handles to your belly, elbows close to your sides, and squeeze your shoulder blades for 1 second.',
-      'Let the arms go forward slowly. Hold the handles lower down the band to make it harder.',
-    ],
-    mistakes: ['Leaning back to pull with your body', 'Shrugging the shoulders', 'Letting the band snap back'],
   },
   'band-face-pull': {
     equipment: 'Tube band (Boldfit 20 kg) on the door anchor at face height',
@@ -506,6 +473,83 @@ export const DETAILS: Record<string, ExerciseDetails> = {
   },
 
   // ---------- Home versions of the gym days ----------
+  'standing-db-press': {
+    equipment: 'Two dumbbells from your kit',
+    targets: 'Front & side delts · triceps · core',
+    steps: [
+      'Stand with feet hip-width, dumbbells at shoulder height, palms facing forward.',
+      'Brace your abs and squeeze your glutes so your lower back stays neutral.',
+      'Press straight up until your arms are almost straight, dumbbells over your shoulders.',
+      'Lower slowly back to shoulder height.',
+    ],
+    mistakes: ['Leaning back to push', 'Bouncing out of the bottom', 'Elbows flaring far behind the body'],
+  },
+  'close-grip-push-up': {
+    equipment: 'Floor or mat (hands on your table or counter edge to make it easier)',
+    targets: 'Triceps · chest · front delts',
+    steps: [
+      'Hands just under your shoulders, fingers forward, body in one straight line.',
+      'Lower your chest, elbows brushing your ribs and pointing back.',
+      'Go down until your chest is a fist above the floor.',
+      'Push back up to straight arms, squeezing the triceps.',
+    ],
+    mistakes: ['Elbows flaring out', 'Hips sagging', 'Hands too close (diamond) hurting the wrists'],
+  },
+  'db-kickback': {
+    equipment: 'Your 2 kg dumbbell pair (5 kg from the kit when easy)',
+    targets: 'Triceps',
+    steps: [
+      'Stand with soft knees and hinge forward until your back is about 45°, a dumbbell in each hand.',
+      'Pull your upper arms up so they sit along your sides, elbows bent at 90°.',
+      'Straighten your elbows until your arms point back, squeeze 1 second.',
+      'Bend back to 90° slowly; the upper arms never move.',
+    ],
+    mistakes: ['Swinging the dumbbells', 'Upper arms dropping', 'Rounding the back'],
+  },
+  'standing-oh-triceps': {
+    equipment: 'One dumbbell (your 2 kg, then 5 kg from the kit)',
+    targets: 'Triceps (long head)',
+    steps: [
+      'Stand tall, abs braced, one dumbbell held straight up over your shoulder.',
+      'Keep the elbow pointing up and close to your head.',
+      'Lower the dumbbell behind your head until you feel a triceps stretch.',
+      'Straighten the arm back up; finish the set, then switch arms.',
+    ],
+    mistakes: ['Elbow drifting out to the side', 'Arching the lower back', 'Going too heavy and losing control behind the head'],
+  },
+  'supported-db-row': {
+    equipment: 'One dumbbell from your kit + your table or counter to lean on',
+    targets: 'Lats · mid-back · biceps',
+    steps: [
+      'Stand beside the table, put your free hand on it and hinge forward until your back is nearly flat.',
+      'Let the dumbbell hang straight down from the shoulder, feet in a short split stance.',
+      'Pull the dumbbell to your hip, elbow close to your side, squeeze 1 second.',
+      'Lower slowly to a full stretch; finish the set, then switch sides.',
+    ],
+    mistakes: ['Twisting the torso to lift', 'Pulling to the chest instead of the hip', 'Rounding the back'],
+  },
+  'db-reverse-lunge': {
+    equipment: 'Two dumbbells from your kit (or bodyweight)',
+    targets: 'Quads · glutes',
+    steps: [
+      'Stand tall, a dumbbell in each hand at your sides.',
+      'Step one foot back and lower the back knee toward the floor.',
+      'Stop just above the floor with the front shin roughly vertical.',
+      'Push through the front heel to stand; finish the set, then switch legs.',
+    ],
+    mistakes: ['Front knee caving inward', 'Leaning far forward', 'Pushing off the back foot'],
+  },
+  'split-squat': {
+    equipment: 'Bodyweight, flat floor',
+    targets: 'Quads · glutes',
+    steps: [
+      'Stand in a long stride, back heel up, both feet pointing forward.',
+      'Drop the back knee straight down toward the floor, chest tall.',
+      'Stop just above the floor.',
+      'Push up through the front heel; finish the set, then switch legs.',
+    ],
+    mistakes: ['Stride too short', 'Front heel lifting', 'Front knee caving inward'],
+  },
   'db-floor-press': {
     equipment: 'Two dumbbells from your kit + the yoga mat',
     targets: 'Chest · front delts · triceps',
@@ -528,28 +572,6 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     ],
     mistakes: ["Hips sagging or piking up", "Flaring the elbows straight out", "Stopping halfway down"],
   },
-  "band-chest-press": {
-    equipment: "Blue tube band, wrapped behind your upper back; chair optional",
-    targets: "Chest · front delts · triceps",
-    steps: [
-      "Sit tall on the chair (or stand), the band across your upper back under your armpits, a handle in each hand at chest level.",
-      "Press both handles forward and slightly together until your arms are almost straight.",
-      "Squeeze your chest for a moment.",
-      "Return slowly until your hands are beside your chest.",
-    ],
-    mistakes: ["Shrugging the shoulders forward", "Letting the band snap back", "Band riding up onto your neck"],
-  },
-  "decline-push-up": {
-    equipment: "Bed or chair for your feet + floor or mat",
-    targets: "Upper chest · front delts · triceps",
-    steps: [
-      "Put your feet on the bed or chair and your hands on the floor, a little wider than your shoulders.",
-      "Brace your core so your body is one straight line.",
-      "Lower your chest toward the floor, elbows about 45°.",
-      "Push back up.",
-    ],
-    mistakes: ["Hips sagging", "Head poking forward", "Feet too high at first (start low)"],
-  },
   "band-overhead-press": {
     equipment: "Red loop (later the blue tube band), stand on it",
     targets: "Front & side delts · triceps",
@@ -560,17 +582,6 @@ export const DETAILS: Record<string, ExerciseDetails> = {
       "Lower slowly back to the shoulders.",
     ],
     mistakes: ["Leaning back to push", "Elbows flaring far behind the body", "Band slipping from under your feet"],
-  },
-  "band-pushdown": {
-    equipment: "Red loop or blue tube band on the door anchor at the top of the door",
-    targets: "Triceps",
-    steps: [
-      "Close the door anchor in the top of the door and hold the band with both hands, elbows bent.",
-      "Pin your elbows to your sides and lean forward very slightly.",
-      "Push down until your arms are straight and squeeze.",
-      "Let the hands rise slowly to chest height.",
-    ],
-    mistakes: ["Elbows drifting forward", "Leaning over the band", "Cutting the range short"],
   },
   "band-rdl": {
     equipment: "Blue tube band, stand on the middle",
@@ -584,13 +595,13 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     mistakes: ["Rounding the back", "Bending the knees into a squat", "Hands drifting away from the legs"],
   },
   "band-pulldown": {
-    equipment: "Blue tube band on the door anchor at the top of the door",
+    equipment: "Blue tube band on the door anchor at the top of the door + the yoga mat",
     targets: "Lats · upper back · biceps",
     steps: [
-      "Close the anchor in the top of the door, kneel facing it, a handle in each hand, arms up.",
-      "Lift your chest and lean back very slightly.",
-      "Pull the handles to your upper chest, driving your elbows down and back.",
-      "Let your arms rise slowly until straight.",
+      "Close the anchor in the top of the door and kneel on the mat facing it, one handle in one hand, arm up.",
+      "Lift your chest and brace; kneel far enough back that the band is tight with the arm straight.",
+      "Pull the handle down to your side, driving the elbow toward your hip.",
+      "Let the arm rise slowly until straight; finish the set, then switch arms.",
     ],
     mistakes: ["Pulling with the arms only (think elbows down)", "Shrugging", "Kneeling too close, so there's no tension"],
   },
@@ -638,19 +649,8 @@ export const DETAILS: Record<string, ExerciseDetails> = {
     ],
     mistakes: ["Knees caving in", "Heels lifting", "Letting the handles pull you forward"],
   },
-  "bulgarian-split-squat": {
-    equipment: "Chair or bed for your rear foot; 2 kg dumbbells optional",
-    targets: "Quads · glutes",
-    steps: [
-      "Stand about two steps in front of the chair and put the top of one foot on it behind you.",
-      "Keep most of your weight on the front foot, chest tall.",
-      "Lower straight down until the front thigh is about parallel.",
-      "Push through the front heel to stand; finish the set, then switch legs.",
-    ],
-    mistakes: ["Front foot too close to the chair", "Front knee caving in", "Pushing off the back foot"],
-  },
   "single-leg-rdl": {
-    equipment: "Bodyweight or your 2 kg dumbbells",
+    equipment: "One dumbbell from your kit (or bodyweight)",
     targets: "Hamstrings · glutes · balance",
     steps: [
       "Stand on one leg with a soft knee, a dumbbell in the opposite hand (or none).",

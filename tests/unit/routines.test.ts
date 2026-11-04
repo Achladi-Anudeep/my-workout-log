@@ -16,7 +16,7 @@ describe('Gym PPL (the original plan) stays exactly as agreed', () => {
     expect(names(BUILTIN, 'wed')).toEqual(['Barbell Squat', 'Leg Press', 'RDL', 'Wall Sit', 'Leg Curl', 'Seated Calf Raise', 'Side Plank']);
     expect(names(BUILTIN, 'thu')).toEqual(['Incline Press', 'Flies', 'Bicep Curl', 'Triceps + Bicep Superset', 'Front Raises', 'Rear Delt Fly']);
     expect(names(BUILTIN, 'fri')).toEqual(['Lat Pulldown', 'Low Row', 'Rear Delt Fly', "Farmer's Carry", 'Leg Raises', 'Plank']);
-    expect(names(BUILTIN, 'sat')).toEqual(['Bodyweight Squat', 'Glute Bridge', 'Step-ups (low step)', 'Push-ups', 'Russian Twists', 'Dead Bug', 'Lying Leg Raise']);
+    expect(names(BUILTIN, 'sat')).toEqual(['Bodyweight Squat', 'Glute Bridge', 'Split Squat', 'Push-ups', 'Russian Twists', 'Dead Bug', 'Reverse Crunch']);
     expect(names(BUILTIN, 'sun')).toEqual([]);
   });
 
@@ -40,7 +40,7 @@ describe('Gym PPL v2', () => {
     expect(names(BUILTIN_V2, 'mon')).toContain('Seated DB Shoulder Press');
     expect(names(BUILTIN_V2, 'thu')).not.toContain('Front Raises');
     expect(names(BUILTIN_V2, 'fri')).toEqual(expect.arrayContaining(['Hammer Curl', 'Standing Calf Raise']));
-    expect(names(BUILTIN_V2, 'sat')).toEqual(expect.arrayContaining(['Band Seated Row', 'Band Face Pull', 'Band Lateral Raise', 'Monster Walk']));
+    expect(names(BUILTIN_V2, 'sat')).toEqual(expect.arrayContaining(['Single-arm Band Row', 'Band Face Pull', 'Band Lateral Raise', 'Monster Walk']));
   });
 
   it('trains side delts on three days a week', () => {
@@ -206,6 +206,21 @@ describe('finding the machine and doing it right', () => {
       for (const l of e.loads ?? []) expect(ONE_DB.includes(l), `${e.id} ${l}`).toBe(true);
       expect(detailsOf(e)?.equipment, e.id).toBeTruthy();
     }
+  });
+
+  it('nothing at home needs gear the user does not own (no bench, step, stairs, box or incline seat)', () => {
+    const NOT_OWNED = /\b(bench|step|stairs?|box|incline seat|staircase)\b/i;
+    const homeEx = [
+      ...Object.values(HOME_DAYS).flatMap(d => d!.exercises),
+      ...BAND_SWAPS,
+      ...BUILTINS.flatMap(r => r.days.sat.exercises),
+    ];
+    for (const e of homeEx) {
+      const d = detailsOf(e);
+      for (const text of [e.wNote, e.cue, e.equipment ?? '', d?.equipment ?? '', ...(d?.steps ?? [])]) expect(text, e.id).not.toMatch(NOT_OWNED);
+      expect(demoGif(e), `${e.id} has a demo`).toBeTruthy();
+    }
+    for (const d of [...Object.values(HOME_DAYS), ...BUILTINS.map(r => r.days.sat)]) for (const w of [...d!.warmup, ...d!.cooldown]) expect(w).not.toMatch(NOT_OWNED);
   });
 
   it('home days train the same muscles as the gym day they replace', () => {

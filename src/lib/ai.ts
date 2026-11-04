@@ -10,7 +10,7 @@ export const DEFAULT_PROFILE = [
   'Knee pain at the gym: keep gym leg work knee-friendly and pain-free. At home the knee is fine (no limits).',
   'Goal: lean, athletic and muscular with visible abs. Currently on a gentle cut (~1,900–2,000 kcal, 120–140 g protein a day).',
   'Vegetarian. Trains 6 days a week at the gym or at home (Saturday always at home).',
-  'Home gear: 20 kg blue tube band with handles + door anchor, 7–15 kg red loop band, 2 kg dumbbells, push-up stands, hand gripper, chair, bed, yoga mat. No knee limits at home.',
+  'Home gear: adjustable dumbbell kit (5 / 10 / 15 kg per hand, up to 20 kg on one dumbbell), a 2 kg dumbbell pair, 20 kg blue tube band with handles + door anchor, 7–15 kg red loop band, push-up stands, hand gripper, chair, bed, yoga mat, a table/counter and wall space. No bench, step, box or incline seat at home: never suggest exercises that need them. No knee limits at home.',
 ].join('\n');
 
 /** Earlier default profiles: replaced by the current default if you never edited them. */
@@ -19,6 +19,12 @@ export const LEGACY_PROFILES = [[
   'Has knee pain: keep exercises knee-friendly and within a pain-free range.',
   'Goal: lean, athletic and muscular with visible abs. Currently on a gentle cut (~1,900–2,000 kcal, 120–140 g protein a day).',
   'Vegetarian. Trains 6 days a week (Saturday at home with a tube band and a loop band).',
+].join('\n'), [
+  'Male, 28, 162 cm. Beginner (little regular exercise before starting).',
+  'Knee pain at the gym: keep gym leg work knee-friendly and pain-free. At home the knee is fine (no limits).',
+  'Goal: lean, athletic and muscular with visible abs. Currently on a gentle cut (~1,900–2,000 kcal, 120–140 g protein a day).',
+  'Vegetarian. Trains 6 days a week at the gym or at home (Saturday always at home).',
+  'Home gear: 20 kg blue tube band with handles + door anchor, 7–15 kg red loop band, 2 kg dumbbells, push-up stands, hand gripper, chair, bed, yoga mat. No knee limits at home.',
 ].join('\n')];
 
 export type AiError = 'sign-in' | 'not-configured' | 'busy' | 'offline' | 'failed';

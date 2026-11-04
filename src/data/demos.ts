@@ -41,11 +41,10 @@ export const DEMO_ID: Record<string, string> = {
   'tri-bi-superset': 'kont8Ut',
   // core & home
   'leg-raise': 'WhuFnR7',            // lying leg raise flat bench
-  'lying-leg-raise': 'WhuFnR7',
   'bw-squat': '75Bgtjy',             // potty squat = plain bodyweight squat, arms forward
   'glute-bridge': 'u0cNiij',         // low glute bridge on floor
-  'step-up': 'aXtJhlg',              // dumbbell step-up
-  'single-leg-calf': '6HmFgmx',      // standing calf raise (on a staircase)
+  'split-squat': '9E25EOx',          // split squats, bodyweight, flat floor
+  'single-leg-calf': '0jp9Rlz',      // single-leg floor calf raise (no step)
   'russian-twist': 'XVDdcoj',        // russian twist
   'dead-bug': 'iny3m5y',             // dead bug
   // more
@@ -59,22 +58,23 @@ export const DEMO_ID: Record<string, string> = {
   // home bands (Saturday)
   'band-glute-bridge': 'u0cNiij',    // glute bridge on the floor: see note
   'monster-walk': 'O95afRA',         // monster walk
-  'band-row': 'Nu7jqFE',             // band seated straight back row
   'band-face-pull': 'tc5dYrf',       // band standing rear delt row = face pull with a band
   'band-lateral-raise': 'DsgkuIt',   // dumbbell lateral raise, same movement: see note
   // home versions of the gym days
-  'db-floor-press': 'SpYC0Kp',       // dumbbell bench press: see note
+  'db-floor-press': 'rg59QCH',       // single-arm floor press, lying on the floor: see note
   'stand-push-up': 'I4hDWkc',        // push-up: see note
-  'band-chest-press': '4x5Okof',     // band seated chest press (band behind the back)
-  'decline-push-up': 'i5cEhka',      // decline push-up
   'band-overhead-press': 'peAeMR3',  // band shoulder press (standing on the band)
-  'band-pushdown': '3ZflifB',        // cable pushdown: see note
+  'standing-db-press': 'A6wtbuL',    // dumbbell standing overhead press
+  'close-grip-push-up': 'x6KpKpq',   // close-grip push-up on the floor
+  'db-kickback': 'UmpPAAe',          // dumbbell standing kickback (no bench)
+  'standing-oh-triceps': 'PdmaD0N',  // dumbbell standing (one-arm overhead) triceps extension
+  'supported-db-row': 'v2DfH14',     // single-arm bent-over row, free hand holding a support: see note
+  'db-reverse-lunge': 'SSsBDwB',     // dumbbell rear lunge
   'band-rdl': 'kuMiR2T',             // band stiff leg deadlift
-  'band-pulldown': 'DptumMx',        // band close-grip pulldown (anchored overhead)
+  'band-pulldown': 'pmnrOp0',        // band kneeling single-arm pulldown
   'single-arm-band-row': 'km0sQC0',  // band single-arm standing low row
   'band-shrug': 'trmte8s',           // band shrug
   'band-squat': 'TUZLh71',           // band squat
-  'bulgarian-split-squat': 'y8bYM8w',// band single leg split squat (rear foot raised)
   'single-leg-rdl': 'gKozT8X',       // dumbbell single leg deadlift
   'band-wall-sit': 'sVQCCeG',        // march sit (wall): see note
   'single-leg-bridge': 'rmEukuS',    // single leg bridge with outstretched leg
@@ -101,22 +101,18 @@ export const DEMO_NOTE: Record<string, string> = {
   'wall-sit': 'The demo also lifts one knee at a time. Keep both feet on the floor and just hold the position.',
   plank: 'The demo has a weight plate on the back. Do it with bodyweight only.',
   'rear-delt-fly': 'The demo is seated on the end of a bench. Standing and bent over works the same.',
-  'single-leg-calf': 'The demo uses both feet. Do one foot at a time and hold the wall.',
   'tri-bi-superset': 'The demo shows the triceps half. The curl half is the same as Bicep Curl.',
   'band-glute-bridge': 'Same movement with a loop band just above your knees. Push the knees out against it.',
   'band-lateral-raise': 'The demo uses dumbbells. Stand on the middle of the tube band and hold a handle in each hand.',
-  'band-row': 'The demo sits on a bench. Sitting on the floor with legs straight works the same.',
-  'db-floor-press': 'Shown on a bench. On the floor it is the same press; your upper arms touch the floor at the bottom.',
+  'db-floor-press': 'Shown with one kettlebell. You press a dumbbell in each hand the same way, lying on your mat; upper arms touch the floor at the bottom.',
+  'supported-db-row': 'The demo holds a wall bar. Rest your free hand on your table or counter instead.',
   'stand-push-up': 'Shown on the floor. Hold your push-up stands: deeper stretch, easier on the wrists.',
   'banded-push-up': 'Same push-up, with the red loop across your upper back and the ends under your palms.',
-  'band-pushdown': 'The demo uses a cable. Hang the band from the door anchor at the top of the door; same movement.',
   'band-fly': 'The demo uses cables. Door anchor at chest height, face away, a handle in each hand; same hugging motion.',
   'band-hammer-curl': 'The demo uses a cable rope. Stand on the band, palms facing each other; same movement.',
   'band-overhead-triceps': 'Shown one arm at a time. Both arms together with the band under your back foot works too.',
   'band-wall-sit': 'The demo lifts one knee at a time. Keep both feet down, red loop above the knees, push the knees out.',
-  'band-pulldown': 'Shown seated on a box. Kneeling under the door anchor works the same.',
-  'band-chest-press': 'Shown seated. Standing works too; keep the band across your upper back.',
-  'single-leg-rdl': 'Shown with dumbbells; yours are 2 kg, or do it with bodyweight.',
+  'single-leg-rdl': 'Shown with a dumbbell in each hand. Hold one, in the hand opposite your standing leg.',
 };
 
 export const gifUrl = (id: string) => `https://static.exercisedb.dev/media/${id}.gif`;

@@ -54,15 +54,15 @@ export const PLAN: Day[] = [
     E('plank', 'Plank', 3, 60, 60, 'sec', null, 'Bodyweight', 45, 'Straight line head to heels, squeeze the glutes.'),
   ] },
   { id: 'sat', short: 'Sat', title: 'Home Recovery + Core', focus: 'Light full body · core · bodyweight', mins: '35', plate: 'var(--p-black)', cardio: 'home', home: true,
-    warmup: ['Brisk walk, jumping jacks or stairs · 5–10 min'],
+    warmup: ['Brisk walk, jumping jacks or marching in place · 5–10 min'],
     cooldown: ["Child's Pose · 30s", 'Pigeon Pose · 30s/side', 'Thread the Needle · 30s/side', 'Hamstring Stretch · 30s', 'Wall Chest Opener · 30s'], exercises: [
     E('bw-squat', 'Bodyweight Squat', 3, 20, 20, 'reps', null, 'Bodyweight', 45, 'Shallow, pain-free depth, slow tempo.'),
     E('glute-bridge', 'Glute Bridge', 3, 15, 15, 'reps', null, 'Bodyweight', 45, 'Pause 2s at the top.'),
-    E('step-up', 'Step-ups (low step)', 3, 12, 12, 'reps', null, 'Bodyweight', 45, 'Push through the heel, lower slowly.', true),
-    E('push-up', 'Push-ups', 3, 12, 12, 'reps', null, 'Bodyweight (incline if needed)', 45, 'Body in one straight line.'),
+    E('split-squat', 'Split Squat', 3, 10, 12, 'reps', null, 'Bodyweight', 45, 'Drop the back knee straight down, push up through the front heel.', true),
+    E('push-up', 'Push-ups', 3, 12, 12, 'reps', null, 'Bodyweight (hands on the table or counter if needed)', 45, 'Body in one straight line.'),
     E('russian-twist', 'Russian Twists', 3, 20, 20, 'reps', null, 'Bodyweight', 30, 'Rotate from the ribs, not the arms.'),
     E('dead-bug', 'Dead Bug', 3, 12, 12, 'reps', null, 'Bodyweight', 30, 'Lower back stays flat on the floor.', true),
-    E('lying-leg-raise', 'Lying Leg Raise', 3, 12, 12, 'reps', null, 'Bodyweight', 30, 'Keep your lower back pressed down.'),
+    E('reverse-crunch', 'Reverse Crunch', 3, 12, 15, 'reps', null, 'Bodyweight, on the mat', 30, 'Curl your hips off the mat toward your chest, lower slowly.'),
   ] },
   { id: 'sun', short: 'Sun', title: 'Rest', focus: 'Full rest · no training, no cardio', mins: '0', plate: 'var(--line)', cardio: 'none', warmup: [], cooldown: [], exercises: [] },
 ];
@@ -84,6 +84,6 @@ export const DEMO_Q: Record<string, string> = {
   'face-pull': 'face pull', shrug: 'dumbbell shrug', squat: 'barbell full squat', 'leg-press': 'leg press', rdl: 'romanian deadlift', 'wall-sit': 'wall sit',
   'leg-curl': 'lying leg curl', 'seated-calf': 'seated calf raise', 'side-plank': 'side bridge', flies: 'dumbbell fly', 'bicep-curl': 'dumbbell biceps curl',
   'tri-bi-superset': 'triceps extension', 'front-raise': 'dumbbell front raise', 'rear-delt-fly': 'rear delt fly', 'farmers-carry': 'farmers walk',
-  'leg-raise': 'lying leg raise', plank: 'plank', 'bw-squat': 'bodyweight squat', 'glute-bridge': 'glute bridge', 'step-up': 'step-up',
-  'push-up': 'push-up', 'russian-twist': 'russian twist', 'dead-bug': 'dead bug', 'lying-leg-raise': 'lying leg raise',
+  'leg-raise': 'lying leg raise', plank: 'plank', 'bw-squat': 'bodyweight squat', 'glute-bridge': 'glute bridge', 'split-squat': 'split squats',
+  'push-up': 'push-up', 'russian-twist': 'russian twist', 'dead-bug': 'dead bug', 'reverse-crunch': 'reverse crunch',
 };

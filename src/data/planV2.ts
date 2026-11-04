@@ -66,19 +66,20 @@ export function buildV2(): Record<DayId, RoutineDay> {
   sat.mins = '45';
   sat.title = 'Home Legs + Bands';
   sat.focus = 'Gentle legs · back & shoulders with bands · core';
-  sat.warmup = ['Brisk walk, jumping jacks or stairs · 5 min', 'Glute Bridge × 10', 'Band Pull-apart × 10', 'Arm circles × 10 each way'];
+  sat.warmup = ['Brisk walk, jumping jacks or marching in place · 5 min', 'Glute Bridge × 10', 'Band Pull-apart × 10', 'Arm circles × 10 each way'];
   const squat = ex('sat', 'bw-squat');
   squat.min = 15; squat.max = 20;
   squat.cue = 'Lower over 3 seconds to a pain-free depth, stand up normally.';
   sat.exercises = [
     squat,
-    ex('sat', 'step-up'),
+    E('split-squat', 'Split Squat', 3, 10, 12, 'reps', null, 'Bodyweight', 45,
+      'Feet a long stride apart, drop the back knee straight down, push up through the front heel.', { perSide: true }),
     E('band-glute-bridge', 'Banded Glute Bridge', 3, 15, 15, 'reps', null, 'Loop band above the knees', 45,
       'Push the knees out against the band, pause 2s at the top.'),
     E('monster-walk', 'Monster Walk', 3, 10, 12, 'reps', null, 'Loop band around the legs', 45,
       'Small steps, knees pushed out, stay in a quarter squat.', { perSide: true }),
-    E('band-row', 'Band Seated Row', 3, 12, 15, 'reps', null, 'Tube band around your feet', 60,
-      'Sit tall, pull the handles to your belly, squeeze the shoulder blades 1s.'),
+    E('single-arm-band-row', 'Single-arm Band Row', 3, 12, 15, 'reps', null, 'Blue band on the door anchor, waist height', 60,
+      'Stand side-on in a split stance, pull the handle to your hip, squeeze the shoulder blade 1s.', { perSide: true }),
     E('band-face-pull', 'Band Face Pull', 3, 15, 15, 'reps', null, 'Tube band on the door anchor, face height', 45,
       'Pull toward your face with elbows high, split the handles apart.'),
     E('band-lateral-raise', 'Band Lateral Raise', 3, 15, 15, 'reps', null, 'Stand on the tube band', 45,
