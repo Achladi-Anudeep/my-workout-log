@@ -391,6 +391,7 @@ test.describe('@local', () => {
     await card.getByRole('button', { name: 'Mark set 1 done' }).click();
     await page.getByRole('button', { name: 'Skip' }).click();
 
+    await card.getByRole('button', { name: 'More about Assisted Pull-up' }).click();
     await card.getByRole('button', { name: 'Swap Assisted Pull-up' }).click();
     await expect(page.getByRole('dialog').locator('#swap-to-lat-pulldown')).toContainText('Back to Lat Pulldown');
     await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();

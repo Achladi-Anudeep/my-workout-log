@@ -79,7 +79,7 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-xl px-4 pb-28 pt-4">
-        <div key={`${tab}-${resets}`} className="anim-rise">
+        <div key={`${tab}-${resets}`} className="anim-fade">
           {tab === 'today' && <Today onRest={onRest} />}
           {tab === 'calendar' && <CalendarView />}
           {tab === 'progress' && <Progress />}
